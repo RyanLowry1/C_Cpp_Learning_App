@@ -1,0 +1,187 @@
+@title Memory Management
+@topic memory
+@subtitle The stack and the heap, new and delete, malloc and free, leaks and dangling pointers
+
+# Two places to keep data
+## The stack
+Local variables (`int x;` inside a function) live on the **stack**. They're created when their scope starts and destroyed automatically when it ends. Fast and tidy - but short-lived, and the size must be known at compile time.
+
+## The heap
+Memory you request at run time with `new` (C++) or `malloc` (C) comes from the **heap**. It stays allocated until **you** release it with `delete` or `free`.
+
+```
+int x = 5;              // stack - gone at the closing brace
+int *p = new int;       // heap - lives until delete
+*p = 5;
+delete p;               // give it back
+p = nullptr;            // and forget the old address
+```
+
+@mem
+x (stack) | int | 5 | 7ff0
+p (stack) | int* | 4a20 | 7ff8 | heap int
+heap int | int | 5 | 4a20
+@end
+caption: The pointer p itself is on the stack. The int it points to is on the heap.
+
+===
+
+# Scope and dangling pointers
+When a variable goes out of scope its memory may be reused. A pointer still holding its old address is **dangling**.
+
+```
+int *p;
+if (true) {
+    int x = 5;
+    p = &x;
+}
+cout << *p << endl;   // undefined! x no longer exists
+```
+
+!> It might still print 5 - which is exactly why this bug is dangerous. It works on your machine and fails in the exam demo.
+
+## Returning the address of a local
+```
+int* getPtrToFive() {
+    int x = 5;
+    return &x;        // BUG: x dies when the function returns
+}
+```
+
+The fix from the slides: allocate on the heap, and make the caller responsible for deleting it.
+
+```
+int* getPtrToFive() {
+    int *x = new int;
+    *x = 5;
+    return x;
+}
+
+int main() {
+    int *p = getPtrToFive();
+    cout << *p << endl;   // 5
+    delete p;
+}
+```
+
+===
+
+# Memory leaks
+Memory that's allocated and never freed, and can no longer be reached, is a **leak**. Leak inside a loop and the program's memory use grows and grows.
+
+```
+int *p;
+for (int i = 0; i < 3; ++i) {
+    p = getPtrToFive();
+    cout << *p << endl;
+}
+delete p;    // frees only the LAST one - two leaked
+```
+
+The fix: delete each allocation before you lose its address.
+
+```
+for (int i = 0; i < 3; ++i) {
+    int *p = getPtrToFive();
+    cout << *p << endl;
+    delete p;
+}
+```
+
+## The rules of delete
+- Only `delete` memory that came from `new`. Deleting `&x` of a stack variable is undefined behaviour.
+- Never delete the same memory twice. Set the pointer to `nullptr` afterwards - deleting a null pointer is harmless.
+- Don't use memory after deleting it.
+
+===
+
+# Arrays on the heap
+A stack array's size must be a compile-time constant, so `int arr[numItems];` with a user-typed size isn't standard C++. Use `new[]`:
+
+```
+int numItems;
+cout << "How many items? ";
+cin >> numItems;
+int *arr = new int[numItems];
+for (int i = 0; i < numItems; i++) {
+    arr[i] = i * 10;
+}
+delete[] arr;     // [] because it came from new[]
+```
+
+!> `new` pairs with `delete`; `new[]` pairs with `delete[]`. Mixing them up is undefined behaviour.
+
+## 2D arrays on the heap
+```
+int** arr2D = new int*[rows];
+for (int i = 0; i < rows; i++) {
+    arr2D[i] = new int[cols];
+}
+// ... use arr2D[r][c] ...
+for (int i = 0; i < rows; i++) {
+    delete[] arr2D[i];     // rows first
+}
+delete[] arr2D;            // then the row table
+```
+
+> Free the rows **before** the array of row pointers - otherwise you've thrown away the only copy of their addresses.
+
+===
+
+# malloc and free (C)
+C uses library functions from `<stdlib.h>` instead of operators. `malloc` takes a size in **bytes** and returns `NULL` if it fails.
+
+```
+#include <stdio.h>
+#include <stdlib.h>
+
+int main() {
+    int n = 5;
+    int *nums = (int*)malloc(n * sizeof(int));
+    if (nums == NULL) {
+        printf("Out of memory!\n");
+        return 1;
+    }
+    for (int i = 0; i < n; i++) nums[i] = i * i;
+    free(nums);
+    nums = NULL;
+    return 0;
+}
+```
+
+- `calloc(n, size)` - like malloc but zero-fills.
+- `realloc(ptr, newSize)` - grow or shrink a block.
+- Pair `malloc` with `free` and `new` with `delete`. Never mix the two families.
+
+> `new` also runs the object's constructor (and `delete` its destructor). `malloc` just hands back raw bytes - that's why C++ code uses `new`.
+
+===
+
+# Destructors clean up
+A class that allocates in its constructor should free in its **destructor**, which runs automatically when the object goes out of scope.
+
+```
+class TwentyThousandPoints {
+public:
+    TwentyThousandPoints() { points = new Point[20000]; }
+    ~TwentyThousandPoints() { delete[] points; }
+private:
+    Point *points;
+};
+```
+
+Without the destructor, every object created in a loop would leak its 20,000 points - the slides show memory use climbing steadily. With it, memory use stays flat.
+
+# Globals and shadowing
+A variable declared outside every function is **global**. A local with the same name **shadows** it inside that function.
+
+```
+int glVar = 10;
+void f() {
+    int glVar;     // a new local - hides the global
+    glVar = 20;    // changes the local only
+}
+// after f(), the global glVar is still 10
+```
+
+*> Expect to spot leaks, dangling pointers and mismatched delete / delete[] in code snippets. Ask of every pointer: who allocated it, who frees it, and is it still valid here?

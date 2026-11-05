@@ -1,0 +1,45 @@
+# Autopilot script: hub -> coding workbook -> open a problem -> run it
+mouse 0.5 0.45
+wait 3.2
+shot 01_hub
+mouse 0.06 0.42
+wait 0.9
+shot 02_hub_hover
+mouse 0.5 0.45
+tab 3
+wait 1.4
+shot 03_coding_choices
+pick 0
+quick 1
+wait 1.6
+shot 04_fetch_standup
+wait 2.2
+shot 05_fetch_walk
+wait 2.2
+shot 06_fetch_shelf
+wait 2.0
+shot 07_fetch_back
+phase presenting
+wait 0.7
+shot 08_presenting
+phase reading
+wait 0.6
+shot 09_workbook_list
+debug open 20
+wait 0.6
+debug unfocus
+shot 10_problem
+debug solution
+debug run
+wait 6
+shot 11_problem_run
+debug submit
+wait 6
+shot 12_problem_submit
+close
+wait 1.3
+shot 13_closing
+phase hub
+wait 2.5
+shot 14_hub_after
+quit

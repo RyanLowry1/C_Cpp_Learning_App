@@ -1,0 +1,223 @@
+@title Classes & Objects
+@topic classes
+@subtitle Fields, methods, access, constructors, destructors, this, static and copying
+
+# User-defined types
+A **class** bundles related data (fields) and the functions that work on it (methods) into a new type. Each **instance** (object) has its own set of field values.
+
+```
+class Point {
+public:
+    double x, y;
+};
+
+class Vector {
+public:
+    Point start, end;
+};   // don't forget this semicolon!
+
+int main() {
+    Vector vec1;
+    vec1.start.x = 3.0;
+    vec1.start.y = 4.0;
+    vec1.end.x = 5.0;
+    vec1.end.y = 6.0;
+}
+```
+
+!> Leaving out the `;` after the closing brace of a class causes confusing errors - often reported on a later line.
+
+## class versus struct
+They are almost identical. The only difference is the default: members of a `class` are **private** unless you say otherwise, members of a `struct` are **public**.
+
+===
+
+# Copying and passing objects
+Assigning one object to another copies **every field**.
+
+```
+Vector vec2;
+vec2.start = vec1.start;   // copies x and y
+vec2.start.x = 7.0;        // vec1.start.x is still 3.0
+```
+
+Objects are passed **by value** unless you say otherwise - so the function gets a copy:
+
+```
+void offsetPoint(Point p, double x, double y) {
+    p.x += x;          // changes the copy only
+    p.y += y;
+}
+
+void offsetPointRef(Point &p, double x, double y) {
+    p.x += x;          // changes the caller's point
+    p.y += y;
+}
+```
+
+> Pass large objects as `const Point &p` when you only need to read them - no copy, and no accidental changes.
+
+===
+
+# Methods
+A method is a function declared inside the class. It can use the fields of the object it was called on directly.
+
+```
+class Vector {
+public:
+    Point start, end;
+    void offset(double offsetX, double offsetY) {
+        start.x += offsetX;  end.x += offsetX;
+        start.y += offsetY;  end.y += offsetY;
+    }
+    void print() {
+        cout << "(" << start.x << "," << start.y << ") -> ("
+             << end.x << "," << end.y << ")" << endl;
+    }
+};
+
+vec1.offset(1.0, 1.5);
+vec1.print();
+```
+
+## Header and implementation files
+In bigger programs the class is declared in `vector.h` and its methods are defined in `vector.cpp` with the `ClassName::` prefix:
+
+```
+// vector.cpp
+#include "vector.h"
+void Vector::print() {
+    cout << "(" << start.x << "," << start.y << ")" << endl;
+}
+```
+
+===
+
+# Access control
+- `public:` - usable from anywhere.
+- `private:` - usable only by the class's own methods.
+
+```
+class Point {
+private:
+    double x, y;
+public:
+    double getX() { return x; }
+    void setX(double newX) { x = newX; }
+};
+
+Point p;
+p.setX(5.0);     // fine
+// p.x = 5.0;    // error: x is private
+```
+
+> Hiding fields behind getters and setters (**encapsulation**) lets the class protect its rules - a setter can refuse a negative radius, for example.
+
+# Pointers to objects
+Use `->` to reach a member through a pointer:
+
+```
+Point p;
+Point *pPtr = &p;
+pPtr->setX(2.0);       // same as (*pPtr).setX(2.0)
+Point *heap = new Point();
+heap->setX(4.0);
+delete heap;
+```
+
+===
+
+# Constructors
+A **constructor** has the class's name and no return type. It runs automatically when an instance is created.
+
+```
+class Point {
+public:
+    double x, y;
+    Point() { x = 0.0; y = 0.0; }               // default
+    Point(double nx, double ny) : x(nx), y(ny) {} // init list
+};
+
+Point a;             // (0, 0)
+Point b(2.0, 3.0);   // (2, 3)
+Point *c = new Point(1.0, 1.0);
+```
+
+- The **initialisation list** (`: x(nx), y(ny)`) sets members before the body runs.
+- Once you write any constructor, the compiler no longer provides the default one for free.
+- `Point points[20];` needs a default constructor - every element is default-constructed.
+
+# Destructors
+The **destructor**, `~ClassName()`, runs when an object goes out of scope or is deleted. It's where you release anything the object owns.
+
+```
+class Noisy {
+public:
+    Noisy(int id) : id(id) { cout << "make " << id << endl; }
+    ~Noisy() { cout << "bye " << id << endl; }
+private:
+    int id;
+};
+```
+
+> Locals are destroyed in **reverse** order of creation at the end of their scope.
+
+===
+
+# this
+Inside a method, `this` is a pointer to the object the method was called on.
+
+```
+class Point {
+public:
+    double x, y;
+    void set(double x, double y) {
+        this->x = x;   // the field x = the parameter x
+        this->y = y;
+    }
+};
+```
+
+# static members
+A **static** field is shared by every instance - there is one copy for the whole class. A static method belongs to the class, not an object, so it has **no `this`** and can't use ordinary fields.
+
+```
+class Student {
+public:
+    static int total;           // declaration
+    Student() { total++; }
+    static int count() { return total; }
+};
+int Student::total = 0;        // definition, outside the class
+
+Student a, b;
+cout << Student::count() << endl;   // 2
+```
+
+===
+
+# Copy constructors
+When an object is copied (`MITStudent s2 = s1;`, or passed by value) the **copy constructor** runs. The default one copies each field - including pointers.
+
+```
+class MITStudent {
+public:
+    char *name;
+    int studentID;
+    MITStudent() {
+        studentID = 0;
+        name = new char[20];
+        strcpy(name, "Unknown");
+    }
+    MITStudent(const MITStudent &o) {   // deep copy
+        studentID = o.studentID;
+        name = new char[strlen(o.name) + 1];
+        strcpy(name, o.name);
+    }
+    ~MITStudent() { delete[] name; }
+};
+```
+
+!> With only the default copy constructor, both students' `name` pointers would point at the same characters: changing `student2.name[0]` would change student1's name too, and both destructors would delete the same array. That's a **shallow** copy.
+
+*> If a class has a pointer to memory it owns, it needs a destructor, a copy constructor and an assignment operator (the "rule of three"). Expect a question on why the shallow copy breaks.

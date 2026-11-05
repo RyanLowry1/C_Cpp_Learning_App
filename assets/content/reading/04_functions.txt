@@ -1,0 +1,169 @@
+@title Functions & Parameters
+@topic functions
+@subtitle Declaring functions, return values, pass by value and pass by reference
+
+# Why functions?
+A function packages a task under a name so you can reuse it, test it on its own, and keep `main` readable.
+
+```
+#include <stdio.h>
+
+int add(int a, int b) {      // return type, name, parameters
+    return a + b;
+}
+
+void printGreeting() {       // void: returns nothing
+    printf("Hello from a function!\n");
+}
+
+int main() {
+    int result = add(5, 3);
+    printf("5 + 3 = %d\n", result);
+    printGreeting();
+    return 0;
+}
+```
+
+```output
+5 + 3 = 8
+Hello from a function!
+```
+
+## Prototypes
+If you want to call a function before its body appears in the file, declare it first with a **prototype**:
+
+```
+int add(int a, int b);   // prototype - note the ;
+```
+
+===
+
+# Returning a value
+`return` hands one value back and ends the function immediately.
+
+```
+double calculateAverage(int arr[], int size) {
+    int sum = 0;
+    for (int i = 0; i < size; i++) {
+        sum += arr[i];
+    }
+    return (double)sum / size;
+}
+```
+
+!> Without the `(double)` cast, `sum / size` is integer division - an average of 86.6 comes back as 86.0.
+
+> The return type is part of the contract. A function declared `int` must return an `int` on every path; a `void` function returns nothing.
+
+# Pass by value
+By default C and C++ pass a **copy** of each argument. The function can change its copy freely - the caller never sees it.
+
+```
+void tryToChange(int x) {
+    x = 999;   // changes the local copy only
+}
+
+int main() {
+    int value = 5;
+    tryToChange(value);
+    printf("%d\n", value);   // still 5
+    return 0;
+}
+```
+
+@mem
+value (main) | int | 5
+x (tryToChange) | int | 999
+@end
+caption: Two separate boxes. Changing x can't touch value.
+
+===
+
+# Pass by reference (C++)
+Put `&` after the type and the parameter becomes a **reference** - another name for the caller's actual variable.
+
+```
+#include <iostream>
+using namespace std;
+
+void addOneByValue(int x)      { x = x + 1; }
+void addOneByReference(int& x) { x = x + 1; }
+
+int main() {
+    int a = 5;
+    addOneByValue(a);
+    cout << a << endl;        // 5
+    addOneByReference(a);
+    cout << a << endl;        // 6
+}
+```
+
+@mem
+a (main) | int | 6
+x (reference) | int& | alias | | a (main)
+@end
+caption: A reference isn't a new box - it's a second label on the same box.
+
+## The classic swap
+```
+void swap(int &a, int &b) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+
+int x = 10, y = 20;
+swap(x, y);   // now x is 20, y is 10
+```
+
+> With `void swap(int a, int b)` the function would swap its own copies and the caller's x and y would be unchanged.
+
+===
+
+# When to use which
+## Pass by value
+- Small types (`int`, `char`, `double`) you only need to read.
+- When the function must not affect the caller.
+
+## Pass by reference
+- When the function must **change** the caller's variable (swap, read input into it).
+- To return **several results**: a function can only `return` one value, but it can fill several reference parameters.
+- To avoid copying a **large object** - add `const` if it should stay read-only: `void print(const Student& s)`.
+
+```
+void minMax(int arr[], int n, int& mn, int& mx) {
+    mn = mx = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < mn) mn = arr[i];
+        if (arr[i] > mx) mx = arr[i];
+    }
+}
+// int lo, hi;  minMax(data, 4, lo, hi);
+```
+
+!> Arrays are the exception to pass-by-value: an array parameter receives the address of the first element, so changes inside the function are visible to the caller.
+
+*> "What does this print?" questions comparing a by-value and a by-reference call are almost guaranteed. Draw a box for each variable and ask: is this a copy, or the original?
+
+===
+
+# In C: pointers instead of references
+C has no `&` references. To let a function change a caller's variable, pass its **address** and dereference it inside the function.
+
+```
+void change(int *p) {
+    *p = 50;          // write into the caller's variable
+}
+
+int main() {
+    int x = 10;
+    change(&x);       // pass the address of x
+    printf("%d\n", x);   // 50
+    return 0;
+}
+```
+
+> This is exactly why `scanf("%d", &age)` needs the `&`. The next chapter takes pointers apart in detail.
+
+## Scope
+A variable declared inside a function (or any `{ }` block) exists only there. Two functions can each have a local called `i` without any clash.

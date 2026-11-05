@@ -1,0 +1,1409 @@
+# Coding Exam 1 workbook - built from Lab1.cpp (exam preparation lab)
+# Format: see assets/content/README.txt
+
+@set exam1
+title: Coding Exam 1 Workbook
+subtitle: C fundamentals - the Lab 1 exercises
+desc: Every function from **Lab 1**, the preparation lab for Coding Exam 1 (Friday 2nd October, 3pm, D422 & D417). Each problem gives you the exact function signature from the lab. Write the body, press **Run** to try the sample tests, then **Submit** to face the hidden tests - just like the exam, the hidden tests probe edge cases. Code is written in C style (printf, arrays, loops) but compiled as C++, so `bool` and `int&` work exactly as in the lab file.
+prelude: c
+exam: 1
+color: 40,70,110
+
+# --------------------------------------------------------------------------
+@p e1.leap
+title: Leap Year
+topic: control
+diff: Easy
+desc:
+Lab Q1. Return `true` if `year` is a leap year.
+
+A leap year is divisible by **4**, but **not** by **100** - unless it is **also** divisible by **400**. So 2016 and 1600 are leap years, but 1700 and 1900 are not.
+@end
+example:
+isLeapYear(2016)  ->  true
+isLeapYear(1700)  ->  false   (divisible by 100 but not 400)
+isLeapYear(1600)  ->  true    (divisible by 400)
+@end
+starter:
+bool isLeapYear(int year) {
+    // your code here
+    return true;
+}
+@end
+tests:
++ 2016 is a leap year
+EXPECT_EQ(isLeapYear(2016), true);
++ 1700 is not (divisible by 100, not by 400)
+EXPECT_EQ(isLeapYear(1700), false);
++ 1600 is (divisible by 400)
+EXPECT_EQ(isLeapYear(1600), true);
+- 2023 is not divisible by 4
+EXPECT_EQ(isLeapYear(2023), false);
+- 1900 is not a leap year
+EXPECT_EQ(isLeapYear(1900), false);
+- 2000 is a leap year
+EXPECT_EQ(isLeapYear(2000), true);
+- 2024 is a leap year
+EXPECT_EQ(isLeapYear(2024), true);
+@end
+hint: Use the modulus operator. A one-line answer is: (year % 4 == 0 && year % 100 != 0) || year % 400 == 0
+solution:
+bool isLeapYear(int year) {
+    return (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0);
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.reversed
+title: Reverse the Digits
+topic: control
+diff: Easy
+desc:
+Lab Q2 (helper). Return the number with its digits reversed, e.g. 123 becomes 321.
+
+Peel off the last digit with `% 10`, and drop it with `/ 10`. Build the answer up with `result = result * 10 + digit`.
+@end
+example:
+Reversed(123)   ->  321
+Reversed(1)     ->  1
+Reversed(1200)  ->  21
+@end
+starter:
+int Reversed(int testNumber) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ 123 becomes 321
+EXPECT_EQ(Reversed(123), 321);
++ a single digit stays the same
+EXPECT_EQ(Reversed(1), 1);
+- 1234 becomes 4321
+EXPECT_EQ(Reversed(1234), 4321);
+- trailing zeros disappear: 1200 becomes 21
+EXPECT_EQ(Reversed(1200), 21);
+- zero stays zero
+EXPECT_EQ(Reversed(0), 0);
+- 90817 becomes 71809
+EXPECT_EQ(Reversed(90817), 71809);
+@end
+hint: while (testNumber > 0) { result = result * 10 + testNumber % 10; testNumber /= 10; }
+solution:
+int Reversed(int testNumber) {
+    int result = 0;
+    while (testNumber > 0) {
+        result = result * 10 + testNumber % 10;
+        testNumber /= 10;
+    }
+    return result;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.palindrome
+title: Palindrome Number
+topic: functions
+diff: Easy
+desc:
+Lab Q2. A palindrome reads the same forwards and backwards (121, 7, 4554). Return `true` if `testNumber` is a palindrome.
+
+Reuse your `Reversed` function from the previous exercise - that is exactly why the lab gives it to you as a helper. Both functions are in the editor; implement both.
+@end
+example:
+isAPalindrome(121)   ->  true
+isAPalindrome(1213)  ->  false
+isAPalindrome(1)     ->  true
+@end
+starter:
+int Reversed(int testNumber) {
+    // copy your answer from the previous exercise
+    return 0;
+}
+
+bool isAPalindrome(int testNumber) {
+    // hint: compare the number with Reversed(number)
+    return false;
+}
+@end
+tests:
++ 121 is a palindrome
+EXPECT_EQ(isAPalindrome(121), true);
++ 1213 is not
+EXPECT_EQ(isAPalindrome(1213), false);
++ a single digit is a palindrome
+EXPECT_EQ(isAPalindrome(1), true);
+- 4554 is a palindrome (even length)
+EXPECT_EQ(isAPalindrome(4554), true);
+- 10 is not a palindrome
+EXPECT_EQ(isAPalindrome(10), false);
+- 12321 is a palindrome
+EXPECT_EQ(isAPalindrome(12321), true);
+@end
+hint: A number is a palindrome exactly when Reversed(n) == n.
+solution:
+int Reversed(int testNumber) {
+    int result = 0;
+    while (testNumber > 0) {
+        result = result * 10 + testNumber % 10;
+        testNumber /= 10;
+    }
+    return result;
+}
+
+bool isAPalindrome(int testNumber) {
+    return Reversed(testNumber) == testNumber;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.prime
+title: Prime Number
+topic: control
+diff: Medium
+desc:
+Lab Q3. A prime is only divisible by 1 and itself. Return `true` if `numbertoTest` is prime. Numbers below 2 are not prime.
+
+**Watch out:** the lab tests 2147483647 (the largest `int`). Checking every number up to n is far too slow - you only need to test divisors up to the square root. And `i * i` can overflow an `int` near the top of its range...
+@end
+example:
+isAPrimeNumber(3)           ->  true
+isAPrimeNumber(4)           ->  false
+isAPrimeNumber(2147483647)  ->  true
+@end
+starter:
+bool isAPrimeNumber(int numbertoTest) {
+    // your code here
+    return false;
+}
+@end
+tests:
++ 3 is prime
+EXPECT_EQ(isAPrimeNumber(3), true);
++ 4 is not prime
+EXPECT_EQ(isAPrimeNumber(4), false);
++ 2147483647 is prime (and must be fast)
+EXPECT_EQ(isAPrimeNumber(2147483647), true);
+- 2 is the smallest prime
+EXPECT_EQ(isAPrimeNumber(2), true);
+- 1 is not prime
+EXPECT_EQ(isAPrimeNumber(1), false);
+- 0 and negatives are not prime
+EXPECT_FALSE(isAPrimeNumber(0) || isAPrimeNumber(-7));
+- 91 = 7 x 13 is not prime
+EXPECT_EQ(isAPrimeNumber(91), false);
+- 97 is prime
+EXPECT_EQ(isAPrimeNumber(97), true);
+- 2147483646 is even, so not prime
+EXPECT_EQ(isAPrimeNumber(2147483646), false);
+@end
+hint: Loop i from 2 while i <= n / i (this avoids overflow), returning false as soon as n % i == 0.
+solution:
+bool isAPrimeNumber(int numbertoTest) {
+    if (numbertoTest < 2) return false;
+    for (int i = 2; i <= numbertoTest / i; i++) {
+        if (numbertoTest % i == 0) return false;
+    }
+    return true;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.binary
+title: Binary to Decimal
+topic: control
+diff: Medium
+desc:
+Lab Q4. The parameter is an `int` whose decimal digits are all 0 or 1, e.g. `110`. Treat those digits as a binary number and return its value (110 in binary is 6). Do **not** use the shift operators.
+
+Work from the rightmost digit: each digit is worth 1, 2, 4, 8... in turn.
+@end
+example:
+convertBinarytoDecimal(110)  ->  6
+convertBinarytoDecimal(111)  ->  7
+convertBinarytoDecimal(1)    ->  1
+@end
+starter:
+int convertBinarytoDecimal(int binaryNumber) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ 110 is 6
+EXPECT_EQ(convertBinarytoDecimal(110), 6);
++ 111 is 7
+EXPECT_EQ(convertBinarytoDecimal(111), 7);
+- 0 is 0
+EXPECT_EQ(convertBinarytoDecimal(0), 0);
+- 1 is 1
+EXPECT_EQ(convertBinarytoDecimal(1), 1);
+- 101101 is 45
+EXPECT_EQ(convertBinarytoDecimal(101101), 45);
+- 1111111111 (ten ones) is 1023
+EXPECT_EQ(convertBinarytoDecimal(1111111111), 1023);
+- 1000 is 8
+EXPECT_EQ(convertBinarytoDecimal(1000), 8);
+@end
+forbid: <<|>> ; The lab says: convert without using the shift operators (<< or >>).
+hint: Keep a 'place value' that starts at 1 and doubles each time: result += (binaryNumber % 10) * place; place *= 2; binaryNumber /= 10;
+solution:
+int convertBinarytoDecimal(int binaryNumber) {
+    int result = 0;
+    int place = 1;
+    while (binaryNumber > 0) {
+        result += (binaryNumber % 10) * place;
+        place *= 2;
+        binaryNumber /= 10;
+    }
+    return result;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.triangle
+title: Right-angled Triangle
+topic: control
+diff: Easy
+desc:
+Lab Q6. Using **two nested for loops**, print this triangle of capital A's (four rows, each followed by a newline):
+@end
+example:
+A
+AA
+AAA
+AAAA
+@end
+starter:
+void drawRightAngledTriangle() {
+    // your code here (use printf)
+}
+@end
+tests:
++ prints the four-row triangle
+EXPECT_OUT(drawRightAngledTriangle(), "A\nAA\nAAA\nAAAA\n");
+@end
+hint: The outer loop picks the row (1 to 4); the inner loop prints that many A's; then print "\n".
+solution:
+void drawRightAngledTriangle() {
+    for (int row = 1; row <= 4; row++) {
+        for (int col = 0; col < row; col++) {
+            printf("A");
+        }
+        printf("\n");
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.diamond
+title: Isosceles Triangle
+topic: control
+diff: Medium
+desc:
+Lab Q7. Print this shape (seven rows) using **two for loops** and **at most one if/else**:
+@end
+example:
+A
+AA
+AAA
+AAAA
+AAA
+AA
+A
+@end
+starter:
+void drawIsocelesTriangle() {
+    // your code here
+}
+@end
+tests:
++ prints the seven-row shape
+EXPECT_OUT(drawIsocelesTriangle(), "A\nAA\nAAA\nAAAA\nAAA\nAA\nA\n");
+@end
+hint: Loop row from 1 to 7. The number of A's is row while row <= 4, and 8 - row after that.
+solution:
+void drawIsocelesTriangle() {
+    for (int row = 1; row <= 7; row++) {
+        int count;
+        if (row <= 4) count = row;
+        else count = 8 - row;
+        for (int i = 0; i < count; i++) printf("A");
+        printf("\n");
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.diamond2
+title: Isosceles Triangle - No Conditionals
+topic: control
+diff: Hard
+desc:
+Lab Q19 (extra). Print the **same** seven-row shape as the previous exercise, but this time with **two for loops and no conditional statements at all** - no `if`, no `switch`, no `?:`.
+
+Think about a formula for the number of A's on each row. For rows 1..7 the counts are 1 2 3 4 3 2 1. How far is each row from the middle row?
+@end
+example:
+A
+AA
+AAA
+AAAA
+AAA
+AA
+A
+@end
+starter:
+void drawIsocelesTriangle2() {
+    // your code here - no if, switch or ?:
+}
+@end
+tests:
++ prints the seven-row shape
+EXPECT_OUT(drawIsocelesTriangle2(), "A\nAA\nAAA\nAAAA\nAAA\nAA\nA\n");
+@end
+forbid: if|switch|? ; This exercise forbids conditional statements (if, switch and the ?: operator).
+hint: Let row run from -3 to 3. The number of A's is 4 - abs(row). abs() lives in <stdlib.h> and is a function, not a conditional.
+solution:
+void drawIsocelesTriangle2() {
+    for (int row = -3; row <= 3; row++) {
+        for (int i = 0; i < 4 - abs(row); i++) printf("A");
+        printf("\n");
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.find
+title: Find an Element
+topic: arrays
+diff: Easy
+desc:
+Lab Q8. Search `arr` (which has `size` elements) for `toFind`. Return the **index** of the first match, or **-1** if it is not there. (The lab says "print" - the tests check the value you return.)
+@end
+example:
+int a[] = {4, 8, 15, 16, 23};
+find(5, a, 15)  ->  2
+find(5, a, 99)  ->  -1
+@end
+starter:
+int find(int size, int arr[], int toFind) {
+    // your code here
+    return -1;
+}
+@end
+tests:
++ finds 15 at index 2
+int a[] = {4, 8, 15, 16, 23};
+EXPECT_EQ(find(5, a, 15), 2);
++ returns -1 when missing
+int a[] = {4, 8, 15, 16, 23};
+EXPECT_EQ(find(5, a, 99), -1);
+- finds the first element
+int a[] = {7, 1, 2};
+EXPECT_EQ(find(3, a, 7), 0);
+- finds the last element
+int a[] = {7, 1, 2};
+EXPECT_EQ(find(3, a, 2), 2);
+- returns the FIRST index when the value repeats
+int a[] = {5, 9, 5, 9};
+EXPECT_EQ(find(4, a, 9), 1);
+- an empty array has no matches
+int a[1] = {3};
+EXPECT_EQ(find(0, a, 3), -1);
+@end
+hint: A for loop from 0 to size-1; return i as soon as arr[i] == toFind. After the loop, return -1.
+solution:
+int find(int size, int arr[], int toFind) {
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == toFind) return i;
+    }
+    return -1;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.second
+title: Second Largest
+topic: arrays
+diff: Medium
+desc:
+Lab Q9. The array holds positive integers. Return the **second largest distinct value**, or **-1** if there isn't one (for example when every element is the same, or there is only one element).
+
+So for {9, 9, 5} the answer is 5, not 9.
+@end
+example:
+{5, 3, 9, 1}  ->  5
+{4, 4, 4}     ->  -1
+{9, 9, 5}     ->  5
+@end
+starter:
+int find2ndLargest(int size, int arr[]) {
+    // your code here
+    return -1;
+}
+@end
+tests:
++ {5, 3, 9, 1} gives 5
+int a[] = {5, 3, 9, 1};
+EXPECT_EQ(find2ndLargest(4, a), 5);
++ all equal gives -1
+int a[] = {4, 4, 4};
+EXPECT_EQ(find2ndLargest(3, a), -1);
+- duplicates of the largest are skipped
+int a[] = {9, 9, 5};
+EXPECT_EQ(find2ndLargest(3, a), 5);
+- a single element gives -1
+int a[] = {7};
+EXPECT_EQ(find2ndLargest(1, a), -1);
+- two elements
+int a[] = {1, 2};
+EXPECT_EQ(find2ndLargest(2, a), 1);
+- largest appears twice at the end
+int a[] = {10, 20, 30, 30};
+EXPECT_EQ(find2ndLargest(4, a), 20);
+- largest first
+int a[] = {50, 10, 40, 30};
+EXPECT_EQ(find2ndLargest(4, a), 40);
+@end
+hint: Track two variables, largest and second, both starting at -1. For each value: if it beats largest, the old largest becomes second; else if it is between them (and not equal to largest), it becomes second.
+solution:
+int find2ndLargest(int size, int arr[]) {
+    int largest = -1, second = -1;
+    for (int i = 0; i < size; i++) {
+        if (arr[i] > largest) {
+            second = largest;
+            largest = arr[i];
+        } else if (arr[i] < largest && arr[i] > second) {
+            second = arr[i];
+        }
+    }
+    return second;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.copy
+title: Copy an Array
+topic: arrays
+diff: Easy
+desc:
+Lab Q10. Copy all `size` elements from `arr1` into `arr2` (both arrays have the same size).
+
+Remember: in C you cannot write `arr2 = arr1;` - arrays are not assignable. Copy element by element.
+@end
+starter:
+void copyArraytoArray(int size, int arr1[], int arr2[]) {
+    // your code here
+    return;
+}
+@end
+tests:
++ copies three elements
+int a[] = {1, 2, 3};
+int b[3] = {0, 0, 0};
+copyArraytoArray(3, a, b);
+EXPECT_ARR(b, 3, {1, 2, 3});
+- the source is left unchanged
+int a[] = {9, 8, 7, 6};
+int b[4] = {0};
+copyArraytoArray(4, a, b);
+EXPECT_ARR(a, 4, {9, 8, 7, 6});
+EXPECT_ARR(b, 4, {9, 8, 7, 6});
+- size 0 copies nothing
+int a[] = {5};
+int b[] = {-1};
+copyArraytoArray(0, a, b);
+EXPECT_EQ(b[0], -1);
+@end
+hint: for (int i = 0; i < size; i++) arr2[i] = arr1[i];
+solution:
+void copyArraytoArray(int size, int arr1[], int arr2[]) {
+    for (int i = 0; i < size; i++) {
+        arr2[i] = arr1[i];
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.insert
+title: Insert an Element
+topic: arrays
+diff: Medium
+desc:
+Lab Q11. `arr` has room for `size` elements but currently holds `count` of them. Insert `elementToInsert` at `insertIndex`, shifting the elements from that index onwards one place to the right. Increase `count` (it is passed by reference, so the caller sees the change).
+
+Return `true` if the element was inserted. Return `false` (and change nothing) if the array is full (`count == size`) or `insertIndex` is outside `0..count`. Inserting at `count` simply appends.
+@end
+example:
+arr = {1, 2, 3, 4, _, _}   size 6, count 4
+insertElement(size, count, arr, 9, 1)
+arr = {1, 9, 2, 3, 4, _}   count 5, returns true
+@end
+starter:
+bool insertElement(int& size, int& count, int arr[], int elementToInsert, int insertIndex) {
+    // your code here
+    return false;
+}
+@end
+tests:
++ inserts 9 at index 1
+int arr[6] = {1, 2, 3, 4};
+int size = 6, count = 4;
+EXPECT_TRUE(insertElement(size, count, arr, 9, 1));
+EXPECT_EQ(count, 5);
+EXPECT_ARR(arr, 5, {1, 9, 2, 3, 4});
++ refuses when the array is full
+int arr[4] = {1, 2, 3, 4};
+int size = 4, count = 4;
+EXPECT_FALSE(insertElement(size, count, arr, 9, 0));
+EXPECT_EQ(count, 4);
+EXPECT_ARR(arr, 4, {1, 2, 3, 4});
+- inserting at count appends
+int arr[5] = {1, 2, 3};
+int size = 5, count = 3;
+EXPECT_TRUE(insertElement(size, count, arr, 7, 3));
+EXPECT_ARR(arr, 4, {1, 2, 3, 7});
+- inserting at the front shifts everything
+int arr[4] = {5, 6};
+int size = 4, count = 2;
+EXPECT_TRUE(insertElement(size, count, arr, 4, 0));
+EXPECT_EQ(count, 3);
+EXPECT_ARR(arr, 3, {4, 5, 6});
+- a negative index is rejected
+int arr[4] = {5, 6};
+int size = 4, count = 2;
+EXPECT_FALSE(insertElement(size, count, arr, 1, -1));
+EXPECT_EQ(count, 2);
+- an index beyond count is rejected
+int arr[6] = {5, 6};
+int size = 6, count = 2;
+EXPECT_FALSE(insertElement(size, count, arr, 1, 3));
+EXPECT_ARR(arr, 2, {5, 6});
+- insert into an empty array
+int arr[3] = {0};
+int size = 3, count = 0;
+EXPECT_TRUE(insertElement(size, count, arr, 42, 0));
+EXPECT_EQ(count, 1);
+EXPECT_EQ(arr[0], 42);
+@end
+hint: Shift from the END backwards: for (int i = count; i > insertIndex; i--) arr[i] = arr[i - 1]; then place the new value and count++. Shifting forwards would overwrite values before you copy them.
+solution:
+bool insertElement(int& size, int& count, int arr[], int elementToInsert, int insertIndex) {
+    if (count >= size || insertIndex < 0 || insertIndex > count) return false;
+    for (int i = count; i > insertIndex; i--) {
+        arr[i] = arr[i - 1];
+    }
+    arr[insertIndex] = elementToInsert;
+    count++;
+    return true;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.delete
+title: Delete an Element
+topic: arrays
+diff: Medium
+desc:
+Lab Q12. Delete the element at `deleteIndex`, shifting every later element one place to the left, and decrease `count`. Return `true` if something was deleted, or `false` if `deleteIndex` is not a valid position (`0..count-1`) - in which case nothing changes.
+@end
+example:
+arr = {1, 2, 3, 4, 5}   count 5
+deleteElement(size, count, arr, 1)
+arr = {1, 3, 4, 5}      count 4, returns true
+@end
+starter:
+bool deleteElement(int& size, int& count, int arr[], int deleteIndex) {
+    // your code here
+    return true;
+}
+@end
+tests:
++ deletes index 1
+int arr[5] = {1, 2, 3, 4, 5};
+int size = 5, count = 5;
+EXPECT_TRUE(deleteElement(size, count, arr, 1));
+EXPECT_EQ(count, 4);
+EXPECT_ARR(arr, 4, {1, 3, 4, 5});
++ rejects an index equal to count
+int arr[5] = {1, 2, 3};
+int size = 5, count = 3;
+EXPECT_FALSE(deleteElement(size, count, arr, 3));
+EXPECT_EQ(count, 3);
+- deletes the last element
+int arr[5] = {1, 2, 3, 4, 5};
+int size = 5, count = 5;
+EXPECT_TRUE(deleteElement(size, count, arr, 4));
+EXPECT_ARR(arr, 4, {1, 2, 3, 4});
+- deletes the first element
+int arr[3] = {7, 8, 9};
+int size = 3, count = 3;
+EXPECT_TRUE(deleteElement(size, count, arr, 0));
+EXPECT_ARR(arr, 2, {8, 9});
+- nothing to delete in an empty array
+int arr[3] = {0};
+int size = 3, count = 0;
+EXPECT_FALSE(deleteElement(size, count, arr, 0));
+EXPECT_EQ(count, 0);
+- a negative index is rejected
+int arr[3] = {1, 2, 3};
+int size = 3, count = 3;
+EXPECT_FALSE(deleteElement(size, count, arr, -2));
+EXPECT_ARR(arr, 3, {1, 2, 3});
+@end
+hint: Check 0 <= deleteIndex < count first. Then for (int i = deleteIndex; i < count - 1; i++) arr[i] = arr[i + 1]; and count--.
+solution:
+bool deleteElement(int& size, int& count, int arr[], int deleteIndex) {
+    if (deleteIndex < 0 || deleteIndex >= count) return false;
+    for (int i = deleteIndex; i < count - 1; i++) {
+        arr[i] = arr[i + 1];
+    }
+    count--;
+    return true;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.freq
+title: Frequency Count
+topic: arrays
+diff: Easy
+desc:
+Lab Q13. Return how many times `value` appears in the array.
+@end
+starter:
+int frequencyCount(int size, int arr[], int value) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ 2 appears three times
+int a[] = {2, 5, 2, 7, 2};
+EXPECT_EQ(frequencyCount(5, a, 2), 3);
++ a missing value appears zero times
+int a[] = {2, 5, 2, 7, 2};
+EXPECT_EQ(frequencyCount(5, a, 9), 0);
+- every element matches
+int a[] = {4, 4, 4, 4};
+EXPECT_EQ(frequencyCount(4, a, 4), 4);
+- negative values work too
+int a[] = {-1, 0, -1};
+EXPECT_EQ(frequencyCount(3, a, -1), 2);
+- empty array
+int a[1] = {1};
+EXPECT_EQ(frequencyCount(0, a, 1), 0);
+@end
+hint: Keep a counter; add one whenever arr[i] == value.
+solution:
+int frequencyCount(int size, int arr[], int value) {
+    int count = 0;
+    for (int i = 0; i < size; i++) {
+        if (arr[i] == value) count++;
+    }
+    return count;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.dups
+title: Count Duplicates
+topic: arrays
+diff: Medium
+desc:
+Lab Q14. Count the total number of **duplicate** elements: an element counts as a duplicate if the **same value already appeared earlier** in the array. Equivalently, it is the number of elements minus the number of distinct values.
+
+For {1, 2, 2, 3, 3, 3}: the second 2, the second 3 and the third 3 are duplicates, so the answer is **3**.
+@end
+example:
+{1, 2, 2, 3, 3, 3}  ->  3
+{1, 2, 3}           ->  0
+{4, 4, 4, 4}        ->  3
+@end
+starter:
+int countDuplicates(int size, int arr[]) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ {1, 2, 2, 3, 3, 3} has 3 duplicates
+int a[] = {1, 2, 2, 3, 3, 3};
+EXPECT_EQ(countDuplicates(6, a), 3);
++ all different means 0
+int a[] = {1, 2, 3};
+EXPECT_EQ(countDuplicates(3, a), 0);
+- four copies of one value is 3 duplicates
+int a[] = {4, 4, 4, 4};
+EXPECT_EQ(countDuplicates(4, a), 3);
+- duplicates need not be adjacent
+int a[] = {5, 1, 5, 1, 5};
+EXPECT_EQ(countDuplicates(5, a), 3);
+- empty array
+int a[1] = {0};
+EXPECT_EQ(countDuplicates(0, a), 0);
+- one element
+int a[] = {8};
+EXPECT_EQ(countDuplicates(1, a), 0);
+@end
+hint: For each index i, look back through 0..i-1. If you find the same value, count i as a duplicate (and stop looking).
+solution:
+int countDuplicates(int size, int arr[]) {
+    int dups = 0;
+    for (int i = 0; i < size; i++) {
+        for (int j = 0; j < i; j++) {
+            if (arr[j] == arr[i]) {
+                dups++;
+                break;
+            }
+        }
+    }
+    return dups;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.reverse
+title: Reverse an Array in Place
+topic: arrays
+diff: Easy
+desc:
+Lab Q15. Reverse the array **in place** - using only the one array (no second array). Swap the first with the last, the second with the second-last, and so on until you meet in the middle.
+@end
+starter:
+void reverse(int size, int arr[]) {
+    // your code here
+    return;
+}
+@end
+tests:
++ reverses an odd-length array
+int a[] = {1, 2, 3, 4, 5};
+reverse(5, a);
+EXPECT_ARR(a, 5, {5, 4, 3, 2, 1});
++ reverses an even-length array
+int a[] = {1, 2, 3, 4};
+reverse(4, a);
+EXPECT_ARR(a, 4, {4, 3, 2, 1});
+- a single element is unchanged
+int a[] = {9};
+reverse(1, a);
+EXPECT_ARR(a, 1, {9});
+- reversing twice restores the array
+int a[] = {3, 1, 4, 1, 5, 9};
+reverse(6, a);
+reverse(6, a);
+EXPECT_ARR(a, 6, {3, 1, 4, 1, 5, 9});
+@end
+hint: for (int i = 0; i < size / 2; i++) { int t = arr[i]; arr[i] = arr[size - 1 - i]; arr[size - 1 - i] = t; }
+solution:
+void reverse(int size, int arr[]) {
+    for (int i = 0; i < size / 2; i++) {
+        int temp = arr[i];
+        arr[i] = arr[size - 1 - i];
+        arr[size - 1 - i] = temp;
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.rotate
+title: Rotate Left by One
+topic: arrays
+diff: Easy
+desc:
+Lab Q16. Rotate the array left by one position: every element moves one place towards the front, and the **first element moves to the end**.
+
+The lab's stub returns an `int`: return the element that was moved to the end (the original first element), or **-1** if the array is empty.
+@end
+example:
+{1, 2, 3, 4, 5}  ->  {2, 3, 4, 5, 1}   returns 1
+@end
+starter:
+int rotateLeft(int size, int arr[]) {
+    // your code here
+    return -1;
+}
+@end
+tests:
++ rotates {1, 2, 3, 4, 5}
+int a[] = {1, 2, 3, 4, 5};
+EXPECT_EQ(rotateLeft(5, a), 1);
+EXPECT_ARR(a, 5, {2, 3, 4, 5, 1});
+- a single element is unchanged
+int a[] = {7};
+EXPECT_EQ(rotateLeft(1, a), 7);
+EXPECT_ARR(a, 1, {7});
+- an empty array returns -1
+int a[1] = {3};
+EXPECT_EQ(rotateLeft(0, a), -1);
+- rotating twice
+int a[] = {10, 20, 30};
+rotateLeft(3, a);
+rotateLeft(3, a);
+EXPECT_ARR(a, 3, {30, 10, 20});
+@end
+hint: Save arr[0], shift arr[i] = arr[i + 1] for i from 0 to size-2, then put the saved value in arr[size - 1].
+solution:
+int rotateLeft(int size, int arr[]) {
+    if (size <= 0) return -1;
+    int first = arr[0];
+    for (int i = 0; i < size - 1; i++) {
+        arr[i] = arr[i + 1];
+    }
+    arr[size - 1] = first;
+    return first;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.movies
+title: Two Movies on a Flight
+topic: arrays
+diff: Medium
+desc:
+Lab Q17. A passenger wants to watch **exactly two** different movies whose run-times add up to exactly `flightLength`. Return `true` if some pair of **different** movies (different positions in the array) adds up to `flightLength`. Nobody watches the same movie twice.
+@end
+example:
+twoMovies(120, {60, 70, 50}, 3)  ->  true    (70 + 50)
+twoMovies(100, {50, 20, 30}, 3)  ->  false   (can't watch the 50 twice)
+twoMovies(100, {50, 50}, 2)      ->  true    (two different 50-minute films)
+@end
+starter:
+bool twoMovies(int flightLength, int movieLengths[], int size) {
+    // your code here
+    return false;
+}
+@end
+tests:
++ 70 + 50 fills a 120 minute flight
+int m[] = {60, 70, 50};
+EXPECT_EQ(twoMovies(120, m, 3), true);
++ you cannot watch the same movie twice
+int m[] = {50, 20, 30};
+EXPECT_EQ(twoMovies(100, m, 3), false);
+- two different movies may have the same length
+int m[] = {50, 50};
+EXPECT_EQ(twoMovies(100, m, 2), true);
+- one movie is not enough
+int m[] = {10};
+EXPECT_EQ(twoMovies(10, m, 1), false);
+- no movies at all
+int m[1] = {0};
+EXPECT_EQ(twoMovies(90, m, 0), false);
+- the pair can be far apart
+int m[] = {80, 15, 25, 35, 40};
+EXPECT_EQ(twoMovies(120, m, 5), true);
+- no pair adds up
+int m[] = {80, 15, 25, 35};
+EXPECT_EQ(twoMovies(200, m, 4), false);
+@end
+hint: Two nested loops: i from 0, j from i + 1. Starting j at i + 1 guarantees two different movies.
+solution:
+bool twoMovies(int flightLength, int movieLengths[], int size) {
+    for (int i = 0; i < size; i++) {
+        for (int j = i + 1; j < size; j++) {
+            if (movieLengths[i] + movieLengths[j] == flightLength) return true;
+        }
+    }
+    return false;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.words
+title: Word Counter
+topic: arrays
+diff: Medium
+desc:
+Lab Q18. `characters` holds `size` characters. A **word** is one or more letters (A-Z or a-z) in a row; words are separated by spaces (possibly several). Return the number of words.
+
+Do not rely on a `'\0'` at the end - use `size`.
+@end
+example:
+"Hello world"          ->  2
+"  two   words  "      ->  2
+""                     ->  0
+@end
+starter:
+int wordCounter(int size, char characters[]) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ two words
+char s[] = "Hello world";
+EXPECT_EQ(wordCounter((int)strlen(s), s), 2);
++ extra spaces don't create extra words
+char s[] = "  two   words  ";
+EXPECT_EQ(wordCounter((int)strlen(s), s), 2);
+- an empty string has no words
+char s[] = "";
+EXPECT_EQ(wordCounter(0, s), 0);
+- only spaces
+char s[] = "     ";
+EXPECT_EQ(wordCounter(5, s), 0);
+- a single word
+char s[] = "Pointers";
+EXPECT_EQ(wordCounter(8, s), 1);
+- a longer sentence
+char s[] = "the quick brown fox jumps over the lazy dog";
+EXPECT_EQ(wordCounter((int)strlen(s), s), 9);
+- size limits the count (only "one two" is inside size 7)
+char s[] = "one two three";
+EXPECT_EQ(wordCounter(7, s), 2);
+@end
+hint: Count the START of each word: a letter whose previous character is a space (or that is at position 0).
+solution:
+static bool isLetter(char c) {
+    return (c >= 'A' && c <= 'Z') || (c >= 'a' && c <= 'z');
+}
+
+int wordCounter(int size, char characters[]) {
+    int words = 0;
+    bool inWord = false;
+    for (int i = 0; i < size; i++) {
+        if (isLetter(characters[i])) {
+            if (!inWord) words++;
+            inWord = true;
+        } else {
+            inWord = false;
+        }
+    }
+    return words;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.print
+title: Print the 4x6 Grid
+topic: arrays
+diff: Easy
+desc:
+Lab Q19. Print the 4 x 6 array as **4 rows of 6 numbers**, with the numbers in a row separated by spaces and a newline after each row. (Any amount of spacing between numbers is accepted - `"%3d"` or `"%d "` both pass.)
+
+This is the only function in the grid exercises that is allowed to use `printf`.
+@end
+example:
+0 0 3 1 3 4
+0 0 2 3 4 3
+0 0 1 3 3 2
+0 0 1 1 1 1
+@end
+starter:
+void PrintArray(int array[4][6])
+{
+    // your code here
+}
+@end
+tests:
++ prints the example grid
+int g[4][6] = { {0,0,3,1,3,4}, {0,0,2,3,4,3}, {0,0,1,3,3,2}, {0,0,1,1,1,1} };
+EXPECT_OUT_WS(PrintArray(g), "0 0 3 1 3 4\n0 0 2 3 4 3\n0 0 1 3 3 2\n0 0 1 1 1 1\n");
+- prints negative values
+int g[4][6] = { {-2,-2,-2,-2,-2,-2}, {1,2,3,4,1,2}, {-1,-1,0,0,0,0}, {4,4,4,4,4,4} };
+EXPECT_OUT_WS(PrintArray(g), "-2 -2 -2 -2 -2 -2\n1 2 3 4 1 2\n-1 -1 0 0 0 0\n4 4 4 4 4 4\n");
+@end
+hint: Nested loops: rows 0..3, columns 0..5, printf("%3d", array[r][c]); then printf("\n") after each row.
+solution:
+void PrintArray(int array[4][6])
+{
+    for (int r = 0; r < 4; r++) {
+        for (int c = 0; c < 6; c++) {
+            printf("%3d", array[r][c]);
+        }
+        printf("\n");
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.cluster
+title: Find and Score a Cluster
+topic: arrays
+diff: Hard
+desc:
+Lab Q20 - a match-3 style puzzle. Scan the 4 x 6 grid from (0,0), left to right along each row, then down to the next row. At each position holding a value from **1 to 4**:
+
+1. First check for a **horizontal** line of **3 or more** equal values starting here and running to the right.
+2. If there isn't one, check for a **vertical** line of 3 or more equal values starting here and running down.
+
+The **first** cluster you find is scored by **summing its values** (three 4s score 12). Replace every cell of that cluster with **-1** and return the score. If there is no cluster, return 0 and leave the grid alone. Cells holding **0** or **-2** are never part of a cluster.
+@end
+example:
+{0,0,3,1,3,4},
+{0,0,2,3,4,3},
+{0,0,1,3,3,2},
+{0,0,1,1,1,1}   <- four 1s in a row: score 4
+
+After:  {0,0,-1,-1,-1,-1} in the bottom row, returns 4
+@end
+starter:
+int ReplaceWithMinusOne(int array[4][6])
+{
+    // your code here
+    return 0;
+}
+@end
+helpers:
+#define GRID(...) int g[4][6] = __VA_ARGS__
+@end
+tests:
++ the lab example: four 1s on the bottom row score 4
+GRID({ {0,0,3,1,3,4}, {0,0,2,3,4,3}, {0,0,1,3,3,2}, {0,0,1,1,1,1} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 4);
+EXPECT_ARR(g[3], 6, {0, 0, -1, -1, -1, -1});
+EXPECT_ARR(g[2], 6, {0, 0, 1, 3, 3, 2});
++ a vertical cluster of three 1s scores 3
+GRID({ {1,2,3,4,1,2}, {1,3,4,1,2,3}, {1,4,1,2,3,4}, {2,1,2,3,4,1} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 3);
+EXPECT_EQ(g[0][0], -1);
+EXPECT_EQ(g[1][0], -1);
+EXPECT_EQ(g[2][0], -1);
+EXPECT_EQ(g[3][0], 2);
+- no cluster returns 0 and changes nothing
+GRID({ {1,2,1,2,1,2}, {2,1,2,1,2,1}, {1,2,1,2,1,2}, {2,1,2,1,2,1} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 0);
+EXPECT_ARR(g[0], 6, {1, 2, 1, 2, 1, 2});
+EXPECT_ARR(g[3], 6, {2, 1, 2, 1, 2, 1});
+- three 4s in the middle of a row score 12; zeros are ignored
+GRID({ {0,0,0,0,0,0}, {0,4,4,4,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 12);
+EXPECT_ARR(g[1], 6, {0, -1, -1, -1, 0, 0});
+- horizontal is checked before vertical at the same cell
+GRID({ {2,2,2,3,1,3}, {2,1,1,4,0,0}, {2,0,0,0,0,0}, {0,0,0,0,0,0} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 6);
+EXPECT_ARR(g[0], 6, {-1, -1, -1, 3, 1, 3});
+EXPECT_EQ(g[1][0], 2);
+EXPECT_EQ(g[2][0], 2);
+- -2 cells are never part of a cluster
+GRID({ {-2,-2,-2,1,2,3}, {1,2,3,1,2,3}, {3,2,1,1,2,3}, {0,0,0,0,0,0} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 3);
+EXPECT_EQ(g[0][3], -1);
+EXPECT_EQ(g[2][3], -1);
+EXPECT_EQ(g[0][4], 2);
+EXPECT_ARR(g[0], 3, {-2, -2, -2});
+- only the first cluster is replaced
+GRID({ {3,3,3,0,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0}, {4,4,4,4,0,0} });
+EXPECT_EQ(ReplaceWithMinusOne(g), 9);
+EXPECT_ARR(g[3], 6, {4, 4, 4, 4, 0, 0});
+@end
+hint: Write the scan as two nested loops (r, c). Skip values outside 1..4. Count the run to the right: while (c + len < 6 && array[r][c + len] == v) len++. If len >= 3 you've found it. Otherwise count downwards the same way with r + len < 4.
+solution:
+int ReplaceWithMinusOne(int array[4][6])
+{
+    for (int r = 0; r < 4; r++) {
+        for (int c = 0; c < 6; c++) {
+            int v = array[r][c];
+            if (v < 1 || v > 4) continue;
+            int len = 1;
+            while (c + len < 6 && array[r][c + len] == v) len++;
+            if (len >= 3) {
+                for (int k = 0; k < len; k++) array[r][c + k] = -1;
+                return v * len;
+            }
+            len = 1;
+            while (r + len < 4 && array[r + len][c] == v) len++;
+            if (len >= 3) {
+                for (int k = 0; k < len; k++) array[r + k][c] = -1;
+                return v * len;
+            }
+        }
+    }
+    return 0;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.fall
+title: Fall Down and Refill
+topic: arrays
+diff: Hard
+desc:
+Lab Q21. After a cluster has been replaced with **-1**s, remove the gaps: in each column, everything that is **not -1** falls down to fill the space beneath it (keeping its order). The cells left empty at the **top** of the column are filled with **-2** (new items that won't be part of the next cluster).
+
+Work column by column.
+@end
+example:
+Before:                    After:
+{0,0,3,1,3,4},            {0,0,-2,-2,-2,-2},
+{0,0,2,3,4,3},            {0,0,3,1,3,4},
+{0,0,1,3,3,2},            {0,0,2,3,4,3},
+{0,0,-1,-1,-1,-1}         {0,0,1,3,3,2}
+@end
+starter:
+void FallDownAndReplace(int array[4][6])
+{
+    // your code here
+}
+@end
+helpers:
+#define GRID(...) int g[4][6] = __VA_ARGS__
+@end
+tests:
++ the lab example: the bottom row of -1s is filled from above
+GRID({ {0,0,3,1,3,4}, {0,0,2,3,4,3}, {0,0,1,3,3,2}, {0,0,-1,-1,-1,-1} });
+FallDownAndReplace(g);
+EXPECT_ARR(g[0], 6, {0, 0, -2, -2, -2, -2});
+EXPECT_ARR(g[1], 6, {0, 0, 3, 1, 3, 4});
+EXPECT_ARR(g[2], 6, {0, 0, 2, 3, 4, 3});
+EXPECT_ARR(g[3], 6, {0, 0, 1, 3, 3, 2});
++ a vertical gap of three in column 0
+GRID({ {-1,2,3,4,1,2}, {-1,3,4,1,2,3}, {-1,4,1,2,3,4}, {2,1,2,3,4,1} });
+FallDownAndReplace(g);
+EXPECT_ARR(g[0], 6, {-2, 2, 3, 4, 1, 2});
+EXPECT_ARR(g[1], 6, {-2, 3, 4, 1, 2, 3});
+EXPECT_ARR(g[2], 6, {-2, 4, 1, 2, 3, 4});
+EXPECT_ARR(g[3], 6, {2, 1, 2, 3, 4, 1});
+- gaps in the middle rows: only the items above fall
+GRID({ {1,2,3,4,1,2}, {4,-1,-1,-1,0,0}, {0,0,0,0,0,0}, {0,0,0,0,0,0} });
+FallDownAndReplace(g);
+EXPECT_ARR(g[0], 6, {1, -2, -2, -2, 1, 2});
+EXPECT_ARR(g[1], 6, {4, 2, 3, 4, 0, 0});
+EXPECT_ARR(g[2], 6, {0, 0, 0, 0, 0, 0});
+- no -1s means no change
+GRID({ {1,2,3,4,1,2}, {2,3,4,1,2,3}, {3,4,1,2,3,4}, {4,1,2,3,4,1} });
+FallDownAndReplace(g);
+EXPECT_ARR(g[0], 6, {1, 2, 3, 4, 1, 2});
+EXPECT_ARR(g[3], 6, {4, 1, 2, 3, 4, 1});
+- -1s that are not adjacent in a column
+GRID({ {1,0,0,0,0,0}, {-1,0,0,0,0,0}, {2,0,0,0,0,0}, {-1,0,0,0,0,0} });
+FallDownAndReplace(g);
+EXPECT_EQ(g[0][0], -2);
+EXPECT_EQ(g[1][0], -2);
+EXPECT_EQ(g[2][0], 1);
+EXPECT_EQ(g[3][0], 2);
+@end
+hint: For each column, keep a 'write' row starting at the bottom (3). Walk up from row 3 to 0: whenever a cell is not -1, copy it to the write row and move write up one. Finally fill rows write..0 with -2.
+solution:
+void FallDownAndReplace(int array[4][6])
+{
+    for (int c = 0; c < 6; c++) {
+        int write = 3;
+        for (int r = 3; r >= 0; r--) {
+            if (array[r][c] != -1) {
+                array[write][c] = array[r][c];
+                write--;
+            }
+        }
+        for (int r = write; r >= 0; r--) array[r][c] = -2;
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.vars
+title: Find All Variables
+topic: arrays
+diff: Hard
+desc:
+Lab Q21 (variables). `code` holds a C program as one '\0'-terminated string, with lines separated by '\n'. Fill `variables` with a **comma-separated** list (no spaces, no trailing comma) of every variable declared with type **int** or **char**, in the order they appear. Only one variable is declared per line.
+
+A declaration is a line that starts (after any indentation) with the word `int` or `char`, followed by whitespace and the variable's name. The name ends at the first character that is not a letter, digit or underscore. If the name is followed by `(` it is a **function** (like `int main()`), not a variable - skip it. If there are no variables, `variables` must be the empty string.
+
+Careful: `printf` contains the letters "int", and so does a variable called `interest` - match whole words only.
+@end
+example:
+"int var1=10;\n"                           ->  "var1"
+"int main()\n{\n    char c = 'x';\n}\n"   ->  "c"
+@end
+starter:
+void FindAllVariables(char variables[], char code[])
+{
+    // your code here
+}
+@end
+tests:
++ a single declaration
+char code[] = "int var1=10;\n";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "var1");
++ a small program (main is a function, printf is not a declaration)
+char code[] = "int main()\n{\n    int a = 5;\n    char c = 'x';\n    float f = 2.5;\n    int total;\n    printf(\"%d\", a);\n    return 0;\n}\n";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "a,c,total");
+- no int or char variables gives an empty string
+char code[] = "float x = 1.0;\ndouble y;\n";
+char vars[200] = "x";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "");
+- names with digits, underscores and arrays
+char code[] = "char first_name[20];\nint count2 = 0;\n";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "first_name,count2");
+- declarations inside nested blocks still count
+char code[] = "int main()\n{\n    if (1)\n    {\n        int inner = 3;\n    }\n    int outer;\n}\n";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "inner,outer");
+- whole words only: 'interest' is not a declaration
+char code[] = "int rate;\ninterest = rate * 2;\nchar grade;\n";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "rate,grade");
+- the last line need not end with a newline
+char code[] = "char a;\nint b = 1;";
+char vars[200] = "";
+FindAllVariables(vars, code);
+EXPECT_STR(vars, "a,b");
+@end
+hint: Walk the string one line at a time. At the start of each line skip spaces/tabs, then check for "int" or "char" followed by a space or tab (strncmp helps). Copy the identifier characters into variables, adding a comma before every name except the first.
+solution:
+static bool isIdentChar(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+}
+
+void FindAllVariables(char variables[], char code[])
+{
+    int out = 0;
+    variables[0] = '\0';
+    int i = 0;
+    while (code[i] != '\0') {
+        // start of a line: skip indentation
+        while (code[i] == ' ' || code[i] == '\t') i++;
+        int skip = 0;
+        if (strncmp(&code[i], "int", 3) == 0 && (code[i + 3] == ' ' || code[i + 3] == '\t')) skip = 3;
+        else if (strncmp(&code[i], "char", 4) == 0 && (code[i + 4] == ' ' || code[i + 4] == '\t')) skip = 4;
+        if (skip > 0) {
+            int p = i + skip;
+            while (code[p] == ' ' || code[p] == '\t') p++;
+            int start = p;
+            while (isIdentChar(code[p])) p++;
+            int q = p;
+            while (code[q] == ' ') q++;
+            if (p > start && code[q] != '(') {
+                if (out > 0) variables[out++] = ',';
+                for (int k = start; k < p; k++) variables[out++] = code[k];
+                variables[out] = '\0';
+            }
+        }
+        // move to the next line
+        while (code[i] != '\0' && code[i] != '\n') i++;
+        if (code[i] == '\n') i++;
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e1.scope
+title: Variables in Scope
+topic: arrays
+diff: Hard
+desc:
+Lab Q22. Like the previous exercise, but now fill `variables` with only the variables that are **still in scope after line `lineNumber`** (lines are numbered from **1**). The code has no `for` loops, the only function is `int main()`, and each line declares at most one `int` or `char` variable.
+
+Track scope with a **brace depth counter**: `{` increases the depth, `}` decreases it. A variable declared at depth D stays in scope while the depth is >= D; when its block closes it disappears for good. Process lines 1 to `lineNumber` (inclusive) and output the surviving variables in declaration order, comma-separated.
+@end
+example:
+ 1  int main()
+ 2  {
+ 3      int a = 1;
+ 4      char c = 'x';
+ 5      if (a > 0)
+ 6      {
+ 7          int b = 2;
+ 8          char d;
+ 9      }
+10      int e = 5;
+11      return 0;
+12  }
+
+after line 8  ->  "a,c,b,d"
+after line 9  ->  "a,c"
+after line 10 ->  "a,c,e"
+@end
+starter:
+void FindAllVariablesInScope(char variables[], char code[], int lineNumber)
+{
+    // your code here
+}
+@end
+helpers:
+static const char* kScopeA =
+    "int main()\n{\n    int a = 1;\n    char c = 'x';\n    if (a > 0)\n    {\n        int b = 2;\n        char d;\n    }\n    int e = 5;\n    return 0;\n}\n";
+static const char* kScopeB =
+    "int main()\n{\n    int x;\n    {\n        int y;\n        {\n            char z;\n        }\n        int w;\n    }\n    char v;\n}\n";
+#define SCOPE(src, line, expected) do { char code[400]; strcpy(code, src); char vars[200] = "?"; FindAllVariablesInScope(vars, code, line); EXPECT_STR(vars, expected); } while (0)
+@end
+tests:
++ after line 8 everything declared so far is visible
+SCOPE(kScopeA, 8, "a,c,b,d");
++ after line 9 the inner block has closed
+SCOPE(kScopeA, 9, "a,c");
+- after line 10 a new variable joins the outer scope
+SCOPE(kScopeA, 10, "a,c,e");
+- after line 4
+SCOPE(kScopeA, 4, "a,c");
+- after line 1 nothing is declared yet (main is a function)
+SCOPE(kScopeA, 1, "");
+- after line 12 main has closed
+SCOPE(kScopeA, 12, "");
+- deeply nested: after line 7
+SCOPE(kScopeB, 7, "x,y,z");
+- deeply nested: after line 8
+SCOPE(kScopeB, 8, "x,y");
+- deeply nested: after line 9
+SCOPE(kScopeB, 9, "x,y,w");
+- deeply nested: after line 11
+SCOPE(kScopeB, 11, "x,v");
+@end
+hint: Keep arrays of names and depths (a stack). For each line up to lineNumber: first check for a declaration and push (name, current depth); then scan the line's characters, doing depth++ on '{' and on '}' doing depth-- and popping every variable whose depth is now greater than the current depth.
+solution:
+static bool isIdentChar2(char c) {
+    return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+}
+
+void FindAllVariablesInScope(char variables[], char code[], int lineNumber)
+{
+    char names[50][32];
+    int depths[50];
+    int count = 0;
+    int depth = 0;
+    int line = 1;
+    int i = 0;
+    while (code[i] != '\0' && line <= lineNumber) {
+        int lineStart = i;
+        while (code[i] == ' ' || code[i] == '\t') i++;
+        int skip = 0;
+        if (strncmp(&code[i], "int", 3) == 0 && (code[i + 3] == ' ' || code[i + 3] == '\t')) skip = 3;
+        else if (strncmp(&code[i], "char", 4) == 0 && (code[i + 4] == ' ' || code[i + 4] == '\t')) skip = 4;
+        if (skip > 0) {
+            int p = i + skip;
+            while (code[p] == ' ' || code[p] == '\t') p++;
+            int start = p;
+            while (isIdentChar2(code[p])) p++;
+            int q = p;
+            while (code[q] == ' ') q++;
+            if (p > start && code[q] != '(' && count < 50) {
+                int len = p - start;
+                if (len > 31) len = 31;
+                strncpy(names[count], &code[start], len);
+                names[count][len] = '\0';
+                depths[count] = depth;
+                count++;
+            }
+        }
+        // braces on this line
+        for (int k = lineStart; code[k] != '\0' && code[k] != '\n'; k++) {
+            if (code[k] == '{') depth++;
+            else if (code[k] == '}') {
+                depth--;
+                while (count > 0 && depths[count - 1] > depth) count--;
+            }
+        }
+        while (code[i] != '\0' && code[i] != '\n') i++;
+        if (code[i] == '\n') i++;
+        line++;
+    }
+    variables[0] = '\0';
+    for (int v = 0; v < count; v++) {
+        if (v > 0) strcat(variables, ",");
+        strcat(variables, names[v]);
+    }
+}
+@end

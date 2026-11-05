@@ -1,0 +1,44 @@
+# Autopilot: Reading Room -> Pointers chapter, flip through spreads
+quick 1
+mouse 0.5 0.45
+wait 2.5
+tab 0
+wait 1.2
+shot r01_reading_choices
+pick 4
+phase reading
+wait 0.8
+shot r02_title
+debug spread 1
+wait 0.5
+shot r03_spread1
+debug spread 2
+wait 0.5
+shot r04_spread2
+debug spread 3
+wait 0.5
+shot r05_spread3
+debug spread 4
+wait 0.5
+shot r06_spread4
+debug spread 5
+wait 0.5
+shot r07_spread5
+debug spread 6
+wait 0.5
+shot r08_spread6
+close
+wait 1.5
+phase hub
+wait 1.0
+tab 0
+pick 7
+phase reading
+wait 0.8
+debug spread 4
+wait 0.5
+shot r09_classes_spread4
+debug spread 6
+wait 0.5
+shot r10_classes_spread6
+quit

@@ -1,0 +1,171 @@
+@title Overloading
+@topic operators
+@subtitle Function overloading, operator overloading, ++ prefix and postfix, and <<
+
+# Function overloading
+Several functions can share a name as long as their **parameter lists differ** (in number or types). The compiler picks the best match from the arguments.
+
+```
+class printData {
+public:
+    void print(int i)    { cout << "Printing int: " << i << endl; }
+    void print(double f) { cout << "Printing float: " << f << endl; }
+    void print(const char* c) { cout << "Printing character: " << c << endl; }
+};
+
+printData pd;
+pd.print(5);
+pd.print(500.263);
+pd.print("Hello C++");
+```
+
+```output
+Printing int: 5
+Printing float: 500.263
+Printing character: Hello C++
+```
+
+!> You can't overload on the return type alone. `int get();` and `double get();` together are an error - the call `get()` gives the compiler nothing to choose by.
+
+> When there's no exact match, the compiler tries promotions: `show('A')` with only `show(int)` and `show(double)` calls the int version, printing 65.
+
+===
+
+# Operator overloading
+You can give operators like `+`, `==` and `<<` a meaning for your own classes. An overloaded operator is just a function named `operator` followed by the symbol.
+
+```
+class Box {
+public:
+    double getVolume() { return length * breadth * height; }
+    void setLength(double l)  { length = l; }
+    void setBreadth(double b) { breadth = b; }
+    void setHeight(double h)  { height = h; }
+
+    Box operator+(const Box& b) {
+        Box box;
+        box.length = this->length + b.length;
+        box.breadth = this->breadth + b.breadth;
+        box.height = this->height + b.height;
+        return box;
+    }
+private:
+    double length, breadth, height;
+};
+
+Box Box3 = Box1 + Box2;   // calls Box1.operator+(Box2)
+```
+
+- As a **member**, the left operand is `this` and the right is the parameter: one parameter.
+- As a **non-member**, both operands are parameters: `Box operator+(const Box& a, const Box& b);`
+
+===
+
+# Overloadable operators
+Almost all operators can be overloaded: `+ - * / %`, `== != < >`, `+= -=`, `++ --`, `<< >>`, `[]`, `()`, `=` and more.
+
+These can't: `::` `.` `.*` `?:` and `sizeof`.
+
+> Overloading can't change an operator's precedence or the number of operands. `a + b * 2` still multiplies first.
+
+# A Clock class
+The lecture's running example: a clock that ticks one minute at a time.
+
+```
+class Clock {
+public:
+    Clock(int h = 0, int m = 0) : hour(h), min(m) {}
+    void tick() {
+        min++;
+        if (min == 60) { min = 0; hour = (hour + 1) % 24; }
+    }
+    Clock operator++();        // prefix  ++c
+    Clock operator++(int);     // postfix c++
+    friend ostream& operator<<(ostream& out, const Clock& c);
+private:
+    int hour, min;
+};
+```
+
+===
+
+# Prefix versus postfix ++
+Both are called `operator++`. The postfix version gets a **dummy `int` parameter** that is never used - it only tells the compiler which is which.
+
+```
+Clock Clock::operator++() {      // prefix: tick, return new value
+    tick();
+    return *this;
+}
+
+Clock Clock::operator++(int) {   // postfix: save, tick, return old
+    Clock old = *this;
+    tick();
+    return old;
+}
+```
+
+```
+Clock c3(11, 0);
+Clock c1 = c3++;   // c1 is 11:00, c3 is 11:01
+Clock c2 = ++c3;   // c2 is 11:02, c3 is 11:02
+```
+
+*> The difference between `c1 = c3++` and `c1 = ++c3` is a favourite exam question. Postfix hands back the value **before** the change.
+
+===
+
+# Overloading << for output
+`cout << clock` has `cout` (an `ostream`) on the left, so it can't be a member of Clock. It's written as a non-member - usually a **friend** so it can read the private fields.
+
+```
+ostream& operator<<(ostream& out, const Clock& c) {
+    out << c.hour << ":";
+    if (c.min < 10) out << "0";
+    out << c.min;
+    return out;
+}
+
+Clock c(9, 5);
+cout << "Time: " << c << endl;   // Time: 9:05
+```
+
+- It returns `ostream&` - the same stream - so calls can be **chained**: `cout << a << " " << b;`
+- The Clock is passed as `const Clock&` - no copy, no changes.
+
+## friend
+A function declared `friend` inside a class isn't a member, but it may access the class's private members. Use it sparingly - mainly for operators like `<<` and `>>`.
+
+===
+
+# Comparison operators
+```
+class Point {
+public:
+    Point(int x, int y) : x(x), y(y) {}
+    bool operator==(const Point& other) const {
+        return x == other.x && y == other.y;
+    }
+    bool operator!=(const Point& other) const {
+        return !(*this == other);
+    }
+private:
+    int x, y;
+};
+```
+
+> The `const` after the parameter list promises the method won't modify the object, so it can be called on const objects.
+
+## Compound assignment
+`+=` should change the left operand and return it by reference:
+
+```
+Box& operator+=(const Box& b) {
+    length += b.length;
+    breadth += b.breadth;
+    height += b.height;
+    return *this;
+}
+```
+
+*> Know the signatures by heart: member `T operator+(const T&)`, prefix `T operator++()`, postfix `T operator++(int)`, and friend `ostream& operator<<(ostream&, const T&)`.

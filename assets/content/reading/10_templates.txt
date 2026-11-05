@@ -1,0 +1,140 @@
+@title Templates
+@topic templates
+@subtitle Writing one function or class that works for many types
+
+# The problem
+Suppose you need to sum an array of ints, then floats, then doubles. Without templates you write three nearly identical functions - and fix every bug three times.
+
+```
+int sum(int const* pArray, int const ELEMENTS) {
+    int total = 0;
+    for (int i = 0; i < ELEMENTS; i++) total += pArray[i];
+    return total;
+}
+float sum(float const* pArray, int const ELEMENTS) {
+    float total = 0;
+    for (int i = 0; i < ELEMENTS; i++) total += pArray[i];
+    return total;
+}
+// ...and again for double, long, short...
+```
+
+> The algorithm is identical - only the type changes. That's exactly what a template captures.
+
+# A function template
+```
+template <typename T>
+T sum(T const* pArray, int const ELEMENTS) {
+    T total = 0;
+    for (int i = 0; i < ELEMENTS; i++) total += pArray[i];
+    return total;
+}
+
+int ints[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+float floats[] = {1.5f, 2.5f, 3.0f};
+cout << sum(ints, 10) << endl;     // 55   (T = int)
+cout << sum(floats, 3) << endl;    // 7    (T = float)
+```
+
+===
+
+# How it works
+`template <typename T>` says "T is a placeholder for a type". When you call `sum(ints, 10)`, the compiler sees an `int*` argument, works out that T is `int`, and **generates** an int version of the function. Call it with floats and it generates a float version too.
+
+- The compiler does the copying for you - the "drudgery of making multiple copies of the function" is automated.
+- `typename` and `class` mean the same thing here: `template <class T>` is equivalent.
+- T is just a name. `template <typename DataType>` works too.
+
+!> The type of a template function is deduced from its **arguments**, never from its return type. `double d = sum(ints, 10);` still uses T = int.
+
+## Template requirements
+The template only compiles for types that support what the body does. `sum` needs `T total = 0` and `+=`. It works for int, float and double - and for your own class too, if it supports those operations.
+
+===
+
+# Several type parameters
+```
+template <typename Sumtype, typename Averagetype>
+Averagetype average(Sumtype const* pArray,
+                    Averagetype const ELEMENTS) {
+    Sumtype sum = 0;
+    for (int i = 0; i < ELEMENTS; i++) sum += pArray[i];
+    return (Averagetype)sum / ELEMENTS;
+}
+
+int intArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+cout << average(intArray, 10) << endl;     // 5
+cout << average(intArray, 10.0f) << endl;  // 5.5
+```
+
+> Same array, different answers. With `10` the Averagetype is int, so the division truncates to 5. With `10.0f` it's float, giving 5.5. The **second argument's type** chose the return type.
+
+## Explicit types
+You can name the types yourself instead of letting the compiler deduce them:
+
+```
+cout << average<int, float>(intArray, 10) << endl;   // 5.5
+```
+
+===
+
+# Class templates
+A class can be a template too. This is how `vector<int>` and `vector<string>` come from one definition.
+
+```
+template <typename T>
+class Adder {
+public:
+    Adder() : total(0) {}
+    void add(T number);
+    T getTotal() { return total; }
+private:
+    T total;
+};
+
+template <typename T>
+void Adder<T>::add(T number) {
+    total += number;
+}
+```
+
+!> Every member function defined **outside** the class needs its own `template <typename T>` line and the `Adder<T>::` prefix.
+
+## Using a class template
+For class templates you write the type in angle brackets:
+
+```
+Adder<int> intAdder;
+intAdder.add(5);
+intAdder.add(7);
+cout << intAdder.getTotal() << endl;     // 12
+
+Adder<double> doubleAdder;
+doubleAdder.add(2.5);
+doubleAdder.add(0.25);
+cout << doubleAdder.getTotal() << endl;  // 2.75
+```
+
+===
+
+# A generic container
+```
+template <typename T>
+class Box {
+public:
+    Box(T v) : value(v) {}
+    T get() const { return value; }
+    void set(T v) { value = v; }
+private:
+    T value;
+};
+
+Box<int> a(5);
+Box<string> s("hi");
+s.set(s.get() + "!");    // "hi!"
+```
+
+## Templates live in headers
+The compiler needs the full template body wherever it's used, to generate the right version. That's why templates are normally written entirely in the `.h` file rather than split into `.h` and `.cpp`.
+
+*> Be ready to convert a set of duplicated functions into one template, to write the out-of-class member syntax `template <typename T> void Adder<T>::add(T n)`, and to predict what T becomes for a given call.

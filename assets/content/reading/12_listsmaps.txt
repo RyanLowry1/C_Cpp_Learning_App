@@ -1,0 +1,159 @@
+@title STL List & Map
+@topic listsmaps
+@subtitle list and splice, map and pair, unordered_map, stack and queue
+
+# std::list
+`std::list` is a **doubly linked list** - the same structure you built by hand, already written and tested.
+
+```
+#include <list>
+list<int> listObject;
+listObject.push_back(50);
+listObject.push_back(40);
+listObject.push_front(10);
+listObject.push_front(20);    // 20 10 50 40
+listObject.sort();            // 10 20 40 50
+for (list<int>::iterator it = listObject.begin();
+     it != listObject.end(); ++it) {
+    (*it) *= 2;               // 20 40 80 100
+}
+```
+
+- Fast insert and erase **anywhere** (just re-linking), and iterators to other elements stay valid.
+- **No** `operator[]` - reaching element i means walking i nodes.
+- Has its own `sort()`, `remove(value)`, `reverse()`, `unique()` and `merge()`.
+
+> `std::sort` needs random-access iterators, so it doesn't work on a list. Use the member `listObject.sort()`.
+
+===
+
+# splice
+`splice` moves nodes from one list into another **without copying or constructing** any elements - it just re-links pointers. Only `list` can do this.
+
+```
+list<int> mylist1, mylist2;
+for (int i = 1; i <= 4; ++i) mylist1.push_back(i);      // 1 2 3 4
+for (int i = 1; i <= 3; ++i) mylist2.push_back(i * 10); // 10 20 30
+list<int>::iterator it = mylist1.begin();
+++it;                        // points to 2
+mylist1.splice(it, mylist2); // 1 10 20 30 2 3 4
+                             // mylist2 is now empty
+```
+
+## empty() versus size()
+Prefer `if (listObject.empty())` to `if (listObject.size() == 0)`. `empty()` is always constant time; for lists, `size()` hasn't always been (because splice can move a whole range without counting it).
+
+!> After splicing, iterators to the moved elements now belong to the destination list.
+
+===
+
+# std::map
+A `map` stores **key-value pairs**, sorted by key, with each key appearing **once**. It's usually a balanced binary tree, so lookups take logarithmic time.
+
+```
+#include <map>
+map<string, int> freq;
+freq["One"] = 1;
+freq["Two"] = 2;
+freq["One"] = 134;            // replaces the old value
+cout << freq["One"] << endl;  // 134
+cout << freq.size() << endl;  // 2
+```
+
+- `m[key]` - read or write. If the key is missing, it is **inserted** with a default value (0 for int).
+- `m.insert(make_pair(key, value))` - adds only if the key is new; **never overwrites**.
+- `m.find(key)` - an iterator to the element, or `m.end()` if not found.
+- `m.count(key)` - 1 if present, 0 if not.
+- `m.erase(key)` - remove it.
+
+!> Reading `freq["Typo"]` to check whether a key exists **adds** "Typo" to the map. Use `find` or `count` to test.
+
+===
+
+# Iterating over a map
+Every element is a `pair<const Key, Value>`: `first` is the key, `second` is the value. Iteration is in **sorted key order**.
+
+```
+map<string, int> ages;
+ages["zoe"] = 21;
+ages["adam"] = 34;
+ages["mia"] = 28;
+for (map<string, int>::iterator it = ages.begin();
+     it != ages.end(); ++it) {
+    cout << it->first << " is " << it->second << endl;
+}
+```
+
+```output
+adam is 34
+mia is 28
+zoe is 21
+```
+
+## Checking an insert
+```
+pair<map<string, int>::iterator, bool> result =
+    freq.insert(make_pair("One", 1));
+if (!result.second) {
+    cout << "One was already there" << endl;
+}
+```
+
+## Counting with a map
+```
+string words[] = {"cat", "dog", "cat", "emu", "cat"};
+map<string, int> counts;
+for (const string& w : words) counts[w]++;
+// cat=3 dog=1 emu=1
+```
+
+===
+
+# Keys must be comparable
+A map sorts its keys with `<`. Strings and numbers work out of the box; for your own class, provide `operator<`.
+
+!> Using **pointers** as keys sorts by address, not by what they point to - two equal strings at different addresses become different keys.
+
+# unordered_map
+`unordered_map` (C++11) uses a **hash table** instead of a tree. Lookups are usually faster (constant time on average), but iteration order is unpredictable.
+
+```
+#include <unordered_map>
+unordered_map<string, string> urlMapping;
+urlMapping["abc123"] = "https://example.com/long/path";
+if (urlMapping.count("abc123")) {
+    cout << urlMapping["abc123"] << endl;
+}
+```
+
+===
+
+# stack and queue
+Container **adapters** give a restricted interface on top of another container (a `deque` by default).
+
+```
+#include <stack>
+#include <queue>
+stack<int> s;          // LIFO - last in, first out
+queue<int> q;          // FIFO - first in, first out
+for (int i = 1; i <= 3; i++) { s.push(i); q.push(i); }
+cout << s.top() << endl;     // 3
+cout << q.front() << endl;   // 1
+s.pop();                     // removes 3
+q.pop();                     // removes 1
+```
+
+- stack: `push`, `pop`, `top`, `empty`, `size`
+- queue: `push`, `pop`, `front`, `back`, `empty`, `size`
+
+> `pop()` returns nothing - read `top()` or `front()` first, then pop.
+
+# Choosing a container
+- Need fast access by index? **vector**
+- Lots of inserting and removing in the middle? **list**
+- Look things up by a key, in sorted order? **map**
+- Fastest lookup by key, order doesn't matter? **unordered_map**
+- Undo history or bracket matching? **stack**
+- Waiting lines, breadth-first search? **queue**
+
+*> A typical exam task: count word frequencies with a map, or keep a to-do list in a list and splice it. Know `find` versus `[]`, and `insert` versus `[]`.

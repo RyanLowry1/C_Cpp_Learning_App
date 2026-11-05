@@ -1,0 +1,40 @@
+# Autopilot: Problem Areas, Past Results, help and settings overlays
+quick 1
+mouse 0.5 0.45
+wait 2.5
+tab 4
+phase reading
+wait 0.8
+shot x01_problem_areas
+close
+wait 1.5
+phase hub
+wait 0.5
+tab 5
+phase reading
+wait 0.8
+shot x02_ledger
+close
+wait 1.5
+phase hub
+wait 0.8
+help 1
+wait 0.6
+shot x03_help
+help 0
+settings 1
+wait 0.6
+shot x04_settings
+settings 0
+wait 0.3
+tab 0
+pick 4
+phase reading
+wait 0.8
+debug spread 1
+wait 0.5
+shot x05_reading_spread1
+debug spread 6
+wait 0.5
+shot x06_reading_end
+quit

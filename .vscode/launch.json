@@ -1,0 +1,17 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Run Malloc's Library",
+            "type": "cppvsdbg",
+            "request": "launch",
+            "program": "${workspaceFolder}\\MallocsLibrary_V1.exe",
+            "args": [],
+            "stopAtEntry": false,
+            "cwd": "${workspaceFolder}",
+            "environment": [],
+            "console": "integratedTerminal",
+            "preLaunchTask": "Build Malloc's Library"
+        }
+    ]
+}

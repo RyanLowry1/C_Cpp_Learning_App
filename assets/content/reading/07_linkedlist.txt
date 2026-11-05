@@ -1,0 +1,190 @@
+@title Linked Lists
+@topic linkedlist
+@subtitle Nodes, traversal, insertion, deletion and doubly linked lists
+
+# The idea
+An array keeps its elements side by side. A **linked list** scatters them anywhere on the heap and connects them with pointers: each **node** holds its data and the address of the next node.
+
+```
+struct Node {
+    int data;
+    Node* nextPtr;
+};
+
+Node* head = nullptr;   // an empty list
+```
+
+@mem
+head | Node* | 4a00 | | node 10
+node 10 | Node | 10 | 4a00 | node 20
+node 20 | Node | 20 | 5c10 | node 30
+node 30 | Node | 30 -> null | 61f8
+@end
+caption: head points at the first node. The last node's nextPtr is nullptr, which marks the end.
+
+- No random access: to reach the 5th node you must walk past the first four.
+- Inserting and deleting just re-link pointers - nothing has to be shifted.
+
+===
+
+# Traversal
+Start at head and follow `nextPtr` until you fall off the end.
+
+```
+void PrintList(Node* head) {
+    Node* cur = head;
+    while (cur != nullptr) {
+        cout << cur->data << " ";
+        cur = cur->nextPtr;
+    }
+    cout << endl;
+}
+```
+
+> `cur->data` is shorthand for `(*cur).data` - "the data field of the node cur points to".
+
+## Counting and searching
+```
+int Count(Node* head) {
+    int n = 0;
+    for (Node* c = head; c != nullptr; c = c->nextPtr) n++;
+    return n;
+}
+
+bool Contains(Node* head, int value) {
+    for (Node* c = head; c != nullptr; c = c->nextPtr)
+        if (c->data == value) return true;
+    return false;
+}
+```
+
+===
+
+# Inserting at the beginning
+The new node points at the old first node, then becomes the head. This takes constant time, however long the list.
+
+```
+void InsertAtBeginning(Node** ptrToHeadPtr, int newData) {
+    Node* newNode = new Node();
+    newNode->data = newData;
+    newNode->nextPtr = *ptrToHeadPtr;
+    *ptrToHeadPtr = newNode;
+}
+
+Node* head = nullptr;
+InsertAtBeginning(&head, 1);
+InsertAtBeginning(&head, 2);   // list is now 2 1
+```
+
+## Why Node** ?
+The function must change the caller's `head` variable. If it took a plain `Node* head`, it would change its own **copy** of the pointer and the caller's head would stay `nullptr`. Passing `&head` (a `Node**`) lets it write `*ptrToHeadPtr = newNode;`.
+
+@mem
+head (main) | Node* | 4a00 | 7ff0 | new node
+ptrToHeadPtr | Node** | 7ff0 | | head (main)
+new node | Node | 2 | 4a00
+@end
+caption: Through ptrToHeadPtr the function reaches back and updates main's head.
+
+> In C++ you can use a reference instead: `void InsertAtBeginning(Node*& head, int newData)`.
+
+===
+
+# Inserting at the end
+Walk to the last node (the one whose `nextPtr` is null) and hang the new node off it. An empty list is a special case.
+
+```
+void InsertAtEnd(Node** ptrToHeadPtr, int newData) {
+    Node* newNode = new Node();
+    newNode->data = newData;
+    newNode->nextPtr = nullptr;
+    if (*ptrToHeadPtr == nullptr) {     // empty list
+        *ptrToHeadPtr = newNode;
+        return;
+    }
+    Node* last = *ptrToHeadPtr;
+    while (last->nextPtr != nullptr) {
+        last = last->nextPtr;
+    }
+    last->nextPtr = newNode;
+}
+```
+
+!> Test `last->nextPtr != nullptr`, not `last != nullptr` - the second one walks off the end and leaves `last` null.
+
+> Without a tail pointer this takes time proportional to the length of the list. Keeping a `tail` pointer makes it constant time.
+
+===
+
+# Deleting a node by value
+Find the node, keeping track of the one **before** it, re-link around it, then free it.
+
+```
+void DeleteWithValue(Node** ptrToHeadPtr, int value) {
+    Node* cur = *ptrToHeadPtr;
+    Node* prev = nullptr;
+    while (cur != nullptr && cur->data != value) {
+        prev = cur;
+        cur = cur->nextPtr;
+    }
+    if (cur == nullptr) return;            // not found
+    if (prev == nullptr)                   // deleting the head
+        *ptrToHeadPtr = cur->nextPtr;
+    else
+        prev->nextPtr = cur->nextPtr;      // skip over cur
+    delete cur;                            // free it!
+}
+```
+
+- Three cases to test: the value is the **head**, it's in the **middle or at the end**, or it's **not there**.
+- Forgetting `delete cur;` leaks the node.
+
+## Freeing the whole list
+```
+void DeleteList(Node** ptrToHeadPtr) {
+    Node* cur = *ptrToHeadPtr;
+    while (cur != nullptr) {
+        Node* next = cur->nextPtr;   // save before deleting!
+        delete cur;
+        cur = next;
+    }
+    *ptrToHeadPtr = nullptr;
+}
+```
+
+!> `delete cur; cur = cur->nextPtr;` reads freed memory. Save the next pointer first.
+
+===
+
+# Doubly linked lists
+Each node also points **back** to the previous node, so you can walk in both directions and delete a node without searching for its predecessor.
+
+```
+struct DoublyLinkedNode {
+    int data;
+    DoublyLinkedNode* prevPointer;
+    DoublyLinkedNode* nextPointer;
+};
+```
+
+Inserting between two nodes now means updating up to **four** links: the new node's prev and next, the previous node's next, and the next node's prev.
+
+## A LinkedList class
+Wrapping the head pointer in a class keeps the list's rules in one place.
+
+```
+class LinkedList {
+public:
+    LinkedList() : head(nullptr) {}
+    ~LinkedList();                       // frees every node
+    LinkedList(const LinkedList& other); // deep copy
+    void InsertAtEnd(int value);
+    void Print() const;
+private:
+    Node* head;
+};
+```
+
+!> The default copy constructor would copy only `head`, so two lists would share the same nodes - and both destructors would delete them. Write a copy constructor that copies every node.
+
+*> Coding Exam 2 asks you to write these operations from scratch: insert at front and end, delete by value, count, reverse, find the middle. Practise each one in the Exam 2 workbook until you can write it without notes.

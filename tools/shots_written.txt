@@ -1,0 +1,27 @@
+# Autopilot: written test -> Classes (has multi-line output questions)
+quick 1
+mouse 0.5 0.45
+wait 2.5
+tab 2
+wait 1.2
+pick 11
+wait 0.6
+pick 1
+phase reading
+wait 0.8
+debug unfocus
+shot w01_question
+debug type 2 1
+debug submit
+wait 0.8
+shot w02_checked
+debug next
+wait 0.4
+debug type make 1\nmake 2\nbye 1
+debug unfocus
+wait 0.3
+shot w03_typed
+debug submit
+wait 0.8
+shot w04_wrong_multi
+quit

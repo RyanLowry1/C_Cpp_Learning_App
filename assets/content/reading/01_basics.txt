@@ -1,0 +1,171 @@
+@title C Basics
+@topic basics
+@subtitle Variables, types, printf and scanf, operators and casting
+
+# Your first program
+Every C program starts executing in `main()`. The `#include` line pulls in the standard input/output library so we can use `printf`.
+
+```
+#include <stdio.h>
+
+int main() {
+    printf("Hello, World!\n");
+    return 0;   // 0 tells the system "all went well"
+}
+```
+
+```output
+Hello, World!
+```
+
+- `\n` inside a string is the **newline** character.
+- Every statement ends with a semicolon `;`.
+- Comments start with `//` (one line) or sit between `/*` and `*/`.
+
+# Variables and types
+A variable is a named piece of memory. In C you must declare its **type** before you use it, because the type decides how many bytes it needs and how those bytes are read.
+
+```
+int age = 25;              // whole numbers
+float price = 19.99f;      // single precision decimal
+double pi = 3.14159265359; // double precision decimal
+char grade = 'A';          // one character, in single quotes
+```
+
+@mem
+age | int | 25 | 1000
+price | float | 19.99 | 1004
+grade | char | 'A' | 1008
+@end
+caption: Each variable occupies its own bytes in memory. The addresses here are made up, but the idea is real.
+
+!> A local variable that is declared but not initialised, like `int var;`, is **not** zero. It holds whatever happened to be in that memory. Always give variables a value before you read them.
+
+## Constants
+`const` makes a variable read-only. Any attempt to assign to it later is a compile error.
+
+```
+const double TAX_RATE = 0.08;
+const int MAX_STUDENTS = 30;
+// TAX_RATE = 0.10;   // error: assignment of read-only variable
+```
+
+===
+
+# printf - formatted output
+`printf` prints a format string, replacing each **format specifier** with the next argument in turn.
+
+```
+int count = 42;
+double total = 1234.5;
+char initial = 'J';
+printf("Count: %d\n", count);
+printf("Total: %.2f\n", total);
+printf("Initial: %c\n", initial);
+printf("Name: %s\n", "Jane");
+```
+
+```output
+Count: 42
+Total: 1234.50
+Initial: J
+Name: Jane
+```
+
+- `%d` - an `int`
+- `%f` - a `float` or `double` (six decimal places by default)
+- `%.2f` - exactly two decimal places
+- `%c` - a single `char`
+- `%s` - a string (a char array ending in `'\0'`)
+- `%p` - a pointer (an address)
+
+!> The specifier must match the type. `printf("%d", 7.5);` is undefined behaviour - it won't print 7 or 7.5 reliably.
+
+# scanf - reading input
+`scanf` reads typed input into variables. It needs the **address** of each variable, which is why you write `&`.
+
+```
+int age;
+float height;
+char initial;
+printf("Enter your age: ");
+scanf("%d", &age);
+printf("Enter your height: ");
+scanf("%f", &height);
+printf("Enter your initial: ");
+scanf(" %c", &initial);   // note the space before %c
+```
+
+> The space in `" %c"` tells scanf to skip whitespace first. Without it, `%c` would read the newline left behind when you pressed Enter after the previous number.
+
+*> Exam favourite: "why does scanf need the &?" - because C passes arguments by value, so scanf needs the address to store into your variable.
+
+===
+
+# Arithmetic operators
+- `+` `-` `*` `/` - the usual four
+- `%` - the **remainder** (modulus), for integers only
+
+```
+int a = 10, b = 3;
+printf("%d\n", a / b);   // 3   (integer division)
+printf("%d\n", a % b);   // 1   (10 = 3*3 + 1)
+```
+
+## Integer division
+When **both** operands are integers, `/` throws the fractional part away. It does not round.
+
+```
+printf("%d\n", 7 / 2);           // 3
+printf("%f\n", 7.0 / 2);         // 3.500000
+printf("%d\n", (int)3.9);        // 3 - truncates
+```
+
+## Casting
+A **cast** converts a value to another type on purpose. Cast **before** dividing to keep the fraction.
+
+```
+int total = 7, count = 2;
+float wrong = total / count;          // 3.0!
+float right = (float)total / count;   // 3.5
+```
+
+!> `float f = a / b;` is a classic trap. The integer division happens first, so f becomes 3.0 - the float only receives the already-truncated result.
+
+===
+
+# Assignment shortcuts
+```
+int count = 5;
+count++;      // 6   (same as count = count + 1)
+count--;      // 5
+count += 3;   // 8
+count *= 2;   // 16
+count -= 4;   // 12
+count /= 3;   // 4
+count %= 3;   // 1
+```
+
+> A compound assignment evaluates the whole right-hand side first. `num *= 2 + 3;` means `num = num * (2 + 3)`, not `num * 2 + 3`.
+
+## Comparison and logical operators
+These produce 1 (true) or 0 (false):
+
+- `==` equal, `!=` not equal
+- `<` `>` `<=` `>=`
+- `&&` and, `||` or, `!` not
+
+!> `=` assigns, `==` compares. `if (x = 0)` sets x to 0 and is always false - a bug that compiles happily.
+
+# Characters are numbers
+A `char` holds a small integer - its ASCII code. That's why you can do arithmetic on characters.
+
+```
+char c = 'A';
+printf("%c %d\n", c, c);   // A 65
+c = c + 2;
+printf("%c\n", c);         // C
+char lower = 'a' + 25;     // 'z'
+```
+
+*> Tracing questions in Coding Exam 1 love integer division, `%`, casts and `char` arithmetic. Work them out on paper one statement at a time.

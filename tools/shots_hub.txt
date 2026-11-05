@@ -1,0 +1,12 @@
+# Autopilot: the hub, hover, the librarian talking, clicking the cat and the bell
+quick 1
+mouse 0.5 0.45
+wait 3.4
+shot h01_hub
+mouse 0.08 0.5
+wait 1.0
+shot h02_hover
+tab 1
+wait 1.4
+shot h03_mcq_choices
+quit

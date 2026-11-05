@@ -1,0 +1,18 @@
+# Autopilot: the ledger comes out of the desk drawer, then goes onto the pile
+quick 1
+mouse 0.5 0.45
+wait 3.4
+tab 5
+wait 0.55
+shot l01_duck
+wait 0.55
+shot l02_rise
+wait 0.5
+shot l03_place
+phase reading
+wait 0.6
+shot l04_ledger
+close
+wait 2.0
+shot l05_pile
+quit

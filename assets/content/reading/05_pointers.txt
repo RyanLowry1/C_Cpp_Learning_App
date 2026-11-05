@@ -1,0 +1,189 @@
+@title Pointers
+@topic pointers
+@subtitle Addresses, * and &, pointer arithmetic, arrays and double pointers
+
+# What is a pointer?
+Every variable lives at an **address** in memory. A pointer is a variable whose value **is** an address.
+
+```
+int x = 10;
+int *p = &x;    // p holds the address of x
+printf("%d\n", x);    // 10
+printf("%p\n", p);    // an address, e.g. 0x0061FF18
+printf("%d\n", *p);   // 10 - the value at that address
+```
+
+@mem
+x | int | 10 | 1000
+p | int* | 1000 | 2000 | x
+@end
+caption: p contains 1000 - the address of x. The arrow is how we picture "p points to x".
+
+- `int *p;` declares p as a **pointer to int**.
+- `&x` - the **address-of** operator: "where does x live?"
+- `*p` - the **dereference** operator: "the thing p points to".
+
+> Read `*p` aloud as "the int that p points to". Then `*p = 12;` is simply "set the int that p points to to 12" - and that int is x.
+
+===
+
+# Changing a value through a pointer
+This is the "An Illustration" sequence from the slides. Trace it with the boxes.
+
+```
+int i = 5, j = 10;
+int *ptr;
+ptr = &i;     // ptr points to i
+*ptr = 3;     // i becomes 3
+ptr = &j;     // now ptr points to j
+*ptr = -2;    // j becomes -2
+printf("%d %d\n", i, j);
+```
+
+```output
+3 -2
+```
+
+@mem
+i | int | 3 | 1000
+j | int | -2 | 1004
+ptr | int* | 1004 | 1008 | j
+@end
+caption: After the last assignment ptr points at j. i keeps the 3 it was given earlier.
+
+!> An **uninitialised** pointer points somewhere random. `int *p; *p = 50;` writes 50 into unknown memory - undefined behaviour, often a crash. Initialise pointers, or set them to `NULL` / `nullptr` until you have an address.
+
+```
+int *p = nullptr;       // C++ (NULL in C)
+if (p != nullptr) {
+    *p = 50;            // only dereference valid pointers
+}
+```
+
+===
+
+# Pointers and arrays
+An array's name, used in an expression, gives the **address of its first element**. So these two lines are the same:
+
+```
+int arr[] = {10, 20, 30};
+int *p = arr;        // same as  int *p = &arr[0];
+printf("%d\n", *p);        // 10
+printf("%d\n", *(p + 1));  // 20
+printf("%d\n", p[2]);      // 30
+```
+
+## Pointer arithmetic
+`p + 1` doesn't add one byte - it moves to the **next element**. The compiler multiplies by `sizeof` the pointed-to type, so for ints it jumps 4 bytes, for doubles 8.
+
+@mem
+arr[0] | int | 10 | 1000
+arr[1] | int | 20 | 1004
+arr[2] | int | 30 | 1008
+p+1 | int* | 1004 | | arr[1]
+@end
+caption: p + 1 is 1004, not 1001.
+
+- `arr[i]` is **defined** as `*(arr + i)`.
+- Allowed: `p + n`, `p - n`, `p++`, `p--`, `p2 - p1`, comparisons.
+- Not allowed: `p * 2`, `p / 2`, `p1 + p2`.
+
+!> `*a + 2` is not `*(a + 2)`. The first adds 2 to the first element's value; the second reads the element two along.
+
+===
+
+# Walking an array with a pointer
+From the slides: add up an array until you reach a 0, moving a pointer instead of an index.
+
+```
+int arr[] = {4, 6, 7, 8, 9, 0};
+int sum = 0;
+for (int *ptr = arr; *ptr != 0; ptr++) {
+    sum += *ptr;
+}
+printf("%d\n", sum);   // 34
+```
+
+The pointer-arithmetic walkthrough from the slides:
+
+```
+float a[4];
+float *ptr = &(a[2]);
+*ptr = 3.14f;     // a[2] = 3.14
+ptr++;            // now at a[3]
+*ptr = 9.0f;      // a[3] = 9.0
+ptr = ptr - 3;    // back to a[0]
+*ptr = 6.0f;      // a[0] = 6.0
+ptr += 2;         // a[2] again
+*ptr = 7.0f;      // a[2] = 7.0
+```
+
+> Keep a finger on "where is ptr now?" after every line. Exam questions are designed so that one missed `ptr++` changes the answer.
+
+===
+
+# Pointers as function parameters
+Passing a pointer lets a function change the caller's variable - the C way of doing pass by reference.
+
+```
+void swap(int* x, int* y) {
+    int z = *x;
+    *x = *y;
+    *y = z;
+}
+void swap(int& x, int& y) {   // the C++ reference version
+    int z = x;
+    x = y;
+    y = z;
+}
+
+int a = 45, b = 35;
+swap(&a, &b);   // pointer version: a=35, b=45
+swap(a, b);     // reference version: back to 45, 35
+```
+
+## Pointers versus references
+- A pointer can be **null**; a reference must always refer to something.
+- A pointer can be **re-pointed**; a reference is bound once.
+- Pointers need `*` and `&` at every use; references look like ordinary variables.
+
+*> You'll be asked to write both versions of swap and explain the difference. Remember: "pass by pointer can pass a null pointer, pass by reference cannot".
+
+===
+
+# Pointers to pointers
+A pointer is a variable too, so it has an address - and that address can be stored in a **pointer to a pointer**.
+
+```
+int x = 25;
+int *p = &x;
+int **pp = &p;
+printf("%d\n", **pp);   // 25
+**pp = 30;              // x is now 30
+```
+
+@mem
+x | int | 30 | 1000
+p | int* | 1000 | 2000 | x
+pp | int** | 2000 | 3000 | p
+@end
+caption: *pp is p, and **pp is x.
+
+## The double-indirection exercise
+```
+int i = 2, j = 8;
+int *ptr;
+int **pptr;
+ptr = &i;
+pptr = &ptr;
+*ptr = 7;       // i = 7
+**pptr = 12;    // i = 12
+ptr = &j;
+**pptr = 34;    // j = 34 (pptr still points at ptr!)
+*pptr = &i;     // ptr points at i again
+*ptr = -25;     // i = -25
+```
+
+> Why bother? Because a function that must change the caller's **pointer** (like the head of a linked list) needs the address of that pointer: a `Node**`.
+
+*> The Pointers Lab and Coding Exam 2 lean heavily on this chapter. Do the Pointers MCQs until you can trace these sequences without hesitating.

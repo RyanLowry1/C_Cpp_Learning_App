@@ -1,0 +1,1251 @@
+# Written questions. Format: see README.txt
+#   kind: output  - type what the program prints ("run: yes" = self-test runs it)
+#   kind: blank   - type the code that replaces ____ (whitespace ignored)
+#   kind: fix     - type the corrected line (whitespace ignored)
+#   kind: concept - the answer must contain one of the ans: keywords
+# In ans: lines \n means a new line, so a literal backslash-n is written \\n.
+
+# ============================================================== C BASICS
+@w wb.01
+topic: basics
+kind: output
+q: What does this print?
+code:
+int a = 17, b = 5;
+printf("%d %d\n", a / b, a % b);
+@end
+ans: 3 2
+why: 17 / 5 is integer division (3, with the remainder thrown away) and 17 % 5 is that remainder, 2.
+run: yes
+
+@w wb.02
+topic: basics
+kind: output
+q: Trace `x` through each compound assignment. What is printed?
+code:
+int x = 5;
+x += 3;
+x *= 2;
+x -= 4;
+printf("%d\n", x);
+@end
+ans: 12
+why: 5 -> 8 -> 16 -> 12.
+run: yes
+
+@w wb.03
+topic: basics
+kind: output
+q: What does this print?
+code:
+double price = 19.99;
+int qty = 3;
+printf("Total: %.2f\n", price * qty);
+@end
+ans: Total: 59.97
+why: The int is promoted to double for the multiplication, and `%.2f` prints two decimal places.
+run: yes
+
+@w wb.04
+topic: basics
+kind: output
+q: Careful - where does the division happen? What is printed?
+code:
+int a = 7, b = 2;
+float f = a / b;
+printf("%.1f\n", f);
+@end
+ans: 3.0
+why: `a / b` is integer division (3) **before** the result is stored in the float. Cast first: `(float)a / b` gives 3.5.
+run: yes
+
+@w wb.05
+topic: basics
+kind: output
+lines: multi
+q: Characters are small integers. What does this print?
+code:
+char c = 'A';
+printf("%c %d\n", c, c);
+c = c + 2;
+printf("%c\n", c);
+@end
+ans: A 65\nC
+why: `%c` shows the character and `%d` its ASCII code (65). Adding 2 moves two letters along the alphabet.
+run: yes
+
+@w wb.06
+topic: basics
+kind: blank
+q: Complete the call so that it reads a whole number typed by the user into `age`.
+code:
+int age;
+scanf("%d", ____);
+@end
+ans: &age
+why: scanf needs the **address** of the variable so it can store into it.
+
+@w wb.07
+topic: basics
+kind: fix
+q: This line should print `Average: 7.5`, but it uses the wrong format specifier. Write the corrected line.
+code:
+printf("Average: %d\n", 7.5);
+@end
+ans: printf("Average: %.1f\\n", 7.5);
+ans: printf("Average: %g\\n", 7.5);
+ans: printf("Average: %.1lf\\n", 7.5);
+why: 7.5 is a double, so it needs `%f` - with `.1` for exactly one decimal place. Passing a double to `%d` is undefined behaviour.
+
+@w wb.08
+topic: basics
+kind: concept
+q: Writing `(float)total` to convert a value to another type on purpose is called what?
+ans: cast
+ans: conversion
+why: An explicit type conversion is called a **cast**. The lecture uses it to avoid integer division: `(float)7 / 2`.
+
+# ============================================================== CONTROL
+@w wc.01
+topic: control
+kind: output
+q: What does this print?
+code:
+int sum = 0;
+for (int i = 1; i <= 5; i++) sum += i;
+printf("%d\n", sum);
+@end
+ans: 15
+why: 1 + 2 + 3 + 4 + 5 = 15.
+run: yes
+
+@w wc.02
+topic: control
+kind: output
+lines: multi
+q: Nested loops. What does this print?
+code:
+for (int row = 1; row <= 3; row++) {
+    for (int col = 1; col <= row; col++) printf("*");
+    printf("\n");
+}
+@end
+ans: *\n**\n***
+why: The inner loop runs `row` times, so each line has one more star than the last.
+run: yes
+
+@w wc.03
+topic: control
+kind: output
+q: What does this print?
+code:
+int n = 1;
+while (n < 50) n *= 3;
+printf("%d\n", n);
+@end
+ans: 81
+why: n goes 1, 3, 9, 27, 81. The loop stops when the condition `n < 50` becomes false - after n passes 50.
+run: yes
+
+@w wc.04
+topic: control
+kind: output
+q: What does this print?
+code:
+char grade = 'b';
+switch (grade) {
+    case 'A': case 'a': printf("Excellent\n"); break;
+    case 'B': case 'b': printf("Good\n"); break;
+    default: printf("Unknown\n");
+}
+@end
+ans: Good
+why: Stacked case labels let upper and lower case share one block, and the break stops the fall-through.
+run: yes
+
+@w wc.05
+topic: control
+kind: output
+q: Would this divide by zero? What does it print?
+code:
+int a = 0, b = 5;
+if (a != 0 && b / a > 1) printf("big\n");
+else printf("safe\n");
+@end
+ans: safe
+why: `&&` **short-circuits**: once `a != 0` is false, the right-hand side is never evaluated, so there is no division by zero.
+run: yes
+
+@w wc.06
+topic: control
+kind: fix
+q: This loop should count down from 10 to 1 but it never stops. Write the corrected line.
+code:
+for (int i = 10; i >= 1; i++) printf("%d ", i);
+@end
+ans: for (int i = 10; i >= 1; i--) printf("%d ", i);
+ans: for (int i = 10; i >= 1; --i) printf("%d ", i);
+ans: for (int i = 10; i >= 1; i--)
+ans: for (int i = 10; i >= 1; --i)
+why: Counting **down** needs `i--`. With `i++` the condition `i >= 1` stays true for ever (until int overflows).
+
+@w wc.07
+topic: control
+kind: blank
+q: Fill in the blank so the loop stops completely as soon as it meets a negative number.
+code:
+for (int i = 0; i < size; i++) {
+    if (arr[i] < 0) ____;
+    printf("%d ", arr[i]);
+}
+@end
+ans: break
+why: `break` leaves the loop. (`continue` would only skip that one element.)
+
+@w wc.08
+topic: control
+kind: concept
+q: Which loop always runs its body at least once?
+ans: do-while
+ans: do while
+ans: dowhile
+why: The `do { ... } while (cond);` loop tests its condition **after** the body.
+
+# ============================================================== ARRAYS
+@w wa.01
+topic: arrays
+kind: output
+q: The array is only partly initialised. What does this print?
+code:
+int arr[5] = {1, 2, 3};
+for (int i = 4; i >= 0; i--) printf("%d ", arr[i]);
+@end
+ans: 0 0 3 2 1
+why: The elements without initialisers are zero, and the loop runs from the last index (4) down to 0.
+run: yes
+
+@w wa.02
+topic: arrays
+kind: output
+q: What does this print?
+code:
+char word[] = "hello";
+int len = 0;
+while (word[len] != '\0') len++;
+printf("%d\n", len);
+@end
+ans: 5
+why: This is how `strlen` works: count characters until the null terminator, which itself is not counted.
+run: yes
+
+@w wa.03
+topic: arrays
+kind: output
+q: What does this print?
+code:
+int m[3][3] = { {1, 2, 3}, {4, 5, 6}, {7, 8, 9} };
+int sum = 0;
+for (int i = 0; i < 3; i++) sum += m[i][i];
+printf("%d\n", sum);
+@end
+ans: 15
+why: m[i][i] walks the main diagonal: 1 + 5 + 9.
+run: yes
+
+@w wa.04
+topic: arrays
+kind: output
+q: What does this print?
+code:
+char s[] = "abc";
+for (int i = 0; s[i] != '\0'; i++) s[i] = s[i] - 32;
+printf("%s\n", s);
+@end
+ans: ABC
+why: In ASCII every lower-case letter is exactly 32 above its capital ('a' is 97, 'A' is 65).
+run: yes
+
+@w wa.05
+topic: arrays
+kind: blank
+q: Fill in the blank so `count` is the number of elements in `data`.
+code:
+int data[] = {3, 1, 4, 1, 5, 9, 2, 6};
+int count = sizeof(data) / ____;
+@end
+ans: sizeof(data[0])
+ans: sizeof(int)
+ans: sizeof data[0]
+ans: sizeof(*data)
+why: Total bytes divided by the bytes in one element.
+
+@w wa.06
+topic: arrays
+kind: fix
+q: This loop should set every element of the array to zero, but it writes out of bounds. Write the corrected line.
+code:
+int a[5];
+for (int i = 0; i <= 5; i++) a[i] = 0;
+@end
+ans: for (int i = 0; i < 5; i++) a[i] = 0;
+ans: for (int i = 0; i <= 4; i++) a[i] = 0;
+ans: for (int i = 0; i < 5; i++)
+ans: for (int i = 0; i < 5; ++i) a[i] = 0;
+why: The valid indices of a[5] are 0 to 4, so the test must be `i < 5`.
+
+@w wa.07
+topic: arrays
+kind: concept
+q: What character marks the end of every C string?
+ans: \0
+ans: null
+ans: nul
+why: The null terminator `'\0'` (the character with value 0).
+
+# ============================================================== FUNCTIONS
+@w wf.01
+topic: functions
+kind: output
+q: What does this print?
+code:
+#include <stdio.h>
+int square(int n) { return n * n; }
+int main() {
+    printf("%d\n", square(3) + square(4));
+    return 0;
+}
+@end
+ans: 25
+why: 9 + 16.
+run: yes
+
+@w wf.02
+topic: functions
+kind: output
+q: One parameter is passed by value, one by reference. What does this print?
+code:
+#include <iostream>
+using namespace std;
+void update(int a, int& b) { a = a * 10; b = b * 10; }
+int main() {
+    int x = 2, y = 3;
+    update(x, y);
+    cout << x << " " << y << endl;
+}
+@end
+ans: 2 30
+why: `a` is a copy of x, so x is unchanged. `b` is another name for y, so y really becomes 30.
+run: yes
+
+@w wf.03
+topic: functions
+kind: output
+q: A function can hand back two results through reference parameters. What does this print?
+code:
+#include <iostream>
+using namespace std;
+void minMax(int arr[], int n, int& mn, int& mx) {
+    mn = mx = arr[0];
+    for (int i = 1; i < n; i++) {
+        if (arr[i] < mn) mn = arr[i];
+        if (arr[i] > mx) mx = arr[i];
+    }
+}
+int main() {
+    int data[] = {7, 2, 9, 4};
+    int lo, hi;
+    minMax(data, 4, lo, hi);
+    cout << lo << " " << hi << endl;
+}
+@end
+ans: 2 9
+why: lo and hi are written through the references mn and mx.
+run: yes
+
+@w wf.04
+topic: functions
+kind: blank
+q: Fill in the parameter list so `swap` really exchanges the caller's two ints (use references).
+code:
+void swap(____) {
+    int temp = a;
+    a = b;
+    b = temp;
+}
+@end
+ans: int &a, int &b
+ans: int& a, int& b
+why: Reference parameters are aliases for the caller's variables.
+
+@w wf.05
+topic: functions
+kind: fix
+q: This function should return the average with its decimal part. Write the corrected return line.
+code:
+double average(int total, int count) {
+    return total / count;
+}
+@end
+ans: return (double)total / count;
+ans: return total / (double)count;
+ans: return static_cast<double>(total) / count;
+ans: return 1.0 * total / count;
+ans: return (double)total / (double)count;
+why: Two ints give integer division; cast one operand to double **before** dividing.
+
+@w wf.06
+topic: functions
+kind: concept
+q: The function receives its own copy of each argument, so changes inside it can't affect the caller. What is this way of passing called?
+ans: value
+why: Pass by value - the default for ordinary variables in C and C++.
+
+# ============================================================== POINTERS
+@w wp.01
+topic: pointers
+kind: output
+q: Trace `i`, `j` and `p` like the memory tables in the slides. What is printed?
+code:
+int i = 10, j = 20;
+int *p = &i;
+*p = *p + j;
+p = &j;
+*p = 5;
+printf("%d %d\n", i, j);
+@end
+ans: 30 5
+why: Through p, i becomes 10 + 20 = 30. Then p is re-pointed at j and j is set to 5.
+run: yes
+
+@w wp.02
+topic: pointers
+kind: output
+lines: multi
+q: What does this print?
+code:
+int a[] = {10, 20, 30, 40};
+int *p = a + 1;
+printf("%d\n", *p);
+printf("%d\n", *(p + 2));
+printf("%d\n", p[1]);
+@end
+ans: 20\n40\n30
+why: p starts at a[1]. p + 2 is a[3], and p[1] means *(p + 1), which is a[2].
+run: yes
+
+@w wp.03
+topic: pointers
+kind: output
+q: What does this print?
+code:
+int x = 1;
+int *p = &x;
+int **pp = &p;
+**pp = 9;
+*p = *p + 1;
+printf("%d\n", x);
+@end
+ans: 10
+why: `**pp` and `*p` are both x. It is set to 9, then incremented.
+run: yes
+
+@w wp.04
+topic: pointers
+kind: output
+q: What does this print?
+code:
+int arr[] = {2, 4, 6, 8};
+int *end = arr + 4;
+int total = 0;
+for (int *p = arr; p < end; p++) total += *p;
+printf("%d\n", total);
+@end
+ans: 20
+why: The pointer walks from the first element up to (but not including) one-past-the-end.
+run: yes
+
+@w wp.05
+topic: pointers
+kind: blank
+q: Fill in the blank so that `ptr` points to `num`.
+code:
+int num = 42;
+int *ptr = ____;
+@end
+ans: &num
+why: A pointer stores an address, and `&` takes the address of a variable.
+
+@w wp.06
+topic: pointers
+kind: blank
+q: Fill in the blank to print the value that `ptr` points to (42).
+code:
+int num = 42;
+int *ptr = &num;
+printf("%d\n", ____);
+@end
+ans: *ptr
+ans: ptr[0]
+why: Dereference the pointer with `*`.
+
+@w wp.07
+topic: pointers
+kind: fix
+q: `doubleIt(&x);` should double x, but this doesn't even compile. Write the corrected body line.
+code:
+void doubleIt(int *n) {
+    n = n * 2;
+}
+@end
+ans: *n = *n * 2;
+ans: *n *= 2;
+ans: *n = 2 * *n;
+ans: *n = (*n) * 2;
+ans: *n = *n + *n;
+why: `n` is the address. To work with the caller's value you must dereference it on both sides: `*n`.
+
+@w wp.08
+topic: pointers
+kind: concept
+q: What is it called when you use `*` on a pointer to get at the value it points to?
+ans: derefer
+ans: indirection
+why: Dereferencing (also called indirection).
+
+# ============================================================== MEMORY
+@w wm.01
+topic: memory
+kind: output
+q: Two pointers, one int. What does this print?
+code:
+int *p = new int(7);
+int *q = p;
+*q = *q * 3;
+cout << *p << endl;
+delete p;
+@end
+ans: 21
+why: p and q hold the same address, so changing *q changes *p. Delete once only - deleting q as well would be a double delete.
+run: yes
+
+@w wm.02
+topic: memory
+kind: output
+q: What does this print?
+code:
+#include <stdio.h>
+int counter = 0;
+void bump() { counter++; }
+void bumpLocal() { int counter = 100; counter++; }
+int main() {
+    bump();
+    bump();
+    bumpLocal();
+    printf("%d\n", counter);
+    return 0;
+}
+@end
+ans: 2
+why: bumpLocal declares its own local `counter`, which shadows the global one and disappears when the function returns.
+run: yes
+
+@w wm.03
+topic: memory
+kind: output
+q: What does this print?
+code:
+#include <stdio.h>
+#include <stdlib.h>
+int main() {
+    int *nums = (int*)malloc(4 * sizeof(int));
+    if (nums == NULL) return 1;
+    for (int i = 0; i < 4; i++) nums[i] = i * i;
+    printf("%d\n", nums[3] + nums[2]);
+    free(nums);
+    return 0;
+}
+@end
+ans: 13
+why: The array holds 0, 1, 4, 9, so nums[3] + nums[2] = 9 + 4.
+run: yes
+
+@w wm.04
+topic: memory
+kind: blank
+q: Allocate an array of `n` ints on the heap (C++ style).
+code:
+int n;
+cin >> n;
+int *arr = ____;
+@end
+ans: new int[n]
+ans: (int*)malloc(n * sizeof(int))
+ans: (int*)malloc(sizeof(int) * n)
+why: `new int[n]` works with a size only known at run time - unlike `int arr[n];`.
+
+@w wm.05
+topic: memory
+kind: blank
+q: Release the array correctly.
+code:
+int *arr = new int[n];
+// ... use arr ...
+____;
+@end
+ans: delete[] arr
+why: Memory from `new[]` must be released with `delete[]`.
+
+@w wm.06
+topic: memory
+kind: fix
+q: This returns a dangling pointer. Rewrite the function body as a **single line** that returns a valid pointer to an int holding 5.
+code:
+int* getPtrToFive() {
+    int x = 5;
+    return &x;
+}
+@end
+ans: return new int(5);
+ans: return new int{5};
+why: A heap int outlives the function. The caller is now responsible for deleting it.
+
+@w wm.07
+topic: memory
+kind: concept
+q: Memory that was allocated but never freed, and can no longer be reached, is called a memory ____.
+ans: leak
+why: A memory leak. Every `new` needs a matching `delete` (and every `malloc` a `free`).
+
+@w wm.08
+topic: memory
+kind: concept
+q: Local variables such as `int x;` inside a function live in which region of memory?
+ans: stack
+why: The stack. They are destroyed automatically when their scope ends, unlike heap memory from `new`.
+
+# ============================================================== LINKED LISTS
+@w wl.01
+topic: linkedlist
+kind: output
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+struct Node { int data; Node* nextPtr; };
+void InsertAtBeginning(Node** h, int v) {
+    Node* n = new Node();
+    n->data = v;
+    n->nextPtr = *h;
+    *h = n;
+}
+int main() {
+    Node* head = nullptr;
+    InsertAtBeginning(&head, 1);
+    InsertAtBeginning(&head, 2);
+    InsertAtBeginning(&head, 3);
+    for (Node* c = head; c != nullptr; c = c->nextPtr) cout << c->data << " ";
+    cout << endl;
+}
+@end
+ans: 3 2 1
+why: Each new node goes in front of the old head, so the list comes out in reverse order of insertion.
+run: yes
+
+@w wl.02
+topic: linkedlist
+kind: output
+q: Three nodes linked by hand. What does this print?
+code:
+#include <iostream>
+using namespace std;
+struct Node { int data; Node* nextPtr; };
+int main() {
+    Node c = {30, nullptr};
+    Node b = {20, &c};
+    Node a = {10, &b};
+    int count = 0, sum = 0;
+    for (Node* p = &a; p != nullptr; p = p->nextPtr) { count++; sum += p->data; }
+    cout << count << " " << sum << endl;
+}
+@end
+ans: 3 60
+why: The traversal visits a, b and c and stops at c's null nextPtr.
+run: yes
+
+@w wl.03
+topic: linkedlist
+kind: output
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+struct Node { int data; Node* nextPtr; };
+void Append(Node** h, int v) {
+    Node* n = new Node{v, nullptr};
+    if (*h == nullptr) { *h = n; return; }
+    Node* c = *h;
+    while (c->nextPtr != nullptr) c = c->nextPtr;
+    c->nextPtr = n;
+}
+void DeleteWithValue(Node** h, int v) {
+    Node* cur = *h;
+    Node* prev = nullptr;
+    while (cur != nullptr && cur->data != v) { prev = cur; cur = cur->nextPtr; }
+    if (cur == nullptr) return;
+    if (prev == nullptr) *h = cur->nextPtr;
+    else prev->nextPtr = cur->nextPtr;
+    delete cur;
+}
+int main() {
+    Node* head = nullptr;
+    for (int i = 1; i <= 4; i++) Append(&head, i);
+    DeleteWithValue(&head, 3);
+    DeleteWithValue(&head, 1);
+    DeleteWithValue(&head, 7);
+    for (Node* c = head; c != nullptr; c = c->nextPtr) cout << c->data << " ";
+    cout << endl;
+}
+@end
+ans: 2 4
+why: Deleting 3 re-links 2 to 4. Deleting 1 (the head) moves head on to 2. 7 isn't in the list, so nothing happens.
+run: yes
+
+@w wl.04
+topic: linkedlist
+kind: blank
+q: Fill in the blank to move `cur` on to the next node.
+code:
+Node* cur = head;
+while (cur != nullptr) {
+    cout << cur->data << " ";
+    cur = ____;
+}
+@end
+ans: cur->nextPtr
+ans: (*cur).nextPtr
+why: Follow the link stored in the current node.
+
+@w wl.05
+topic: linkedlist
+kind: blank
+q: Fill in the loop condition so that `last` stops on the final node of a non-empty list.
+code:
+Node* last = head;
+while (____) last = last->nextPtr;
+@end
+ans: last->nextPtr != nullptr
+ans: last->nextPtr != NULL
+ans: last->nextPtr
+ans: last->nextPtr != 0
+why: The final node is the one whose nextPtr is null. Testing `last != nullptr` instead would run off the end.
+
+@w wl.06
+topic: linkedlist
+kind: concept
+q: In a doubly linked list every node has a next pointer and a ____ pointer.
+ans: prev
+why: The previous pointer (prevPointer in the lecture's DoublyLinkedNode).
+
+@w wl.07
+topic: linkedlist
+kind: concept
+q: After unlinking a node from the list, which operator must you use on it to avoid a memory leak?
+ans: delete
+why: `delete curNodePtr;` - the node was created with `new`.
+
+# ============================================================== CLASSES
+@w wk.01
+topic: classes
+kind: output
+q: Each object has its own copy of the fields. What does this print?
+code:
+#include <iostream>
+using namespace std;
+class Counter {
+public:
+    Counter() { count = 0; }
+    void increment() { count++; }
+    int get() { return count; }
+private:
+    int count;
+};
+int main() {
+    Counter a, b;
+    a.increment();
+    a.increment();
+    b.increment();
+    cout << a.get() << " " << b.get() << endl;
+}
+@end
+ans: 2 1
+why: a and b are separate instances, each starting at 0 thanks to the constructor.
+run: yes
+
+@w wk.02
+topic: classes
+kind: output
+lines: multi
+q: When do constructors and destructors run? Write all six lines.
+code:
+#include <iostream>
+using namespace std;
+class Noisy {
+public:
+    Noisy(int id) : id(id) { cout << "make " << id << endl; }
+    ~Noisy() { cout << "bye " << id << endl; }
+private:
+    int id;
+};
+int main() {
+    Noisy a(1);
+    {
+        Noisy b(2);
+    }
+    Noisy c(3);
+}
+@end
+ans: make 1\nmake 2\nbye 2\nmake 3\nbye 3\nbye 1
+why: b is destroyed at the end of its inner block. At the end of main, objects are destroyed in **reverse** order of creation: c, then a.
+run: yes
+
+@w wk.03
+topic: classes
+kind: output
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+class Student {
+public:
+    static int total;
+    Student() { total++; }
+};
+int Student::total = 0;
+int main() {
+    Student a, b;
+    Student group[3];
+    cout << Student::total << endl;
+}
+@end
+ans: 5
+why: A static member is shared by the whole class. The array constructs three more Students with the default constructor.
+run: yes
+
+@w wk.04
+topic: classes
+kind: blank
+q: Fill in the blank to set `x` through the pointer `pPtr`.
+code:
+Point p;
+Point* pPtr = &p;
+____ = 5.0;
+@end
+ans: pPtr->x
+ans: (*pPtr).x
+why: `->` reaches a member through a pointer.
+
+@w wk.05
+topic: classes
+kind: blank
+q: Fill in the initialisation list so the constructor sets `x` to nx and `y` to ny.
+code:
+class Point {
+public:
+    double x, y;
+    Point(double nx, double ny) : ____ {}
+};
+@end
+ans: x(nx), y(ny)
+ans: x{nx}, y{ny}
+why: Members are initialised before the constructor body runs.
+
+@w wk.06
+topic: classes
+kind: concept
+q: What is the special method called automatically when an object is destroyed?
+ans: destructor
+why: The destructor, written `~ClassName()`. It is where you `delete` memory the object owns.
+
+@w wk.07
+topic: classes
+kind: concept
+q: Copying an object by copying its pointer member, so both objects share the same data, is called a ____ copy.
+ans: shallow
+why: The default copy constructor makes a shallow copy. Write your own to make a **deep** copy.
+
+# ============================================================== OVERLOADING
+@w wo.01
+topic: operators
+kind: output
+q: Prefix or postfix? What does this print?
+code:
+#include <iostream>
+using namespace std;
+class Clock {
+public:
+    Clock(int h = 0, int m = 0) : hour(h), min(m) {}
+    void tick() { if (++min == 60) { min = 0; hour = (hour + 1) % 24; } }
+    Clock operator++() { tick(); return *this; }
+    Clock operator++(int) { Clock old = *this; tick(); return old; }
+    friend ostream& operator<<(ostream& out, const Clock& c) {
+        out << c.hour << ":" << (c.min < 10 ? "0" : "") << c.min;
+        return out;
+    }
+private:
+    int hour, min;
+};
+int main() {
+    Clock c(9, 59);
+    Clock a = c++;
+    Clock b = ++c;
+    cout << a << " " << b << " " << c << endl;
+}
+@end
+ans: 9:59 10:01 10:01
+why: `c++` returns the old value (9:59) and ticks c to 10:00. `++c` ticks to 10:01 and returns the new value.
+run: yes
+
+@w wo.02
+topic: operators
+kind: output
+lines: multi
+q: Which overload is chosen for each call?
+code:
+#include <iostream>
+using namespace std;
+void show(int x) { cout << "int " << x << endl; }
+void show(double x) { cout << "double " << x << endl; }
+void show(const char* s) { cout << "text " << s << endl; }
+int main() {
+    show(3);
+    show(2.5);
+    show("hi");
+    show('A');
+}
+@end
+ans: int 3\ndouble 2.5\ntext hi\nint 65
+why: There's no char overload, so 'A' is promoted to int (65) - promotion beats conversion to double.
+run: yes
+
+@w wo.03
+topic: operators
+kind: output
+q: Overloaded operators keep their normal precedence. What does this print?
+code:
+#include <iostream>
+using namespace std;
+struct Vec2 {
+    int x, y;
+    Vec2 operator+(const Vec2& o) const { return {x + o.x, y + o.y}; }
+    Vec2 operator*(int k) const { return {x * k, y * k}; }
+};
+int main() {
+    Vec2 a{1, 2}, b{3, 4};
+    Vec2 c = a + b * 2;
+    cout << c.x << "," << c.y << endl;
+}
+@end
+ans: 7,10
+why: `*` binds tighter than `+`, so b * 2 = (6, 8) is worked out first, then added to a.
+run: yes
+
+@w wo.04
+topic: operators
+kind: blank
+q: Fill in the function name that overloads `==` for Point.
+code:
+bool ____(const Point& other) const {
+    return x == other.x && y == other.y;
+}
+@end
+ans: operator==
+why: The function name is the keyword `operator` followed by the symbol.
+
+@w wo.05
+topic: operators
+kind: blank
+q: Fill in the return type so that `cout << a << b;` can be chained.
+code:
+friend ____ operator<<(ostream& out, const Clock& c);
+@end
+ans: ostream&
+ans: std::ostream&
+why: Return the same stream by reference so it becomes the left operand of the next `<<`.
+
+@w wo.06
+topic: operators
+kind: concept
+q: What does the unused `int` parameter in `operator++(int)` tell the compiler?
+ans: post
+why: It marks the **postfix** version (c++), as opposed to the prefix version (++c).
+
+# ============================================================== TEMPLATES
+@w wt.01
+topic: templates
+kind: output
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+template <typename T>
+T biggest(T a, T b) { return a > b ? a : b; }
+int main() {
+    cout << biggest(3, 7) << " " << biggest(2.5, 1.5) << " " << biggest('a', 'z') << endl;
+}
+@end
+ans: 7 2.5 z
+why: T is deduced separately for each call: int, double and char.
+run: yes
+
+@w wt.02
+topic: templates
+kind: output
+q: The same template with two different types. What does this print?
+code:
+#include <iostream>
+using namespace std;
+template <typename T>
+T half(T x) { return x / 2; }
+int main() {
+    cout << half(7) << " " << half(7.0) << endl;
+}
+@end
+ans: 3 3.5
+why: half(7) uses T = int, so 7 / 2 is integer division. half(7.0) uses T = double.
+run: yes
+
+@w wt.03
+topic: templates
+kind: output
+q: What does this print?
+code:
+#include <iostream>
+#include <string>
+using namespace std;
+template <typename T>
+class Box {
+public:
+    Box(T v) : value(v) {}
+    T get() const { return value; }
+    void set(T v) { value = v; }
+private:
+    T value;
+};
+int main() {
+    Box<int> a(5);
+    Box<string> s("hi");
+    a.set(a.get() * 2);
+    s.set(s.get() + "!");
+    cout << a.get() << " " << s.get() << endl;
+}
+@end
+ans: 10 hi!
+why: One class template, two separate classes generated: Box<int> and Box<string>.
+run: yes
+
+@w wt.04
+topic: templates
+kind: blank
+q: Fill in the line that has to come before a function template.
+code:
+____
+T square(T x) { return x * x; }
+@end
+ans: template <typename T>
+ans: template <class T>
+why: Both `typename` and `class` are allowed here.
+
+@w wt.05
+topic: templates
+kind: blank
+q: Declare an Adder object that works with doubles.
+code:
+____ doubleAdder;
+doubleAdder.add(2.5);
+@end
+ans: Adder<double>
+why: For a class template you must name the type in angle brackets.
+
+@w wt.06
+topic: templates
+kind: concept
+q: For a call such as `sum(intArray, 10)`, what does the compiler use to work out the template type T?
+ans: argument
+ans: parameter
+ans: deduc
+why: T is deduced from the types of the arguments passed in - never from the return type.
+
+# ============================================================== VECTORS
+@w wv.01
+topic: vectors
+kind: output
+q: Trace the vector after each step. What does this print?
+code:
+vector<int> v = {5, 3, 8};
+v.push_back(1);
+v.insert(v.begin(), 9);
+v.erase(v.begin() + 2);
+for (int x : v) cout << x << " ";
+@end
+ans: 9 5 8 1
+why: {5,3,8} -> {5,3,8,1} -> {9,5,3,8,1} -> erase index 2 (the 3) -> {9,5,8,1}.
+run: yes
+
+@w wv.02
+topic: vectors
+kind: output
+q: What does this print?
+code:
+vector<int> v;
+for (int i = 1; i <= 5; i++) v.push_back(i * i);
+cout << v.size() << " " << v.front() << " " << v.back() << endl;
+@end
+ans: 5 1 25
+why: The vector holds 1, 4, 9, 16 and 25.
+run: yes
+
+@w wv.03
+topic: vectors
+kind: output
+q: What does this print?
+code:
+vector<string> names = {"Ann", "Bob", "Cy"};
+for (vector<string>::iterator it = names.begin(); it != names.end(); ++it)
+    *it += "!";
+cout << names[1] << " " << names.size() << endl;
+@end
+ans: Bob! 3
+why: Dereferencing an iterator gives the element itself, so it can be modified.
+run: yes
+
+@w wv.04
+topic: vectors
+kind: output
+q: remove() on its own... What does this print?
+code:
+vector<int> v = {1, 2, 1, 3};
+vector<int>::iterator newEnd = remove(v.begin(), v.end(), 1);
+cout << v.size() << " " << (newEnd - v.begin()) << endl;
+@end
+ans: 4 2
+why: remove keeps 2 elements (2 and 3) at the front and returns the new logical end - but the size is still 4 until you erase.
+run: yes
+
+@w wv.05
+topic: vectors
+kind: blank
+q: Fill in the blank to sort the whole vector `v`.
+code:
+sort(____);
+@end
+ans: v.begin(), v.end()
+ans: begin(v), end(v)
+why: STL algorithms take a range: an iterator to the first element and one to one-past-the-end.
+
+@w wv.06
+topic: vectors
+kind: blank
+q: Complete the erase-remove idiom so it deletes every 0.
+code:
+v.erase(remove(v.begin(), v.end(), 0), ____);
+@end
+ans: v.end()
+why: Erase from the new logical end returned by remove up to the real end.
+
+@w wv.07
+topic: vectors
+kind: blank
+q: A vector has `size() == 10` and `capacity() == 16`. How many more `push_back`s fit before it must reallocate?
+code:
+int spare = ____;
+@end
+ans: 6
+ans: v.capacity() - v.size()
+why: capacity - size = 16 - 10 = 6 free slots.
+
+# ============================================================== LISTS & MAPS
+@w ws.01
+topic: listsmaps
+kind: output
+q: Counting words with a map. What does this print?
+code:
+string words[] = {"cat", "dog", "cat", "emu", "cat", "dog"};
+map<string, int> freq;
+for (const string& w : words) freq[w]++;
+for (auto& kv : freq) cout << kv.first << "=" << kv.second << " ";
+@end
+ans: cat=3 dog=2 emu=1
+why: `freq[w]` creates a 0 entry the first time a word is seen. The map iterates in sorted key order.
+run: yes
+
+@w ws.02
+topic: listsmaps
+kind: output
+q: The same three pushes into a stack and a queue. What does this print?
+code:
+stack<int> s;
+queue<int> q;
+for (int i = 1; i <= 3; i++) { s.push(i); q.push(i); }
+cout << s.top() << " " << q.front() << endl;
+@end
+ans: 3 1
+why: A stack is LIFO (the last one pushed is on top); a queue is FIFO (the first one pushed is at the front).
+run: yes
+
+@w ws.03
+topic: listsmaps
+kind: output
+q: What does this print?
+code:
+list<int> L;
+L.push_back(2);
+L.push_back(3);
+L.push_front(1);
+L.push_front(0);
+L.remove(2);
+L.reverse();
+for (int x : L) cout << x << " ";
+@end
+ans: 3 1 0
+why: 0 1 2 3 -> remove the 2 -> 0 1 3 -> reverse -> 3 1 0.
+run: yes
+
+@w ws.04
+topic: listsmaps
+kind: output
+q: insert versus []. What does this print?
+code:
+map<string, int> m;
+m.insert(make_pair("a", 1));
+m.insert(make_pair("a", 2));
+m["b"] = 5;
+m["b"] = 6;
+cout << m["a"] << " " << m["b"] << " " << m.size() << endl;
+@end
+ans: 1 6 2
+why: insert never overwrites an existing key, but assigning with [] does.
+run: yes
+
+@w ws.05
+topic: listsmaps
+kind: blank
+q: Fill in the blank to test whether the key "bob" is in the map `ages`.
+code:
+if (ages.find("bob") != ____) cout << "found";
+@end
+ans: ages.end()
+why: find returns end() when the key is missing.
+
+@w ws.06
+topic: listsmaps
+kind: concept
+q: Which STL container is implemented as a doubly linked list?
+ans: list
+why: `std::list` - which is why it has splice but no [] operator.
+
+@w ws.07
+topic: listsmaps
+kind: concept
+q: For a map iterator `iter`, `iter->first` is the key. What is `iter->second`?
+ans: value
+why: Each element of a map is a pair of key (first) and value (second).

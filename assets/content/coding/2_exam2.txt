@@ -1,0 +1,1109 @@
+# Coding Exam 2 workbook - built from "Pointers & LinkedList lab" (Coding Exam 2 preparation)
+
+@set exam2
+title: Coding Exam 2 Workbook
+subtitle: Pointers, strings and linked lists - the Pointers Lab
+desc: The **Coding Exam 2 preparation lab**. Part 1 is ten functions that must use **pointer arithmetic only** - writing `arr[i]` anywhere in your code breaks the exam rule and the exercise won't count as solved. Part 2 builds the linked list from the lecture notes, then the **doubly linked list** the lab asks for. Your code is compiled as C++ with `using namespace std;` available.
+prelude: cpp
+exam: 2
+color: 110,40,40
+
+# --------------------------------------------------------------------------
+@p e2.swapints
+title: swap_ints
+topic: pointers
+diff: Easy
+desc:
+Lab function 1. Swap the values of two integers using pointers.
+
+`a` and `b` hold the **addresses** of the caller's variables. Dereference them (`*a`) to read and write the actual integers.
+@end
+example:
+int x = 5, y = 10;
+swap_ints(&x, &y);   // now x = 10, y = 5
+@end
+starter:
+void swap_ints(int *a, int *b) {
+    // your code here
+}
+@end
+tests:
++ swaps 5 and 10
+int x = 5, y = 10;
+swap_ints(&x, &y);
+EXPECT_EQ(x, 10);
+EXPECT_EQ(y, 5);
+- negative numbers
+int x = -3, y = 8;
+swap_ints(&x, &y);
+EXPECT_EQ(x, 8);
+EXPECT_EQ(y, -3);
+- equal values stay equal
+int x = 4, y = 4;
+swap_ints(&x, &y);
+EXPECT_EQ(x, 4);
+EXPECT_EQ(y, 4);
+- swapping a variable with itself leaves it unchanged
+int x = 7;
+swap_ints(&x, &x);
+EXPECT_EQ(x, 7);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: int temp = *a; *a = *b; *b = temp;  (Writing a = b would only change the local pointer copies!)
+solution:
+void swap_ints(int *a, int *b) {
+    int temp = *a;
+    *a = *b;
+    *b = temp;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.swapchars
+title: swap_chars
+topic: pointers
+diff: Easy
+desc:
+Lab function 2. Swap the values of two characters using pointers.
+@end
+example:
+char a = 'A', b = 'B';
+swap_chars(&a, &b);   // now a = 'B', b = 'A'
+@end
+starter:
+void swap_chars(char *a, char *b) {
+    // your code here
+}
+@end
+tests:
++ swaps 'A' and 'B'
+char a = 'A', b = 'B';
+swap_chars(&a, &b);
+EXPECT_EQ(a, 'B');
+EXPECT_EQ(b, 'A');
+- swaps characters inside a string
+char s[] = "xy";
+swap_chars(s, s + 1);
+EXPECT_STR(s, "yx");
+- swapping with itself
+char c = 'q';
+swap_chars(&c, &c);
+EXPECT_EQ(c, 'q');
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: Exactly like swap_ints, but the temporary is a char.
+solution:
+void swap_chars(char *a, char *b) {
+    char temp = *a;
+    *a = *b;
+    *b = temp;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.findmax
+title: find_max
+topic: pointers
+diff: Easy
+desc:
+Lab function 3. Return the maximum value in an integer array of `size` elements (size >= 1), using pointer arithmetic.
+
+**Trap:** don't start your maximum at 0 - what if every value is negative?
+@end
+example:
+int arr[5] = {3, 9, 2, 8, 5};
+find_max(arr, 5)   ->  9
+@end
+starter:
+int find_max(int *arr, int size) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ the lab example
+int a[] = {3, 9, 2, 8, 5};
+EXPECT_EQ(find_max(a, 5), 9);
+- all negative values
+int a[] = {-5, -2, -9};
+EXPECT_EQ(find_max(a, 3), -2);
+- the maximum is first
+int a[] = {50, 1, 2};
+EXPECT_EQ(find_max(a, 3), 50);
+- the maximum is last
+int a[] = {1, 2, 99};
+EXPECT_EQ(find_max(a, 3), 99);
+- a single element
+int a[] = {7};
+EXPECT_EQ(find_max(a, 1), 7);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: int max = *arr; then walk a pointer p from arr + 1 to arr + size, comparing *p.
+solution:
+int find_max(int *arr, int size) {
+    int max = *arr;
+    for (int *p = arr + 1; p < arr + size; p++) {
+        if (*p > max) max = *p;
+    }
+    return max;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.reverse
+title: reverse_array
+topic: pointers
+diff: Medium
+desc:
+Lab function 4. Reverse an integer array **in place** using pointers.
+
+Use two pointers: one starting at the first element and one at the **last** element (`arr + size - 1`). Swap what they point at, then move them towards each other until they meet.
+@end
+example:
+int arr[5] = {1, 2, 3, 4, 5};
+reverse_array(arr, 5);   // arr = {5, 4, 3, 2, 1}
+@end
+starter:
+void reverse_array(int *arr, int size) {
+    // your code here
+}
+@end
+tests:
++ the lab example
+int a[] = {1, 2, 3, 4, 5};
+reverse_array(a, 5);
+EXPECT_ARR(a, 5, {5, 4, 3, 2, 1});
+- even length
+int a[] = {1, 2, 3, 4};
+reverse_array(a, 4);
+EXPECT_ARR(a, 4, {4, 3, 2, 1});
+- single element
+int a[] = {8};
+reverse_array(a, 1);
+EXPECT_ARR(a, 1, {8});
+- empty array does nothing (and must not crash)
+int a[] = {1, 2};
+reverse_array(a, 0);
+EXPECT_ARR(a, 2, {1, 2});
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: int *left = arr, *right = arr + size - 1; while (left < right) { swap *left and *right; left++; right--; }
+solution:
+void reverse_array(int *arr, int size) {
+    int *left = arr;
+    int *right = arr + size - 1;
+    while (left < right) {
+        int temp = *left;
+        *left = *right;
+        *right = temp;
+        left++;
+        right--;
+    }
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.strlen
+title: strlen_ptr
+topic: pointers
+diff: Easy
+desc:
+Lab function 5. Return the length of a null-terminated string using pointers - count characters until you reach `'\0'` (which is not counted).
+@end
+example:
+char str[] = "Hello";
+strlen_ptr(str)   ->  5
+@end
+starter:
+int strlen_ptr(char *str) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ "Hello" has 5 characters
+char s[] = "Hello";
+EXPECT_EQ(strlen_ptr(s), 5);
++ "Hello, world!" has 13
+char s[] = "Hello, world!";
+EXPECT_EQ(strlen_ptr(s), 13);
+- the empty string has length 0
+char s[] = "";
+EXPECT_EQ(strlen_ptr(s), 0);
+- spaces count as characters
+char s[] = "a b c";
+EXPECT_EQ(strlen_ptr(s), 5);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: char *p = str; while (*p != '\0') p++; return p - str;   (subtracting two pointers gives the number of elements between them)
+solution:
+int strlen_ptr(char *str) {
+    char *p = str;
+    while (*p != '\0') p++;
+    return (int)(p - str);
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.vowels
+title: count_vowels
+topic: pointers
+diff: Easy
+desc:
+Lab function 6. Count the vowels (a, e, i, o, u - upper or lower case) in a string using pointers.
+
+**Note:** the lab handout's example says "OpenAI" has 3 vowels ('O', 'e', 'A'), but it forgets the final **'I'** - the correct answer is **4**, and that's what the tests expect.
+@end
+example:
+count_vowels("OpenAI")       ->  4
+count_vowels("Hello World")  ->  3
+@end
+starter:
+int count_vowels(char *str) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ "OpenAI" has 4 vowels (O, e, A, I)
+char s[] = "OpenAI";
+EXPECT_EQ(count_vowels(s), 4);
++ "Hello World" has 3
+char s[] = "Hello World";
+EXPECT_EQ(count_vowels(s), 3);
+- no vowels at all
+char s[] = "rhythm";
+EXPECT_EQ(count_vowels(s), 0);
+- upper and lower case both count
+char s[] = "AEIOUaeiou";
+EXPECT_EQ(count_vowels(s), 10);
+- empty string
+char s[] = "";
+EXPECT_EQ(count_vowels(s), 0);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: Convert each character with tolower(*p) and compare against 'a', 'e', 'i', 'o', 'u'. Or use strchr("aeiouAEIOU", *p).
+solution:
+int count_vowels(char *str) {
+    int count = 0;
+    for (char *p = str; *p != '\0'; p++) {
+        char c = (char)tolower(*p);
+        if (c == 'a' || c == 'e' || c == 'i' || c == 'o' || c == 'u') count++;
+    }
+    return count;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.copy
+title: copy_string
+topic: pointers
+diff: Easy
+desc:
+Lab function 7. Copy the string `src` into `dest` using pointers (assume `dest` is big enough). Don't forget to copy the terminating `'\0'` - without it, `dest` isn't a valid string.
+@end
+example:
+char src[] = "Hello";
+char dest[10];
+copy_string(dest, src);   // dest = "Hello"
+@end
+starter:
+void copy_string(char *dest, char *src) {
+    // your code here
+}
+@end
+tests:
++ copies "Hello"
+char src[] = "Hello";
+char dest[10];
+copy_string(dest, src);
+EXPECT_STR(dest, "Hello");
+- the terminator is copied (old contents are cut off)
+char src[] = "ab";
+char dest[10] = "XXXXXXXX";
+copy_string(dest, src);
+EXPECT_STR(dest, "ab");
+- copying the empty string
+char src[] = "";
+char dest[5] = "zzz";
+copy_string(dest, src);
+EXPECT_STR(dest, "");
+- the source is unchanged
+char src[] = "pointer";
+char dest[20];
+copy_string(dest, src);
+EXPECT_STR(src, "pointer");
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: while (*src != '\0') { *dest = *src; dest++; src++; }  then *dest = '\0';
+solution:
+void copy_string(char *dest, char *src) {
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+    *dest = '\0';
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.concat
+title: concat_strings
+topic: pointers
+diff: Medium
+desc:
+Lab function 8. Append `src` to the end of `dest` using pointers (assume `dest` has enough room). First move a pointer to the `'\0'` at the end of `dest`, then copy `src` from there - including its terminator.
+@end
+example:
+char dest[20] = "Hello, ";
+char src[] = "World!";
+concat_strings(dest, src);   // dest = "Hello, World!"
+@end
+starter:
+void concat_strings(char *dest, char *src) {
+    // your code here
+}
+@end
+tests:
++ the lab example
+char dest[20] = "Hello, ";
+char src[] = "World!";
+concat_strings(dest, src);
+EXPECT_STR(dest, "Hello, World!");
+- appending to an empty string
+char dest[10] = "";
+char src[] = "abc";
+concat_strings(dest, src);
+EXPECT_STR(dest, "abc");
+- appending an empty string changes nothing
+char dest[10] = "abc";
+char src[] = "";
+concat_strings(dest, src);
+EXPECT_STR(dest, "abc");
+- appending twice
+char dest[20] = "a";
+char b[] = "b";
+char c[] = "cd";
+concat_strings(dest, b);
+concat_strings(dest, c);
+EXPECT_STR(dest, "abcd");
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: while (*dest != '\0') dest++;  then the same loop as copy_string.
+solution:
+void concat_strings(char *dest, char *src) {
+    while (*dest != '\0') dest++;
+    while (*src != '\0') {
+        *dest = *src;
+        dest++;
+        src++;
+    }
+    *dest = '\0';
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.sum
+title: sum_array
+topic: pointers
+diff: Easy
+desc:
+Lab function 9. Return the sum of all `size` elements of the array using pointer arithmetic. This is also the `sum(int* ptr, int numValues)` exercise from the Pointers lecture slides.
+@end
+example:
+int arr[4] = {1, 2, 3, 4};
+sum_array(arr, 4)   ->  10
+@end
+starter:
+int sum_array(int *arr, int size) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ {1, 2, 3, 4} sums to 10
+int a[] = {1, 2, 3, 4};
+EXPECT_EQ(sum_array(a, 4), 10);
++ the slides' example {4, 6, 7, 8, 9} sums to 34
+int a[] = {4, 6, 7, 8, 9};
+EXPECT_EQ(sum_array(a, 5), 34);
+- an empty array sums to 0
+int a[] = {5};
+EXPECT_EQ(sum_array(a, 0), 0);
+- negatives
+int a[] = {-1, -2, 3};
+EXPECT_EQ(sum_array(a, 3), 0);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: int total = 0; for (int i = 0; i < size; i++) total += *(arr + i);
+solution:
+int sum_array(int *arr, int size) {
+    int total = 0;
+    for (int i = 0; i < size; i++) total += *(arr + i);
+    return total;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.compare
+title: compare_strings
+topic: pointers
+diff: Medium
+desc:
+Lab function 10. Compare two strings lexicographically (dictionary order) using pointers. Return **0** if they are equal, a **negative** value if `str1` comes first, and a **positive** value if `str1` comes after.
+
+Walk both strings together while the characters match. Then compare the first characters that differ - including the case where one string ends (`'\0'` is smaller than any letter, so "app" comes before "apple").
+@end
+example:
+compare_strings("apple", "banana")  ->  negative
+compare_strings("pear", "pear")     ->  0
+compare_strings("pear", "peach")    ->  positive
+@end
+starter:
+int compare_strings(char *str1, char *str2) {
+    // your code here
+    return 0;
+}
+@end
+tests:
++ apple comes before banana
+char a[] = "apple", b[] = "banana";
+EXPECT_SIGN(compare_strings(a, b), -1);
++ equal strings give 0
+char a[] = "pear", b[] = "pear";
+EXPECT_SIGN(compare_strings(a, b), 0);
+- banana comes after apple
+char a[] = "banana", b[] = "apple";
+EXPECT_SIGN(compare_strings(a, b), 1);
+- a prefix comes first
+char a[] = "app", b[] = "apple";
+EXPECT_SIGN(compare_strings(a, b), -1);
+- the longer string comes after its prefix
+char a[] = "apple", b[] = "app";
+EXPECT_SIGN(compare_strings(a, b), 1);
+- two empty strings are equal
+char a[] = "", b[] = "";
+EXPECT_SIGN(compare_strings(a, b), 0);
+- difference deep in the string
+char a[] = "pointerA", b[] = "pointerB";
+EXPECT_SIGN(compare_strings(a, b), -1);
+@end
+forbid: [ ; Exam 2 rule: use pointer arithmetic only - no [] indexing.
+hint: while (*str1 != '\0' && *str1 == *str2) { str1++; str2++; }  return *str1 - *str2;
+solution:
+int compare_strings(char *str1, char *str2) {
+    while (*str1 != '\0' && *str1 == *str2) {
+        str1++;
+        str2++;
+    }
+    return (unsigned char)*str1 - (unsigned char)*str2;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.ll_end
+title: Linked List: InsertAtEnd & PrintList
+topic: linkedlist
+diff: Medium
+desc:
+Part 2, from the lecture notes. A list is a chain of `Node`s; `headPtr` points at the first node and the last node's `nextPtr` is `nullptr`.
+
+Implement **InsertAtEnd**: create a node with `new`, and attach it after the current last node. Because inserting into an **empty** list must change the caller's head pointer, the function receives a **pointer to the head pointer** (`Node**`).
+
+Implement **PrintList**: print every value followed by a space, then `endl`.
+@end
+example:
+Node* headPtr = nullptr;
+InsertAtEnd(&headPtr, 10);
+InsertAtEnd(&headPtr, 20);
+InsertAtEnd(&headPtr, 30);
+PrintList(headPtr);        // 10 20 30
+@end
+support:
+struct Node {
+    int data;
+    Node* nextPtr;
+};
+@end
+starter:
+void InsertAtEnd(Node** ptrToHeadPtr, int newData) {
+    // your code here
+}
+
+void PrintList(Node* headPtr) {
+    // your code here
+}
+@end
+helpers:
+static std::string listToString(Node* h) {
+    std::string s;
+    int guard = 0;
+    while (h && guard++ < 1000) { if (!s.empty()) s += " "; s += std::to_string(h->data); h = h->nextPtr; }
+    return s;
+}
+@end
+tests:
++ InsertAtEnd builds 10 20 30 in order
+Node* head = nullptr;
+InsertAtEnd(&head, 10);
+InsertAtEnd(&head, 20);
+InsertAtEnd(&head, 30);
+EXPECT_EQ(listToString(head), std::string("10 20 30"));
++ PrintList prints the values
+Node* head = nullptr;
+InsertAtEnd(&head, 10);
+InsertAtEnd(&head, 20);
+InsertAtEnd(&head, 30);
+EXPECT_OUT(PrintList(head), "10 20 30");
+- inserting into an empty list sets the head
+Node* head = nullptr;
+InsertAtEnd(&head, 5);
+EXPECT_TRUE(head != nullptr);
+EXPECT_EQ(head->data, 5);
+EXPECT_TRUE(head->nextPtr == nullptr);
+- the last node's nextPtr is nullptr
+Node* head = nullptr;
+for (int i = 1; i <= 4; i++) InsertAtEnd(&head, i);
+Node* p = head;
+while (p && p->nextPtr) p = p->nextPtr;
+EXPECT_EQ(p->data, 4);
+EXPECT_TRUE(p->nextPtr == nullptr);
+- PrintList of an empty list prints no values
+EXPECT_OUT(PrintList(nullptr), "");
+@end
+hint: Node* newNode = new Node(); newNode->data = newData; newNode->nextPtr = nullptr; if (*ptrToHeadPtr == nullptr) { *ptrToHeadPtr = newNode; return; }  otherwise walk to the last node and link it.
+solution:
+void InsertAtEnd(Node** ptrToHeadPtr, int newData) {
+    Node* newNode = new Node();
+    newNode->data = newData;
+    newNode->nextPtr = nullptr;
+    if (*ptrToHeadPtr == nullptr) {
+        *ptrToHeadPtr = newNode;
+        return;
+    }
+    Node* cur = *ptrToHeadPtr;
+    while (cur->nextPtr != nullptr) cur = cur->nextPtr;
+    cur->nextPtr = newNode;
+}
+
+void PrintList(Node* headPtr) {
+    Node* cur = headPtr;
+    while (cur != nullptr) {
+        cout << cur->data << " ";
+        cur = cur->nextPtr;
+    }
+    cout << endl;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.ll_front
+title: Linked List: InsertAtBeginning
+topic: linkedlist
+diff: Easy
+desc:
+Insert a new node at the **front** of the list. The new node points at the old first node, and becomes the new head - so again you need a `Node**` to change the caller's head pointer.
+
+This is O(1): no walking through the list required.
+@end
+support:
+struct Node {
+    int data;
+    Node* nextPtr;
+};
+@end
+starter:
+void InsertAtBeginning(Node** ptrToHeadPtr, int newData) {
+    // your code here
+}
+@end
+helpers:
+static std::string listToString(Node* h) {
+    std::string s;
+    int guard = 0;
+    while (h && guard++ < 1000) { if (!s.empty()) s += " "; s += std::to_string(h->data); h = h->nextPtr; }
+    return s;
+}
+@end
+tests:
++ inserting 30, 20, 10 at the front gives 10 20 30
+Node* head = nullptr;
+InsertAtBeginning(&head, 30);
+InsertAtBeginning(&head, 20);
+InsertAtBeginning(&head, 10);
+EXPECT_EQ(listToString(head), std::string("10 20 30"));
+- inserting into an empty list
+Node* head = nullptr;
+InsertAtBeginning(&head, 1);
+EXPECT_EQ(listToString(head), std::string("1"));
+EXPECT_TRUE(head->nextPtr == nullptr);
+- the new head points at the old head
+Node* head = nullptr;
+InsertAtBeginning(&head, 2);
+Node* old = head;
+InsertAtBeginning(&head, 1);
+EXPECT_TRUE(head->nextPtr == old);
+@end
+hint: Node* n = new Node(); n->data = newData; n->nextPtr = *ptrToHeadPtr; *ptrToHeadPtr = n;
+solution:
+void InsertAtBeginning(Node** ptrToHeadPtr, int newData) {
+    Node* n = new Node();
+    n->data = newData;
+    n->nextPtr = *ptrToHeadPtr;
+    *ptrToHeadPtr = n;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.ll_delete
+title: Linked List: DeleteWithValue
+topic: linkedlist
+diff: Medium
+desc:
+Delete the **first** node holding `value`, re-linking the list around it, and free it with `delete`.
+
+- If the list is empty print `List is empty.` and return.
+- If the value isn't in the list print `Value not found in the list.` and return.
+- Deleting the **head** is a special case: the head pointer itself must move to the next node.
+
+`InsertAtEnd` is provided so the tests can build lists.
+@end
+support:
+struct Node {
+    int data;
+    Node* nextPtr;
+};
+void InsertAtEnd(Node** ptrToHeadPtr, int newData) {
+    Node* n = new Node();
+    n->data = newData;
+    n->nextPtr = nullptr;
+    if (*ptrToHeadPtr == nullptr) { *ptrToHeadPtr = n; return; }
+    Node* c = *ptrToHeadPtr;
+    while (c->nextPtr) c = c->nextPtr;
+    c->nextPtr = n;
+}
+@end
+starter:
+void DeleteWithValue(Node** ptrToHeadPtr, int value) {
+    // your code here
+}
+@end
+helpers:
+static std::string listToString(Node* h) {
+    std::string s;
+    int guard = 0;
+    while (h && guard++ < 1000) { if (!s.empty()) s += " "; s += std::to_string(h->data); h = h->nextPtr; }
+    return s;
+}
+static Node* makeList(std::initializer_list<int> v) { Node* h = nullptr; for (int x : v) InsertAtEnd(&h, x); return h; }
+@end
+tests:
++ deleting a middle value
+Node* head = makeList({10, 20, 30});
+DeleteWithValue(&head, 20);
+EXPECT_EQ(listToString(head), std::string("10 30"));
++ deleting the head moves the head pointer
+Node* head = makeList({10, 20, 30});
+DeleteWithValue(&head, 10);
+EXPECT_EQ(listToString(head), std::string("20 30"));
+- deleting the last node
+Node* head = makeList({10, 20, 30});
+DeleteWithValue(&head, 30);
+EXPECT_EQ(listToString(head), std::string("10 20"));
+- only the first match is deleted
+Node* head = makeList({5, 7, 5});
+DeleteWithValue(&head, 5);
+EXPECT_EQ(listToString(head), std::string("7 5"));
+- a missing value prints a message and changes nothing
+Node* head = makeList({1, 2});
+EXPECT_OUT(DeleteWithValue(&head, 100), "Value not found in the list.");
+EXPECT_EQ(listToString(head), std::string("1 2"));
+- an empty list prints a message
+Node* head = nullptr;
+EXPECT_OUT(DeleteWithValue(&head, 1), "List is empty.");
+- deleting the only node empties the list
+Node* head = makeList({42});
+DeleteWithValue(&head, 42);
+EXPECT_TRUE(head == nullptr);
+@end
+hint: Handle the head separately. Otherwise keep two pointers, prev and cur, walking together; when cur->data == value, do prev->nextPtr = cur->nextPtr; delete cur;
+solution:
+void DeleteWithValue(Node** ptrToHeadPtr, int value) {
+    if (*ptrToHeadPtr == nullptr) {
+        cout << "List is empty." << endl;
+        return;
+    }
+    Node* cur = *ptrToHeadPtr;
+    if (cur->data == value) {
+        *ptrToHeadPtr = cur->nextPtr;
+        delete cur;
+        return;
+    }
+    Node* prev = nullptr;
+    while (cur != nullptr && cur->data != value) {
+        prev = cur;
+        cur = cur->nextPtr;
+    }
+    if (cur == nullptr) {
+        cout << "Value not found in the list." << endl;
+        return;
+    }
+    prev->nextPtr = cur->nextPtr;
+    delete cur;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p e2.ll_class
+title: LinkedList Class: Size, Search & Deep Copy
+topic: classes
+diff: Medium
+desc:
+The C++ **class** version of the list from the lecture. `insertAtEnd`, `clear`, the destructor and `toString` are written for you. Implement:
+
+- `insertAtBeginning(int)`
+- `getSize()` - number of nodes
+- `contains(int)` - is the value in the list?
+- the **copy constructor** - a *deep* copy: new nodes with the same values
+- the **assignment operator** - clear this list, then deep-copy the other one (and survive `a = a;`)
+
+Why does the copy matter? The default copy just copies the `head` pointer, so both lists share nodes - and both destructors delete them. That double delete crashes the program.
+@end
+support:
+class Node {
+public:
+    int data;
+    Node* next;
+    Node(int value) { data = value; next = nullptr; }
+};
+@end
+starter:
+class LinkedList {
+private:
+    Node* head;
+public:
+    LinkedList() { head = nullptr; }
+    ~LinkedList() { clear(); }
+
+    // TODO: deep copy constructor
+    LinkedList(const LinkedList& other) {
+        head = other.head;   // shallow copy - replace this!
+    }
+
+    // TODO: assignment operator
+    LinkedList& operator=(const LinkedList& other) {
+        head = other.head;   // shallow copy - replace this!
+        return *this;
+    }
+
+    void insertAtEnd(int newData) {
+        Node* newNode = new Node(newData);
+        if (head == nullptr) { head = newNode; return; }
+        Node* current = head;
+        while (current->next != nullptr) current = current->next;
+        current->next = newNode;
+    }
+
+    void insertAtBeginning(int newData) {
+        // TODO
+    }
+
+    int getSize() {
+        // TODO
+        return 0;
+    }
+
+    bool contains(int value) {
+        // TODO
+        return false;
+    }
+
+    void clear() {
+        Node* current = head;
+        while (current != nullptr) {
+            Node* temp = current;
+            current = current->next;
+            delete temp;
+        }
+        head = nullptr;
+    }
+
+    std::string toString() const {
+        std::string s;
+        for (Node* c = head; c != nullptr; c = c->next) { if (!s.empty()) s += " "; s += std::to_string(c->data); }
+        return s;
+    }
+};
+@end
+tests:
++ insertAtBeginning puts values at the front
+LinkedList list;
+list.insertAtEnd(10);
+list.insertAtBeginning(5);
+EXPECT_EQ(list.toString(), std::string("5 10"));
++ getSize counts the nodes
+LinkedList list;
+list.insertAtEnd(1); list.insertAtEnd(2); list.insertAtEnd(3);
+EXPECT_EQ(list.getSize(), 3);
+- an empty list has size 0
+LinkedList list;
+EXPECT_EQ(list.getSize(), 0);
+- contains finds present values
+LinkedList list;
+list.insertAtEnd(10); list.insertAtEnd(20);
+EXPECT_TRUE(list.contains(20));
+EXPECT_FALSE(list.contains(25));
+- the copy constructor makes an independent copy
+LinkedList a;
+a.insertAtEnd(1); a.insertAtEnd(2); a.insertAtEnd(3);
+LinkedList b = a;
+b.insertAtEnd(4);
+EXPECT_EQ(a.toString(), std::string("1 2 3"));
+EXPECT_EQ(b.toString(), std::string("1 2 3 4"));
+- copies survive the original being destroyed
+LinkedList* a = new LinkedList();
+a->insertAtEnd(7); a->insertAtEnd(8);
+LinkedList b(*a);
+delete a;
+EXPECT_EQ(b.toString(), std::string("7 8"));
+- assignment makes an independent copy
+LinkedList a, b;
+a.insertAtEnd(1); a.insertAtEnd(2);
+b.insertAtEnd(9);
+b = a;
+a.insertAtEnd(3);
+EXPECT_EQ(b.toString(), std::string("1 2"));
+EXPECT_EQ(a.toString(), std::string("1 2 3"));
+- self-assignment is safe
+LinkedList a;
+a.insertAtEnd(5); a.insertAtEnd(6);
+a = a;
+EXPECT_EQ(a.toString(), std::string("5 6"));
+@end
+hint: Copy constructor: head = nullptr; then walk other's nodes calling insertAtEnd(current->data). Assignment: if (this != &other) { clear(); ...same loop... } return *this;
+solution:
+class LinkedList {
+private:
+    Node* head;
+public:
+    LinkedList() { head = nullptr; }
+    ~LinkedList() { clear(); }
+
+    LinkedList(const LinkedList& other) {
+        head = nullptr;
+        for (Node* c = other.head; c != nullptr; c = c->next) insertAtEnd(c->data);
+    }
+
+    LinkedList& operator=(const LinkedList& other) {
+        if (this != &other) {
+            clear();
+            for (Node* c = other.head; c != nullptr; c = c->next) insertAtEnd(c->data);
+        }
+        return *this;
+    }
+
+    void insertAtEnd(int newData) {
+        Node* newNode = new Node(newData);
+        if (head == nullptr) { head = newNode; return; }
+        Node* current = head;
+        while (current->next != nullptr) current = current->next;
+        current->next = newNode;
+    }
+
+    void insertAtBeginning(int newData) {
+        Node* newNode = new Node(newData);
+        newNode->next = head;
+        head = newNode;
+    }
+
+    int getSize() {
+        int count = 0;
+        for (Node* c = head; c != nullptr; c = c->next) count++;
+        return count;
+    }
+
+    bool contains(int value) {
+        for (Node* c = head; c != nullptr; c = c->next) if (c->data == value) return true;
+        return false;
+    }
+
+    void clear() {
+        Node* current = head;
+        while (current != nullptr) {
+            Node* temp = current;
+            current = current->next;
+            delete temp;
+        }
+        head = nullptr;
+    }
+
+    std::string toString() const {
+        std::string s;
+        for (Node* c = head; c != nullptr; c = c->next) { if (!s.empty()) s += " "; s += std::to_string(c->data); }
+        return s;
+    }
+};
+@end
+
+# --------------------------------------------------------------------------
+@p e2.dll
+title: Doubly Linked List
+topic: linkedlist
+diff: Hard
+desc:
+Lab Part 2. A **doubly** linked list: every `DoublyLinkedNode` has a `prevPointer` **and** a `nextPointer`, and the list tracks both `head` and `tail`. Implement:
+
+- `InsertAtBeginning(value)`
+- `InsertAtEnd(value)`
+- `InsertAtPosition(value, position)` - position 0 inserts at the front; a position >= the list's size appends at the end; otherwise the new node goes **before** the node currently at that position.
+
+Every insert must keep **four** links consistent. The tests walk the list forwards from `head` **and** backwards from `tail`, so a forgotten `prevPointer` will be caught. `head->prevPointer` and `tail->nextPointer` must stay `nullptr`.
+@end
+example:
+list: 1 <-> 2 <-> 3
+InsertAtPosition(9, 1)
+list: 1 <-> 9 <-> 2 <-> 3     (backwards: 3 2 9 1)
+@end
+starter:
+class DoublyLinkedNode {
+public:
+    int data;
+    DoublyLinkedNode* prevPointer;
+    DoublyLinkedNode* nextPointer;
+    DoublyLinkedNode(int value) : data(value), prevPointer(nullptr), nextPointer(nullptr) {}
+};
+
+class DoublyLinkedList {
+public:
+    DoublyLinkedNode* head;
+    DoublyLinkedNode* tail;
+
+    DoublyLinkedList() : head(nullptr), tail(nullptr) {}
+
+    void InsertAtBeginning(int value) {
+        // TODO
+    }
+
+    void InsertAtEnd(int value) {
+        // TODO
+    }
+
+    void InsertAtPosition(int value, int position) {
+        // TODO
+    }
+};
+@end
+helpers:
+static std::string fwd(DoublyLinkedList& l) {
+    std::string s; int guard = 0;
+    for (DoublyLinkedNode* n = l.head; n && guard++ < 1000; n = n->nextPointer) { if (!s.empty()) s += " "; s += std::to_string(n->data); }
+    return s;
+}
+static std::string bwd(DoublyLinkedList& l) {
+    std::string s; int guard = 0;
+    for (DoublyLinkedNode* n = l.tail; n && guard++ < 1000; n = n->prevPointer) { if (!s.empty()) s += " "; s += std::to_string(n->data); }
+    return s;
+}
+@end
+tests:
++ InsertAtEnd keeps both directions in order
+DoublyLinkedList l;
+l.InsertAtEnd(1); l.InsertAtEnd(2); l.InsertAtEnd(3);
+EXPECT_EQ(fwd(l), std::string("1 2 3"));
+EXPECT_EQ(bwd(l), std::string("3 2 1"));
++ InsertAtPosition in the middle
+DoublyLinkedList l;
+l.InsertAtEnd(1); l.InsertAtEnd(2); l.InsertAtEnd(3);
+l.InsertAtPosition(9, 1);
+EXPECT_EQ(fwd(l), std::string("1 9 2 3"));
+EXPECT_EQ(bwd(l), std::string("3 2 9 1"));
+- InsertAtBeginning
+DoublyLinkedList l;
+l.InsertAtBeginning(3); l.InsertAtBeginning(2); l.InsertAtBeginning(1);
+EXPECT_EQ(fwd(l), std::string("1 2 3"));
+EXPECT_EQ(bwd(l), std::string("3 2 1"));
+- head and tail on a one-node list
+DoublyLinkedList l;
+l.InsertAtEnd(7);
+EXPECT_TRUE(l.head == l.tail);
+EXPECT_TRUE(l.head->prevPointer == nullptr);
+EXPECT_TRUE(l.tail->nextPointer == nullptr);
+- position 0 inserts at the front
+DoublyLinkedList l;
+l.InsertAtEnd(2); l.InsertAtEnd(3);
+l.InsertAtPosition(1, 0);
+EXPECT_EQ(fwd(l), std::string("1 2 3"));
+EXPECT_EQ(bwd(l), std::string("3 2 1"));
+EXPECT_TRUE(l.head->prevPointer == nullptr);
+- a position past the end appends (and updates the tail)
+DoublyLinkedList l;
+l.InsertAtEnd(1); l.InsertAtEnd(2);
+l.InsertAtPosition(5, 10);
+EXPECT_EQ(fwd(l), std::string("1 2 5"));
+EXPECT_EQ(l.tail->data, 5);
+EXPECT_EQ(bwd(l), std::string("5 2 1"));
+- position equal to size appends
+DoublyLinkedList l;
+l.InsertAtEnd(1); l.InsertAtEnd(2);
+l.InsertAtPosition(3, 2);
+EXPECT_EQ(fwd(l), std::string("1 2 3"));
+EXPECT_EQ(bwd(l), std::string("3 2 1"));
+- inserting into an empty list by position
+DoublyLinkedList l;
+l.InsertAtPosition(4, 0);
+EXPECT_EQ(fwd(l), std::string("4"));
+EXPECT_EQ(bwd(l), std::string("4"));
+- mixing all three
+DoublyLinkedList l;
+l.InsertAtEnd(3); l.InsertAtBeginning(1); l.InsertAtPosition(2, 1); l.InsertAtEnd(5); l.InsertAtPosition(4, 3);
+EXPECT_EQ(fwd(l), std::string("1 2 3 4 5"));
+EXPECT_EQ(bwd(l), std::string("5 4 3 2 1"));
+@end
+hint: Draw the four arrows on paper first. For a middle insert before node `cur`: n->prevPointer = cur->prevPointer; n->nextPointer = cur; cur->prevPointer->nextPointer = n; cur->prevPointer = n;
+solution:
+class DoublyLinkedNode {
+public:
+    int data;
+    DoublyLinkedNode* prevPointer;
+    DoublyLinkedNode* nextPointer;
+    DoublyLinkedNode(int value) : data(value), prevPointer(nullptr), nextPointer(nullptr) {}
+};
+
+class DoublyLinkedList {
+public:
+    DoublyLinkedNode* head;
+    DoublyLinkedNode* tail;
+
+    DoublyLinkedList() : head(nullptr), tail(nullptr) {}
+
+    void InsertAtBeginning(int value) {
+        DoublyLinkedNode* n = new DoublyLinkedNode(value);
+        n->nextPointer = head;
+        if (head != nullptr) head->prevPointer = n;
+        else tail = n;
+        head = n;
+    }
+
+    void InsertAtEnd(int value) {
+        DoublyLinkedNode* n = new DoublyLinkedNode(value);
+        n->prevPointer = tail;
+        if (tail != nullptr) tail->nextPointer = n;
+        else head = n;
+        tail = n;
+    }
+
+    void InsertAtPosition(int value, int position) {
+        if (position <= 0 || head == nullptr) { InsertAtBeginning(value); return; }
+        DoublyLinkedNode* cur = head;
+        int index = 0;
+        while (cur != nullptr && index < position) { cur = cur->nextPointer; index++; }
+        if (cur == nullptr) { InsertAtEnd(value); return; }
+        DoublyLinkedNode* n = new DoublyLinkedNode(value);
+        n->prevPointer = cur->prevPointer;
+        n->nextPointer = cur;
+        cur->prevPointer->nextPointer = n;
+        cur->prevPointer = n;
+    }
+};
+@end

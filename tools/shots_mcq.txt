@@ -1,0 +1,49 @@
+# Autopilot: MCQ -> Pointers, ten questions
+quick 1
+mouse 0.5 0.45
+wait 2.5
+tab 1
+wait 1.2
+shot m01_mcq_choices
+pick 8
+wait 0.8
+shot m02_mcq_count
+pick 1
+phase reading
+wait 0.8
+debug unfocus
+shot m03_question
+debug correct
+wait 0.6
+shot m04_correct
+debug next
+wait 0.4
+debug answer 0
+wait 0.6
+shot m05_answered
+debug next
+debug correct
+debug next
+debug answer 1
+debug next
+debug correct
+debug next
+debug correct
+debug next
+debug answer 2
+debug next
+debug correct
+debug next
+debug correct
+debug next
+debug correct
+wait 0.4
+debug finish
+wait 1.0
+shot m06_results
+close
+wait 1.5
+phase hub
+wait 1.5
+shot m07_hub_after
+quit

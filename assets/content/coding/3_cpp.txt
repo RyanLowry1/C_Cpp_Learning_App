@@ -1,0 +1,987 @@
+# C++ workbook - classes, overloading, templates and the STL (from the lecture notes)
+
+@set cpp
+title: C++ Workbook
+subtitle: Classes, overloading, templates and the STL
+desc: Exercises taken straight from the C++ lecture notes: the **Point** and **Box** classes, the **Clock** with prefix and postfix `++`, a **deep-copying** student record, **template** functions and classes, and the **STL** - vectors, the erase-remove idiom, maps, lists with `splice`, and stacks. Code is compiled as C++17 with `using namespace std;`.
+prelude: cpp
+exam: 0
+color: 40,90,70
+
+# --------------------------------------------------------------------------
+@p cpp.point
+title: The Point Class
+topic: classes
+diff: Easy
+desc:
+From the Classes lecture. Complete the `Point` class:
+
+- a **default constructor** setting x and y to 0
+- a **two-parameter constructor** `Point(double nx, double ny)`
+- getters `getX()` and `getY()` (x and y are **private**)
+- `offset(dx, dy)`, which moves the point
+- `distanceTo(const Point& other)`, the straight-line distance (use `sqrt` from `<cmath>`)
+@end
+starter:
+class Point {
+private:
+    double x, y;
+public:
+    Point() {
+        // TODO
+    }
+    Point(double nx, double ny) {
+        // TODO
+    }
+    double getX() { return 0; }
+    double getY() { return 0; }
+    void offset(double dx, double dy) {
+        // TODO
+    }
+    double distanceTo(const Point& other) {
+        // TODO
+        return 0;
+    }
+};
+@end
+tests:
++ the default constructor makes (0, 0)
+Point p;
+EXPECT_NEAR(p.getX(), 0.0, 1e-9);
+EXPECT_NEAR(p.getY(), 0.0, 1e-9);
++ the two-parameter constructor
+Point q(2.0, 3.0);
+EXPECT_NEAR(q.getX(), 2.0, 1e-9);
+EXPECT_NEAR(q.getY(), 3.0, 1e-9);
+- offset moves the point
+Point p(1.0, 1.0);
+p.offset(2.5, -1.0);
+EXPECT_NEAR(p.getX(), 3.5, 1e-9);
+EXPECT_NEAR(p.getY(), 0.0, 1e-9);
+- distance of a 3-4-5 triangle
+Point a(0, 0), b(3, 4);
+EXPECT_NEAR(a.distanceTo(b), 5.0, 1e-9);
+- distance to itself is 0
+Point a(7, -2);
+EXPECT_NEAR(a.distanceTo(a), 0.0, 1e-9);
+@end
+hint: Inside a method you can read other.x directly - private means private to the class, not to the object.
+solution:
+class Point {
+private:
+    double x, y;
+public:
+    Point() : x(0), y(0) {}
+    Point(double nx, double ny) : x(nx), y(ny) {}
+    double getX() { return x; }
+    double getY() { return y; }
+    void offset(double dx, double dy) { x += dx; y += dy; }
+    double distanceTo(const Point& other) {
+        double dx = x - other.x, dy = y - other.y;
+        return sqrt(dx * dx + dy * dy);
+    }
+};
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.box
+title: Box: Overloading operator+
+topic: operators
+diff: Easy
+desc:
+From the Operator Overloading notes. Adding two `Box` objects should produce a new box whose length, breadth and height are the **sums** of the two boxes' dimensions. Implement `operator+` as a member function and `getVolume()`.
+
+In `Box3 = Box1 + Box2;` the left operand is `this` and the right operand is the parameter `b`.
+@end
+example:
+Box1: 6 x 7 x 5    volume 210
+Box2: 12 x 13 x 10 volume 1560
+Box3 = Box1 + Box2  ->  18 x 20 x 15, volume 5400
+@end
+starter:
+class Box {
+public:
+    double getVolume(void) {
+        // TODO
+        return 0;
+    }
+    void setLength(double len) { length = len; }
+    void setBreadth(double bre) { breadth = bre; }
+    void setHeight(double hei) { height = hei; }
+
+    // TODO: overload + to add two Box objects
+    Box operator+(const Box& b) {
+        Box box;
+        return box;
+    }
+
+private:
+    double length = 0;
+    double breadth = 0;
+    double height = 0;
+};
+@end
+helpers:
+static Box makeBox(double l, double b, double h) { Box x; x.setLength(l); x.setBreadth(b); x.setHeight(h); return x; }
+@end
+tests:
++ Box1 has volume 210
+Box b1 = makeBox(6, 7, 5);
+EXPECT_NEAR(b1.getVolume(), 210, 1e-9);
++ Box1 + Box2 has volume 5400
+Box b1 = makeBox(6, 7, 5), b2 = makeBox(12, 13, 10);
+Box b3 = b1 + b2;
+EXPECT_NEAR(b3.getVolume(), 5400, 1e-9);
+- Box2 has volume 1560
+Box b2 = makeBox(12, 13, 10);
+EXPECT_NEAR(b2.getVolume(), 1560, 1e-9);
+- adding doesn't change the operands
+Box b1 = makeBox(1, 2, 3), b2 = makeBox(4, 5, 6);
+Box b3 = b1 + b2;
+EXPECT_NEAR(b1.getVolume(), 6, 1e-9);
+EXPECT_NEAR(b2.getVolume(), 120, 1e-9);
+EXPECT_NEAR(b3.getVolume(), 5 * 7 * 9, 1e-9);
+- chained addition
+Box a = makeBox(1, 1, 1);
+Box s = a + a + a;
+EXPECT_NEAR(s.getVolume(), 27, 1e-9);
+@end
+hint: box.length = this->length + b.length; and the same for breadth and height. Return box.
+solution:
+class Box {
+public:
+    double getVolume(void) { return length * breadth * height; }
+    void setLength(double len) { length = len; }
+    void setBreadth(double bre) { breadth = bre; }
+    void setHeight(double hei) { height = hei; }
+    Box operator+(const Box& b) {
+        Box box;
+        box.length = this->length + b.length;
+        box.breadth = this->breadth + b.breadth;
+        box.height = this->height + b.height;
+        return box;
+    }
+private:
+    double length = 0;
+    double breadth = 0;
+    double height = 0;
+};
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.clock
+title: Clock: Prefix and Postfix ++
+topic: operators
+diff: Medium
+desc:
+From the notes on overloading increment. A `Clock` stores hours and minutes. `tick()` advances it one minute (wrapping 59 -> 00 and 23 -> 00).
+
+- **Prefix** `++c` advances the clock and returns the **new** value.
+- **Postfix** `c++` advances the clock but returns a copy of the **old** value. The dummy `int` parameter is how C++ tells them apart.
+- `operator<<` prints the time as `HH:MM` with leading zeros.
+@end
+example:
+Clock c1, c2(3,20), c3(10,59);
+cout << c1 << " " << c2 << " " << c3;   // 12:00 03:20 10:59
+c1++; ++c2; c3++;                         // 12:01 03:21 11:00
+c1 = ++c2;                                // c1 03:22, c2 03:22
+c1 = c3++;                                // c1 11:00, c3 11:01
+@end
+starter:
+class Clock {
+    friend ostream& operator<<(ostream& out, const Clock& c);
+public:
+    Clock(int h = 12, int m = 0) : hour(h), min(m) {}
+    Clock operator++() {         // prefix
+        // TODO
+        return *this;
+    }
+    Clock operator++(int) {      // postfix
+        // TODO
+        return *this;
+    }
+private:
+    void tick() {
+        min = (min + 1) % 60;
+        if (min == 0) hour = (hour + 1) % 24;
+    }
+    int hour, min;
+};
+
+ostream& operator<<(ostream& os, const Clock& c) {
+    // TODO: print HH:MM
+    return os;
+}
+@end
+tests:
++ printing pads with zeros
+Clock c1, c2(3, 20), c3(10, 59);
+EXPECT_OUT(cout << c1 << " " << c2 << " " << c3, "12:00 03:20 10:59");
++ c1 = ++c2 gives both the new time
+Clock c1, c2(3, 21);
+c1 = ++c2;
+EXPECT_OUT(cout << c1 << " " << c2, "03:22 03:22");
+- c1 = c3++ gives c1 the old time
+Clock c1, c3(11, 0);
+c1 = c3++;
+EXPECT_OUT(cout << c1 << " " << c3, "11:00 11:01");
+- increments roll over the hour
+Clock c(10, 59);
+c++;
+EXPECT_OUT(cout << c, "11:00");
+- prefix and postfix both advance the clock
+Clock a(1, 1), b(1, 1);
+++a;
+b++;
+EXPECT_OUT(cout << a << " " << b, "01:02 01:02");
+- midnight wraps to 00:00
+Clock c(23, 59);
+++c;
+EXPECT_OUT(cout << c, "00:00");
+@end
+hint: Prefix: tick(); return *this;  Postfix: Clock old = *this; tick(); return old;  Printing: if (c.hour < 10) os << '0'; os << c.hour << ":"; ...
+solution:
+class Clock {
+    friend ostream& operator<<(ostream& out, const Clock& c);
+public:
+    Clock(int h = 12, int m = 0) : hour(h), min(m) {}
+    Clock operator++() {
+        tick();
+        return *this;
+    }
+    Clock operator++(int) {
+        Clock old = *this;
+        tick();
+        return old;
+    }
+private:
+    void tick() {
+        min = (min + 1) % 60;
+        if (min == 0) hour = (hour + 1) % 24;
+    }
+    int hour, min;
+};
+
+ostream& operator<<(ostream& os, const Clock& c) {
+    if (c.hour < 10) os << '0';
+    os << c.hour << ":";
+    if (c.min < 10) os << '0';
+    os << c.min;
+    return os;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.student
+title: Deep Copy Constructor
+topic: classes
+diff: Medium
+desc:
+From the Classes lecture (the `MITStudent` example). `Student` owns a heap-allocated name. The **default** copy constructor copies the pointer, so two students would share one name - change one and you change both, and both destructors `delete[]` the same memory.
+
+Write a copy constructor that makes a **deep copy**: allocate a new array and copy the characters. Also complete `setName`, which must replace the name with a fresh copy.
+@end
+starter:
+class Student {
+public:
+    int studentID;
+    char* name;
+
+    Student(int id, const char* n) {
+        studentID = id;
+        name = new char[strlen(n) + 1];
+        strcpy(name, n);
+    }
+
+    // TODO: deep copy
+    Student(const Student& o) {
+        studentID = o.studentID;
+        name = o.name;     // shallow - fix me
+    }
+
+    void setName(const char* n) {
+        // TODO: free the old name and store a copy of n
+    }
+
+    ~Student() { delete[] name; }
+};
+@end
+tests:
++ a copy gets its own name
+Student s1(98, "foo");
+Student s2 = s1;
+s2.name[0] = 'b';
+EXPECT_STR(s1.name, "foo");
+EXPECT_STR(s2.name, "boo");
++ the ID is copied too
+Student s1(42, "ada");
+Student s2(s1);
+EXPECT_EQ(s2.studentID, 42);
+EXPECT_TRUE(s1.name != s2.name);
+- setName stores a copy
+char buf[10] = "grace";
+Student s(1, "x");
+s.setName(buf);
+buf[0] = 'G';
+EXPECT_STR(s.name, "grace");
+- a copy survives the original being destroyed
+Student* a = new Student(5, "linus");
+Student b(*a);
+delete a;
+EXPECT_STR(b.name, "linus");
+@end
+hint: name = new char[strlen(o.name) + 1]; strcpy(name, o.name);   (the + 1 is for the '\0')
+solution:
+class Student {
+public:
+    int studentID;
+    char* name;
+
+    Student(int id, const char* n) {
+        studentID = id;
+        name = new char[strlen(n) + 1];
+        strcpy(name, n);
+    }
+
+    Student(const Student& o) {
+        studentID = o.studentID;
+        name = new char[strlen(o.name) + 1];
+        strcpy(name, o.name);
+    }
+
+    void setName(const char* n) {
+        char* fresh = new char[strlen(n) + 1];
+        strcpy(fresh, n);
+        delete[] name;
+        name = fresh;
+    }
+
+    ~Student() { delete[] name; }
+};
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.statics
+title: Static Members
+topic: classes
+diff: Easy
+desc:
+From the Classes lecture. Give `Counter` a **static** member `created` that counts how many `Counter` objects have ever been constructed, and a static function `getCreated()` that returns it. A static member belongs to the **class**, not to any one object - you reach it with `Counter::getCreated()`.
+
+Remember that a static data member must also be **defined** once outside the class.
+@end
+starter:
+class Counter {
+public:
+    Counter() {
+        // TODO
+    }
+    static int getCreated() {
+        // TODO
+        return 0;
+    }
+private:
+    // TODO: static int created;
+};
+// TODO: define the static member here
+@end
+tests:
++ creating objects increases the count
+int before = Counter::getCreated();
+Counter a, b, c;
+EXPECT_EQ(Counter::getCreated() - before, 3);
+- objects in an array count too
+int before = Counter::getCreated();
+Counter arr[5];
+EXPECT_EQ(Counter::getCreated() - before, 5);
+- dynamically created objects count
+int before = Counter::getCreated();
+Counter* p = new Counter();
+delete p;
+EXPECT_EQ(Counter::getCreated() - before, 1);
+@end
+hint: Inside the class: static int created;  Outside: int Counter::created = 0;  The constructor does created++;
+solution:
+class Counter {
+public:
+    Counter() { created++; }
+    static int getCreated() { return created; }
+private:
+    static int created;
+};
+int Counter::created = 0;
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.sum_template
+title: Template Function: sum
+topic: templates
+diff: Easy
+desc:
+From the Templates notes. Write **one** function template that sums an array of any numeric type:
+
+`template <typename T> T sum(T const* pArray, int const ELEMENTS)`
+
+The compiler generates a separate version for `int`, `float`, `double`... from your single template. (It works out `T` from the arguments - never from the return type.)
+@end
+starter:
+// TODO: write the template here
+template <typename T>
+T sum(T const* pArray, int const ELEMENTS) {
+    return T();
+}
+@end
+tests:
++ sums ints
+int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+EXPECT_EQ(sum(a, 10), 55);
++ sums floats
+float f[] = {1.5f, 2.5f, 3.0f};
+EXPECT_NEAR(sum(f, 3), 7.0f, 1e-5);
+- sums doubles
+double d[] = {0.1, 0.2, 0.3};
+EXPECT_NEAR(sum(d, 3), 0.6, 1e-9);
+- works with long long
+long long big[] = {4000000000LL, 4000000000LL};
+EXPECT_EQ(sum(big, 2), 8000000000LL);
+- an empty array sums to zero
+int a[] = {9};
+EXPECT_EQ(sum(a, 0), 0);
+@end
+hint: T total = 0; for (int i = 0; i < ELEMENTS; i++) total += pArray[i]; return total;
+solution:
+template <typename T>
+T sum(T const* pArray, int const ELEMENTS) {
+    T total = 0;
+    for (int i = 0; i < ELEMENTS; i++) total += pArray[i];
+    return total;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.adder
+title: Template Class: Adder
+topic: templates
+diff: Medium
+desc:
+From the Templates notes. `Adder<T>` keeps a running total of whatever is added to it. Complete the class template: `add(T)`, `sum()` and a `reset()` that sets the total back to empty.
+
+**Twist:** the lecture writes `m_sum = 0;` in the constructor. That works for numbers - but the hidden tests also use `Adder<std::string>`, and assigning 0 to a string is a crash waiting to happen. Initialise with `T()` instead: it value-initialises any type (0 for numbers, "" for strings).
+@end
+starter:
+template <typename T>
+class Adder {
+private:
+    T m_sum;
+public:
+    Adder() {
+        m_sum = 0;
+    }
+    void add(T number) {
+        // TODO
+    }
+    T sum() {
+        // TODO
+        return m_sum;
+    }
+    void reset() {
+        // TODO
+    }
+};
+@end
+tests:
++ adds ints 0..9
+Adder<int> a;
+for (int i = 0; i < 10; i++) a.add(i);
+EXPECT_EQ(a.sum(), 45);
++ adds doubles
+Adder<double> d;
+d.add(1.25); d.add(2.5);
+EXPECT_NEAR(d.sum(), 3.75, 1e-9);
+- reset empties the total
+Adder<int> a;
+a.add(5);
+a.reset();
+a.add(2);
+EXPECT_EQ(a.sum(), 2);
+- works for std::string too (hint: T())
+Adder<std::string> s;
+s.add("con"); s.add("cat");
+EXPECT_EQ(s.sum(), std::string("concat"));
+@end
+hint: Adder() : m_sum(T()) {}   void add(T number) { m_sum += number; }   void reset() { m_sum = T(); }
+solution:
+template <typename T>
+class Adder {
+private:
+    T m_sum;
+public:
+    Adder() : m_sum(T()) {}
+    void add(T number) { m_sum += number; }
+    T sum() { return m_sum; }
+    void reset() { m_sum = T(); }
+};
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.average
+title: Two Template Parameters: average
+topic: templates
+diff: Medium
+desc:
+From the Templates notes - a template with **two** type parameters. Write
+
+`template <typename Sumtype, typename Averagetype> Averagetype average(Sumtype const* pArray, Averagetype const ELEMENTS)`
+
+`Sumtype` is the element type; `Averagetype` (deduced from the second argument) is the result type. So `average(intArray, 10)` does integer division while `average(intArray, 10.0f)` returns a float.
+@end
+starter:
+template <typename Sumtype, typename Averagetype>
+Averagetype average(Sumtype const* pArray, Averagetype const ELEMENTS) {
+    // TODO
+    return Averagetype();
+}
+@end
+tests:
++ average(intArray, 10) uses integer division
+int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+EXPECT_EQ(average(a, 10), 5);
++ average(intArray, 10.0f) gives 5.5
+int a[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+EXPECT_NEAR(average(a, 10.0f), 5.5f, 1e-5);
+- doubles in, double out
+double d[] = {1.0, 2.0, 4.0};
+EXPECT_NEAR(average(d, 3.0), 7.0 / 3.0, 1e-9);
+@end
+hint: Sumtype sum = 0; for (int i = 0; i < ELEMENTS; i++) sum += pArray[i]; return (Averagetype)sum / ELEMENTS;
+solution:
+template <typename Sumtype, typename Averagetype>
+Averagetype average(Sumtype const* pArray, Averagetype const ELEMENTS) {
+    Sumtype sum = 0;
+    for (int i = 0; i < ELEMENTS; i++) sum += pArray[i];
+    return (Averagetype)sum / ELEMENTS;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.erase_remove
+title: The Erase-Remove Idiom
+topic: vectors
+diff: Easy
+desc:
+From the STL notes. Remove **every** occurrence of `value` from the vector using the erase-remove idiom in one line.
+
+`remove` shuffles the keepers to the front and returns an iterator to the new logical end - but the vector's size doesn't change. `erase` then chops off the leftovers.
+@end
+example:
+v = {3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}
+removeAll(v, 3)   ->  {0, 1, 2, 4, 5, 6, 7, 8, 9}   (size 9)
+@end
+starter:
+void removeAll(vector<int>& v, int value) {
+    // TODO: one line with erase and remove
+}
+@end
+tests:
++ the lecture example removes both 3s
+vector<int> v = {3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+removeAll(v, 3);
+EXPECT_EQ((int)v.size(), 9);
+EXPECT_ARR(v, 9, {0, 1, 2, 4, 5, 6, 7, 8, 9});
+- removing a value that isn't there
+vector<int> v = {1, 2};
+removeAll(v, 7);
+EXPECT_ARR(v, 2, {1, 2});
+- removing everything
+vector<int> v = {4, 4, 4};
+removeAll(v, 4);
+EXPECT_TRUE(v.empty());
+- order of the kept elements is preserved
+vector<int> v = {5, 1, 5, 2, 5, 3};
+removeAll(v, 5);
+EXPECT_ARR(v, 3, {1, 2, 3});
+@end
+hint: v.erase(remove(v.begin(), v.end(), value), v.end());
+solution:
+void removeAll(vector<int>& v, int value) {
+    v.erase(remove(v.begin(), v.end(), value), v.end());
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.remove_if
+title: remove_if with a Predicate
+topic: vectors
+diff: Medium
+desc:
+From the STL notes (the particle example). Each frame, particles whose time-to-live has reached 0 must be erased from the vector. Write the predicate `isExpired` and `removeExpired`, which uses `remove_if` with it.
+
+A **predicate** is just a function returning `bool`; `remove_if` calls it for each element.
+@end
+support:
+class Particle {
+private:
+    int m_timetolive;
+public:
+    Particle(int ttl) : m_timetolive(ttl) {}
+    int timetolive() const { return m_timetolive; }
+};
+@end
+starter:
+bool isExpired(const Particle& particle) {
+    // TODO
+    return false;
+}
+
+void removeExpired(vector<Particle>& v) {
+    // TODO: erase + remove_if
+}
+@end
+tests:
++ particles with ttl 0 are removed
+vector<Particle> v;
+for (int i = 0; i < 10; ++i) v.push_back(Particle(i));
+removeExpired(v);
+EXPECT_EQ((int)v.size(), 9);
+EXPECT_EQ(v[0].timetolive(), 1);
+- several expired particles
+vector<Particle> v = {Particle(0), Particle(3), Particle(0), Particle(0), Particle(7)};
+removeExpired(v);
+EXPECT_EQ((int)v.size(), 2);
+EXPECT_EQ(v[0].timetolive(), 3);
+EXPECT_EQ(v[1].timetolive(), 7);
+- the predicate itself
+EXPECT_TRUE(isExpired(Particle(0)));
+EXPECT_FALSE(isExpired(Particle(2)));
+- nothing expired
+vector<Particle> v = {Particle(1), Particle(2)};
+removeExpired(v);
+EXPECT_EQ((int)v.size(), 2);
+@end
+hint: return particle.timetolive() == 0;   and   v.erase(remove_if(v.begin(), v.end(), isExpired), v.end());
+solution:
+bool isExpired(const Particle& particle) {
+    return particle.timetolive() == 0;
+}
+
+void removeExpired(vector<Particle>& v) {
+    v.erase(remove_if(v.begin(), v.end(), isExpired), v.end());
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.sort_objects
+title: Sorting Objects with a Comparator
+topic: vectors
+diff: Medium
+desc:
+From the STL notes ("Sorting a vector"). Sort a vector of `Result` records so the **highest grade comes first**; when grades tie, order by **name** alphabetically. Write the comparison function and call `sort` with it.
+
+A comparator returns `true` when its first argument should come **before** the second.
+@end
+support:
+struct Result {
+    string name;
+    int grade;
+};
+@end
+starter:
+bool compareResults(const Result& a, const Result& b) {
+    // TODO
+    return false;
+}
+
+void sortResults(vector<Result>& v) {
+    // TODO
+}
+@end
+helpers:
+static std::string names(const std::vector<Result>& v) { std::string s; for (auto& r : v) { if (!s.empty()) s += ","; s += r.name; } return s; }
+@end
+tests:
++ highest grade first
+vector<Result> v = {{"ann", 60}, {"bob", 90}, {"cat", 75}};
+sortResults(v);
+EXPECT_EQ(names(v), std::string("bob,cat,ann"));
+- ties are broken by name
+vector<Result> v = {{"zoe", 80}, {"amy", 80}, {"max", 95}};
+sortResults(v);
+EXPECT_EQ(names(v), std::string("max,amy,zoe"));
+- the comparator itself
+Result a{"a", 50}, b{"b", 70};
+EXPECT_TRUE(compareResults(b, a));
+EXPECT_FALSE(compareResults(a, b));
+- already sorted stays sorted
+vector<Result> v = {{"a", 3}, {"b", 2}, {"c", 1}};
+sortResults(v);
+EXPECT_EQ(names(v), std::string("a,b,c"));
+@end
+hint: if (a.grade != b.grade) return a.grade > b.grade; return a.name < b.name;   then sort(v.begin(), v.end(), compareResults);
+solution:
+bool compareResults(const Result& a, const Result& b) {
+    if (a.grade != b.grade) return a.grade > b.grade;
+    return a.name < b.name;
+}
+
+void sortResults(vector<Result>& v) {
+    sort(v.begin(), v.end(), compareResults);
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.digit_freq
+title: Map: Digit Name Frequency
+topic: listsmaps
+diff: Medium
+desc:
+The "What does it do?" exercise from the STL Maps notes, turned into a function. For each decimal digit of `number`, count how many times its **name** ("zero", "one", ... "nine") appears, using a `map<string, int>`.
+
+For 12345033 the digits are 1,2,3,4,5,0,3,3 so "three" maps to 3 and every other present digit maps to 1. Digits that don't appear must not be in the map at all. Treat 0 as having the single digit 0.
+@end
+starter:
+map<string, int> digitFrequency(int number) {
+    map<string, int> freq;
+    string numbers[] = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+    // TODO
+    return freq;
+}
+@end
+tests:
++ the lecture's number 12345033
+map<string, int> f = digitFrequency(12345033);
+EXPECT_EQ(f["three"], 3);
+EXPECT_EQ(f["zero"], 1);
+EXPECT_EQ(f["one"], 1);
++ only digits that appear are stored
+map<string, int> f = digitFrequency(12345033);
+EXPECT_EQ((int)f.size(), 6);
+EXPECT_EQ((int)f.count("nine"), 0);
+- a repeated digit
+map<string, int> f = digitFrequency(7777);
+EXPECT_EQ((int)f.size(), 1);
+EXPECT_EQ(f["seven"], 4);
+- zero is a single digit 0
+map<string, int> f = digitFrequency(0);
+EXPECT_EQ((int)f.size(), 1);
+EXPECT_EQ(f["zero"], 1);
+- keys come out in alphabetical order
+map<string, int> f = digitFrequency(9210);
+std::string keys;
+for (auto& kv : f) keys += kv.first + ",";
+EXPECT_EQ(keys, std::string("nine,one,two,zero,"));
+@end
+hint: do { freq[numbers[number % 10]]++; number /= 10; } while (number > 0);   (freq[key]++ inserts the key with 0 first if it is missing)
+solution:
+map<string, int> digitFrequency(int number) {
+    map<string, int> freq;
+    string numbers[] = { "zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine" };
+    do {
+        freq[numbers[number % 10]]++;
+        number /= 10;
+    } while (number > 0);
+    return freq;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.insert_check
+title: Map: insert() and its Return Value
+topic: listsmaps
+diff: Medium
+desc:
+From the STL Maps notes: `insert` will **not** overwrite an existing key. It returns a `pair<iterator, bool>` - the `bool` says whether the insertion happened.
+
+Write `addIfNew(map<string,int>& m, const string& key, int value)` that inserts the pair only if the key is new and returns `true` in that case, or `false` if the key already existed (leaving its old value). Use `insert` and `make_pair`, not `[]`.
+@end
+starter:
+bool addIfNew(map<string, int>& m, const string& key, int value) {
+    // TODO
+    return false;
+}
+@end
+tests:
++ a new key is inserted
+map<string, int> m;
+EXPECT_TRUE(addIfNew(m, "One", 1));
+EXPECT_EQ(m["One"], 1);
++ an existing key is kept
+map<string, int> m;
+addIfNew(m, "One", 1);
+EXPECT_FALSE(addIfNew(m, "One", 134));
+EXPECT_EQ(m["One"], 1);
+- several keys
+map<string, int> m;
+addIfNew(m, "a", 1); addIfNew(m, "b", 2); addIfNew(m, "a", 3);
+EXPECT_EQ((int)m.size(), 2);
+EXPECT_EQ(m["a"], 1);
+@end
+hint: pair<map<string,int>::iterator, bool> result = m.insert(make_pair(key, value)); return result.second;
+solution:
+bool addIfNew(map<string, int>& m, const string& key, int value) {
+    pair<map<string, int>::iterator, bool> result = m.insert(make_pair(key, value));
+    return result.second;
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.splice
+title: List: Move to Front with splice
+topic: listsmaps
+diff: Medium
+desc:
+From the STL List notes. `splice` moves nodes between (or within) lists **without copying** any elements. Write `moveToFront(list<int>& l, int value)` that moves the **first** element equal to `value` to the front of the same list, using `splice`. If the value isn't there, do nothing.
+@end
+example:
+l = {1, 2, 3, 4}
+moveToFront(l, 3)   ->  {3, 1, 2, 4}
+@end
+starter:
+void moveToFront(list<int>& l, int value) {
+    // TODO: find the element, then l.splice(...)
+}
+@end
+helpers:
+static std::string join(const std::list<int>& l) { std::string s; for (int x : l) { if (!s.empty()) s += " "; s += std::to_string(x); } return s; }
+@end
+tests:
++ moves 3 to the front
+list<int> l = {1, 2, 3, 4};
+moveToFront(l, 3);
+EXPECT_EQ(join(l), std::string("3 1 2 4"));
+- moving the first element changes nothing
+list<int> l = {1, 2, 3};
+moveToFront(l, 1);
+EXPECT_EQ(join(l), std::string("1 2 3"));
+- a missing value changes nothing
+list<int> l = {1, 2, 3};
+moveToFront(l, 9);
+EXPECT_EQ(join(l), std::string("1 2 3"));
+- only the first match moves
+list<int> l = {5, 7, 5, 7};
+moveToFront(l, 7);
+EXPECT_EQ(join(l), std::string("7 5 5 7"));
+- the size never changes
+list<int> l = {4, 3, 2, 1};
+moveToFront(l, 1);
+EXPECT_EQ((int)l.size(), 4);
+EXPECT_EQ(join(l), std::string("1 4 3 2"));
+@end
+hint: auto it = find(l.begin(), l.end(), value); if (it != l.end()) l.splice(l.begin(), l, it);
+solution:
+void moveToFront(list<int>& l, int value) {
+    list<int>::iterator it = find(l.begin(), l.end(), value);
+    if (it != l.end()) l.splice(l.begin(), l, it);
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.brackets
+title: Stack: Balanced Brackets
+topic: listsmaps
+diff: Medium
+desc:
+The STL notes introduce `std::stack` (last in, first out). Use one to check whether the brackets `()`, `[]` and `{}` in a string are **balanced**: every opener is closed by the matching closer, in the right order. Ignore every other character.
+@end
+example:
+"{ a[i] = f(x); }"   ->  true
+"(]"                  ->  false
+"(("                  ->  false
+@end
+starter:
+bool balanced(const string& s) {
+    // TODO: push openers, pop and check on closers
+    return false;
+}
+@end
+tests:
++ a balanced line of code
+EXPECT_TRUE(balanced("{ a[i] = f(x); }"));
++ mismatched brackets
+EXPECT_FALSE(balanced("(]"));
+- an unclosed opener
+EXPECT_FALSE(balanced("(("));
+- a closer with nothing open
+EXPECT_FALSE(balanced(")"));
+- an empty string is balanced
+EXPECT_TRUE(balanced(""));
+- nesting in the wrong order
+EXPECT_FALSE(balanced("([)]"));
+- deep nesting
+EXPECT_TRUE(balanced("{[()()]}([])"));
+@end
+hint: For each char: if it opens, push it. If it closes: the stack must be non-empty and top() must be the matching opener - then pop(). At the end the stack must be empty.
+solution:
+bool balanced(const string& s) {
+    stack<char> st;
+    for (char c : s) {
+        if (c == '(' || c == '[' || c == '{') st.push(c);
+        else if (c == ')' || c == ']' || c == '}') {
+            if (st.empty()) return false;
+            char open = st.top();
+            st.pop();
+            if ((c == ')' && open != '(') || (c == ']' && open != '[') || (c == '}' && open != '{')) return false;
+        }
+    }
+    return st.empty();
+}
+@end
+
+# --------------------------------------------------------------------------
+@p cpp.dyn_array
+title: Dynamic 2D Array
+topic: memory
+diff: Hard
+desc:
+From the Memory Management slides. Write `int** make2D(int rows, int cols)` that allocates a 2D array with `new` - an array of row **pointers**, each pointing at its own `new int[cols]` - and fills it with 1, 2, 3... row by row. Then write `free2D(int** arr, int rows)` that releases **every** allocation: each row with `delete[]`, then the array of pointers.
+@end
+example:
+int** a = make2D(3, 4);
+// 1  2  3  4
+// 5  6  7  8
+// 9 10 11 12
+free2D(a, 3);
+@end
+starter:
+int** make2D(int rows, int cols) {
+    // TODO
+    return nullptr;
+}
+
+void free2D(int** arr, int rows) {
+    // TODO
+}
+@end
+tests:
++ a 3 x 4 grid counts from 1
+int** a = make2D(3, 4);
+EXPECT_TRUE(a != nullptr);
+EXPECT_ARR(a[0], 4, {1, 2, 3, 4});
+EXPECT_ARR(a[2], 4, {9, 10, 11, 12});
+free2D(a, 3);
+- every row is its own allocation
+int** a = make2D(2, 3);
+EXPECT_TRUE(a[0] != a[1]);
+EXPECT_ARR(a[1], 3, {4, 5, 6});
+free2D(a, 2);
+- a single row
+int** a = make2D(1, 5);
+EXPECT_ARR(a[0], 5, {1, 2, 3, 4, 5});
+free2D(a, 1);
+@end
+hint: int** arr = new int*[rows]; for each row: arr[r] = new int[cols]; then a counter. To free: for each row delete[] arr[r]; then delete[] arr;
+solution:
+int** make2D(int rows, int cols) {
+    int** arr = new int*[rows];
+    int counter = 1;
+    for (int r = 0; r < rows; r++) {
+        arr[r] = new int[cols];
+        for (int c = 0; c < cols; c++) arr[r][c] = counter++;
+    }
+    return arr;
+}
+
+void free2D(int** arr, int rows) {
+    for (int r = 0; r < rows; r++) delete[] arr[r];
+    delete[] arr;
+}
+@end

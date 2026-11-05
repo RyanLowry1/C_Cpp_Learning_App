@@ -1,0 +1,145 @@
+@title Arrays & Strings
+@topic arrays
+@subtitle Indexing, initialisation, sizeof, 2D arrays and the null terminator
+
+# Declaring an array
+An array is a fixed number of values of the same type, stored side by side in memory. Elements are numbered from **0**.
+
+```
+int numbers[5] = {10, 20, 30, 40, 50};
+printf("%d\n", numbers[0]);   // 10 - first
+printf("%d\n", numbers[4]);   // 50 - last
+numbers[2] = 99;              // change the middle one
+```
+
+@mem
+numbers[0] | int | 10 | 2000
+numbers[1] | int | 20 | 2004
+numbers[2] | int | 99 | 2008
+@end
+caption: Consecutive ints are 4 bytes apart. That spacing is what makes pointer arithmetic work later.
+
+- An array of N elements has indices **0 to N-1**.
+- `int scores[10] = {85, 92, 78};` sets the rest to **0**.
+- `int values[] = {45, 12, 89};` lets the compiler count the size (3).
+
+!> C does not check bounds. `numbers[5]` on a 5-element array reads or writes memory that isn't yours - undefined behaviour, sometimes a crash, sometimes silent corruption.
+
+===
+
+# Looping over an array
+```
+int values[] = {45, 12, 89, 34, 67, 23};
+int size = sizeof(values) / sizeof(values[0]);
+int sum = 0, max = values[0];
+for (int i = 0; i < size; i++) {
+    sum += values[i];
+    if (values[i] > max) max = values[i];
+}
+printf("Size %d, sum %d, max %d\n", size, sum, max);
+```
+
+```output
+Size 6, sum 270, max 89
+```
+
+> `sizeof(values)` is the size of the whole array in **bytes** (24). Dividing by the size of one element gives the element count.
+
+!> This trick only works where the array was declared. Inside a function the parameter `int arr[]` is really a pointer, and `sizeof(arr)` is just the size of a pointer. That is why array functions take a separate `size`.
+
+## Watch the loop bounds
+```
+for (int i = 0; i <= 5; i++) a[i] = 0;   // BUG: touches a[5]
+for (int i = 0; i < 5; i++)  a[i] = 0;   // correct
+```
+
+===
+
+# 2D arrays
+A 2D array is an array of rows. The first index picks the row, the second the column.
+
+```
+int matrix[3][4] = {
+    {1, 2, 3, 4},
+    {5, 6, 7, 8},
+    {9, 10, 11, 12}
+};
+printf("%d\n", matrix[1][2]);   // 7
+for (int r = 0; r < 3; r++) {
+    for (int c = 0; c < 4; c++) {
+        printf("%3d", matrix[r][c]);
+    }
+    printf("\n");
+}
+```
+
+```output
+7
+  1  2  3  4
+  5  6  7  8
+  9 10 11 12
+```
+
+> `%3d` pads each number to three characters - an easy way to line up columns.
+
+===
+
+# Strings are char arrays
+C has no separate string type. A string is a `char` array that ends with the **null terminator** `'\0'`.
+
+```
+char name[20] = "Alice";
+char greeting[] = "Hello";   // size 6: 5 letters + '\0'
+printf("%s has %d bytes\n", greeting, (int)sizeof(greeting));
+```
+
+@mem
+[0] | char | 'H'
+[1] | char | 'e'
+[4] | char | 'o'
+[5] | char | '\0'
+@end
+caption: The hidden '\0' at the end is the only thing telling printf where to stop.
+
+!> `char city[] = {'N', 'Y'};` has no terminator, so `printf("%s", city)` keeps reading past the end. Add `'\0'` yourself when you build strings character by character.
+
+## Walking a string
+```
+char word[] = "hello";
+int len = 0;
+while (word[len] != '\0') len++;   // this is strlen
+for (int i = 0; i < len; i++) {
+    word[i] = word[i] - 32;        // 'a' -> 'A'
+}
+printf("%s %d\n", word, len);      // HELLO 5
+```
+
+===
+
+# Arrays and functions
+Arrays are **not copied** when passed to a function - the function works directly on the caller's array.
+
+```
+void doubleAll(int arr[], int size) {
+    for (int i = 0; i < size; i++) {
+        arr[i] = arr[i] * 2;
+    }
+}
+
+int main() {
+    int numbers[] = {1, 2, 3};
+    doubleAll(numbers, 3);
+    // numbers is now {2, 4, 6}
+    return 0;
+}
+```
+
+> Under the hood the function receives the address of `numbers[0]`. You'll see exactly why in the Pointers chapter: `arr[i]` means `*(arr + i)`.
+
+## Useful string.h functions
+- `strlen(s)` - number of characters before `'\0'`
+- `strcpy(dest, src)` - copy a string (dest must be big enough!)
+- `strcat(dest, src)` - append
+- `strcmp(a, b)` - 0 if equal, negative or positive otherwise
+
+*> Coding Exam 1 lab problems - reversing an array, counting vowels, finding the second largest, palindromes - are all "loop over the array with the right bounds" problems. Get the `i < size` habit now.

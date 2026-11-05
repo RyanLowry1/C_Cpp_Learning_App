@@ -1,0 +1,2093 @@
+# Multiple choice questions. Format: see README.txt
+# "verify: output" means the self-test runs the code and checks that the
+# correct option is exactly what the program prints.
+
+# ============================================================== C BASICS
+@q b.01
+topic: basics
+q: Which format specifier prints an `int` with `printf`?
+a: `%f`
+*a: `%d`
+a: `%c`
+a: `%s`
+why: `%d` is for integers, `%f` for floats and doubles, `%c` for a single character and `%s` for strings.
+
+@q b.02
+topic: basics
+q: What does this print?
+code:
+printf("%d\n", 7 / 2);
+@end
+*a: 3
+a: 3.5
+a: 4
+a: 3.500000
+why: Both operands are `int`, so this is **integer division** - the fractional part is simply thrown away (truncated), giving 3.
+verify: output
+
+@q b.03
+topic: basics
+diff: 2
+q: What does this print?
+code:
+float result = (float)7 / 2;
+printf("%.2f\n", result);
+@end
+a: 3.00
+*a: 3.50
+a: 4.00
+a: 3
+why: The cast turns 7 into 7.0f **before** the division, so the division is done in floating point: 3.5, printed with two decimal places.
+verify: output
+
+@q b.04
+topic: basics
+q: What does this print?
+code:
+printf("%d\n", (int)3.9);
+@end
+*a: 3
+a: 4
+a: 3.9
+a: 0
+why: Converting a floating-point value to `int` truncates towards zero - it does not round. 3.9 becomes 3.
+verify: output
+
+@q b.05
+topic: basics
+q: What value does `var` hold after `int var;` inside a function?
+a: 0
+a: -1
+*a: Whatever happened to be in that memory - it is uninitialised
+a: It is a compile error to declare a variable without a value
+why: Local variables are not initialised automatically. The lecture notes put it this way: "It is given whatever value is in memory." Always initialise before you read.
+
+@q b.06
+topic: basics
+q: Why does `scanf("%d", &age);` need the `&`?
+a: It marks `age` as an integer
+*a: `scanf` needs the address of `age` so it can store the value it reads into that variable
+a: It tells `scanf` to skip whitespace
+a: It is optional - `scanf("%d", age)` works the same
+why: C passes arguments by value. To let `scanf` change `age`, you pass its address - `&` is the address-of operator.
+
+@q b.07
+topic: basics
+q: What happens when this is compiled?
+code:
+const double TAX_RATE = 0.08;
+TAX_RATE = 0.10;
+@end
+*a: A compile error - a `const` variable cannot be assigned
+a: `TAX_RATE` becomes 0.10
+a: The program crashes at run time
+a: A warning, and `TAX_RATE` stays 0.08
+why: `const` makes the variable read-only. Assigning to it is rejected by the compiler.
+
+@q b.08
+topic: basics
+q: What does this print?
+code:
+int a = 10, b = 3;
+printf("%d\n", a % b);
+@end
+a: 3
+*a: 1
+a: 3.33
+a: 0
+why: `%` is the remainder (modulus) operator. 10 = 3 x 3 + **1**.
+verify: output
+
+@q b.09
+topic: basics
+q: What does this print?
+code:
+int count = 5;
+count++;
+count--;
+count += 3;
+printf("%d\n", count);
+@end
+a: 9
+*a: 8
+a: 6
+a: 5
+why: 5 -> 6 (`++`) -> 5 (`--`) -> 8 (`+= 3`).
+verify: output
+
+@q b.10
+topic: basics
+diff: 2
+q: In `scanf(" %c", &initial);` what does the **space** before `%c` do?
+*a: It skips any whitespace (such as the newline left over from the previous input) before reading the character
+a: It reads a space into `initial`
+a: Nothing - it is ignored
+a: It makes `scanf` read two characters
+why: `%c` reads the very next character, even a newline. The leading space tells `scanf` to skip whitespace first - exactly the trick used in the lecture notes.
+
+@q b.11
+topic: basics
+diff: 2
+q: What does this print?
+code:
+int num = 10;
+num *= 2 + 3;
+printf("%d\n", num);
+@end
+a: 23
+*a: 50
+a: 25
+a: 15
+why: A compound assignment evaluates the whole right-hand side first: `num = num * (2 + 3)` = 10 x 5 = 50.
+verify: output
+
+@q b.12
+topic: basics
+q: What does `printf("%.2f\\n", 19.99f);` print?
+*a: 19.99
+a: 19.990000
+a: 20.00
+a: 19
+why: `.2` asks for exactly two digits after the decimal point.
+verify: output
+code:
+printf("%.2f\n", 19.99f);
+@end
+
+@q b.13
+topic: basics
+q: Where does execution of a C program begin?
+a: At the first function in the file
+*a: In `main()`
+a: At the first `#include`
+a: In whichever function is called `start()`
+why: Every C and C++ program starts executing in `main()`. Returning 0 from it means "everything worked".
+
+@q b.14
+topic: basics
+q: Which statement about `double` and `float` is true?
+a: `float` has more precision than `double`
+*a: `double` usually has about twice the precision of `float` (8 bytes versus 4)
+a: They are the same type with different names
+a: `double` can only store whole numbers
+why: `float` is single precision (typically 4 bytes) and `double` is double precision (typically 8 bytes). Literals like 3.14 are `double`; add `f` (3.14f) for a `float`.
+
+# ============================================================== CONTROL
+@q c.01
+topic: control
+q: What does this print?
+code:
+int score = 85;
+if (score >= 90) printf("A\n");
+else if (score >= 80) printf("B\n");
+else if (score >= 70) printf("C\n");
+else printf("F\n");
+@end
+a: A
+*a: B
+a: B and C
+a: F
+why: The conditions are tested in order and only the **first** true branch runs. 85 fails `>= 90` but passes `>= 80`.
+verify: output
+
+@q c.02
+topic: control
+diff: 2
+q: What does this print? (Notice the missing `break`s.)
+code:
+int x = 2;
+switch (x) {
+    case 1: printf("one ");
+    case 2: printf("two ");
+    case 3: printf("three ");
+        break;
+    default: printf("other");
+}
+@end
+a: two
+*a: two three
+a: two three other
+a: one two three
+why: Without `break`, execution **falls through** into the following cases until a `break` (or the end of the switch) is reached.
+verify: output
+
+@q c.03
+topic: control
+q: What does this print?
+code:
+int n = 0;
+do {
+    printf("%d ", n);
+    n--;
+} while (n > 0);
+@end
+a: Nothing
+*a: 0
+a: 0 -1
+a: It loops forever
+why: A `do-while` runs its body **before** checking the condition, so it always executes at least once.
+verify: output
+
+@q c.04
+topic: control
+q: What does this print?
+code:
+for (int i = 1; i <= 10; i++) {
+    if (i % 2 == 0) continue;
+    printf("%d ", i);
+}
+@end
+a: 2 4 6 8 10
+*a: 1 3 5 7 9
+a: 1
+a: 1 2 3 4 5 6 7 8 9 10
+why: `continue` skips the rest of the current iteration - so the even numbers never reach the `printf`.
+verify: output
+
+@q c.05
+topic: control
+q: What does this print?
+code:
+int i = 1;
+while (1) {
+    printf("%d ", i);
+    if (i == 5) break;
+    i++;
+}
+@end
+a: It loops forever
+a: 1 2 3 4
+*a: 1 2 3 4 5
+a: 1 2 3 4 5 6
+why: `while (1)` is an infinite loop, but `break` exits it as soon as `i == 5` - after 5 has been printed.
+verify: output
+
+@q c.06
+topic: control
+q: How many times does `count++` run?
+code:
+int count = 0;
+for (int row = 1; row <= 3; row++)
+    for (int col = 1; col <= 4; col++)
+        count++;
+printf("%d\n", count);
+@end
+a: 7
+*a: 12
+a: 16
+a: 3
+why: The inner loop runs 4 times for each of the 3 outer iterations: 3 x 4 = 12.
+verify: output
+
+@q c.07
+topic: control
+q: Which loop tests its condition **before** running the body for the first time?
+*a: `while` (and `for`)
+a: `do-while`
+a: All loops run once before testing
+a: None of them
+why: `while` and `for` are pre-test loops - their body might run zero times. `do-while` is the post-test loop.
+
+@q c.08
+topic: control
+diff: 3
+q: What does this print?
+code:
+int x = 5;
+if (x = 0) printf("zero\n");
+else printf("nonzero\n");
+@end
+a: zero
+*a: nonzero
+a: A compile error
+a: 5
+why: `x = 0` is an **assignment**, not a comparison. It sets x to 0 and the value of the expression is 0 (false), so the `else` runs. Use `==` to compare.
+verify: output
+
+@q c.09
+topic: control
+q: With `int age = 10;`, which line does the lecture's example print?
+code:
+if (age >= 18 && age <= 65) printf("You are of working age.\n");
+else if (age < 18 || age > 65) printf("You are not of working age.\n");
+@end
+a: You are of working age.
+*a: You are not of working age.
+a: Both lines
+a: Neither line
+why: `&&` needs **both** sides true; `10 >= 18` is false. The `||` test needs just one side: `10 < 18` is true.
+
+@q c.10
+topic: control
+q: What do the stacked labels `case 'A': case 'a':` achieve in a `switch`?
+*a: Both an upper-case and a lower-case grade run the same code
+a: Only the second label is used
+a: It is a syntax error
+a: The code runs twice
+why: A case label with no statements falls straight through to the next one, so several values can share one block.
+
+@q c.11
+topic: control
+q: What does `break` do inside a `switch` that is itself inside a `for` loop?
+a: Exits the `for` loop
+*a: Exits only the `switch`
+a: Restarts the loop
+a: Ends the program
+why: `break` leaves the innermost enclosing `switch` or loop - here the `switch`. The loop carries on.
+
+@q c.12
+topic: control
+q: What does this print?
+code:
+for (int i = 10; i >= 1; i -= 3) printf("%d ", i);
+@end
+*a: 10 7 4 1
+a: 10 7 4
+a: 10 9 8 7 6 5 4 3 2 1
+a: 7 4 1
+why: i takes the values 10, 7, 4, 1 and then -2, which fails `i >= 1`.
+verify: output
+
+# ============================================================== ARRAYS
+@q a.01
+topic: arrays
+q: Given `int numbers[5] = {10, 20, 30, 40, 50};`, what is `numbers[2]`?
+a: 20
+*a: 30
+a: 40
+a: 2
+why: Arrays are indexed from **0**: numbers[0] is 10, numbers[1] is 20, numbers[2] is 30.
+
+@q a.02
+topic: arrays
+q: What is `scores[5]` after `int scores[10] = {85, 92, 78};`?
+a: 78
+a: Garbage - it was never set
+*a: 0
+a: A compile error
+why: With a partial initialiser list, every remaining element is set to zero.
+
+@q a.03
+topic: arrays
+q: What does this print?
+code:
+int values[] = {45, 12, 89, 34, 67, 23};
+int size = sizeof(values) / sizeof(values[0]);
+printf("%d\n", size);
+@end
+a: 24
+*a: 6
+a: 4
+a: 5
+why: `sizeof(values)` is the size of the whole array in bytes (6 x 4 = 24); dividing by the size of one element gives the number of elements.
+verify: output
+
+@q a.04
+topic: arrays
+q: What are the valid indices of `int a[5];`?
+a: 1 to 5
+*a: 0 to 4
+a: 0 to 5
+a: Any non-negative number
+why: An array of N elements has indices 0 to N-1. Accessing a[5] is out of bounds - undefined behaviour.
+
+@q a.05
+topic: arrays
+q: After `char name[20] = "Alice";`, what is stored in `name[5]`?
+a: 'e'
+*a: '\0' - the null terminator
+a: Garbage
+a: ' ' (a space)
+why: "Alice" occupies indices 0-4, and the compiler adds the terminating `'\0'` at index 5. That terminator is the only thing that makes a char array a string.
+
+@q a.06
+topic: arrays
+diff: 2
+q: `char city[] = {'N', 'Y'};` is passed to `printf("%s", city);`. What happens?
+a: It prints NY
+*a: Undefined behaviour - there is no '\0', so printf keeps reading past the end of the array
+a: A compile error
+a: It prints N
+why: `%s` stops only at a `'\0'`. Built character by character without one, the array is not a string.
+
+@q a.07
+topic: arrays
+q: What does this print?
+code:
+int m[3][4] = { {1, 2, 3, 4}, {5, 6, 7, 8}, {9, 10, 11, 12} };
+printf("%d\n", m[1][2]);
+@end
+a: 6
+*a: 7
+a: 10
+a: 3
+why: The first index picks the row (row 1 is {5, 6, 7, 8}), the second picks the column within it (column 2 is 7).
+verify: output
+
+@q a.08
+topic: arrays
+diff: 2
+q: What does this print?
+code:
+#include <stdio.h>
+void doubleAll(int arr[], int size) {
+    for (int i = 0; i < size; i++) arr[i] = arr[i] * 2;
+}
+int main() {
+    int numbers[] = {1, 2, 3};
+    doubleAll(numbers, 3);
+    printf("%d %d %d\n", numbers[0], numbers[1], numbers[2]);
+    return 0;
+}
+@end
+a: 1 2 3
+*a: 2 4 6
+a: 2 2 2
+a: It depends on the compiler
+why: An array is not copied when passed to a function - the function works directly on the caller's array, so the changes are visible in `main`.
+verify: output
+
+@q a.09
+topic: arrays
+diff: 3
+q: Why can't `sizeof(arr) / sizeof(arr[0])` find the length of an array **inside a function** it was passed to?
+a: `sizeof` doesn't work inside functions
+*a: The parameter is really a pointer, so `sizeof(arr)` gives the size of a pointer, not the array
+a: Arrays lose their elements when passed
+a: It works fine
+why: An array parameter `int arr[]` decays to `int *arr`. That's why array functions in the labs always take a separate `size` parameter.
+
+@q a.10
+topic: arrays
+q: What is wrong with this loop?
+code:
+int a[5];
+for (int i = 0; i <= 5; i++) a[i] = 0;
+@end
+a: Nothing
+*a: It writes to a[5], one past the end of the array
+a: It misses a[0]
+a: a must be initialised first
+why: `i <= 5` lets i reach 5, but the last valid index is 4. Writing out of bounds corrupts other memory.
+
+@q a.11
+topic: arrays
+q: What does this print?
+code:
+char s[] = "hi";
+printf("%d\n", (int)sizeof(s));
+@end
+a: 2
+*a: 3
+a: 4
+a: 8
+why: The array holds 'h', 'i' and the hidden '\0' - three chars.
+verify: output
+
+@q a.12
+topic: arrays
+q: How does `printf("%s", name)` know where the string ends?
+a: It stores the length in name[0]
+*a: It keeps printing characters until it reaches '\0'
+a: It always prints 20 characters
+a: The compiler tells it
+why: There is no stored length in C strings. The '\0' terminator **is** the length marker.
+
+# ============================================================== FUNCTIONS
+@q f.01
+topic: functions
+q: What does this print?
+code:
+#include <stdio.h>
+void tryToChange(int x) { x = 999; }
+int main() {
+    int value = 5;
+    tryToChange(value);
+    printf("%d\n", value);
+    return 0;
+}
+@end
+*a: 5
+a: 999
+a: 0
+a: Undefined
+why: Ordinary variables are passed **by value**: the function gets a copy. Changing the copy doesn't affect `value`.
+verify: output
+
+@q f.02
+topic: functions
+diff: 2
+q: What does this print?
+code:
+#include <stdio.h>
+void addOneByValue(int x) { x = x + 1; }
+void addOneByReference(int& x) { x = x + 1; }
+int main() {
+    int a = 5;
+    addOneByValue(a);
+    printf("%d ", a);
+    addOneByReference(a);
+    printf("%d\n", a);
+    return 0;
+}
+@end
+a: 6 7
+*a: 5 6
+a: 5 5
+a: 6 6
+why: The by-value call changes a copy (a stays 5); the by-reference call changes `a` itself (a becomes 6).
+verify: output
+
+@q f.03
+topic: functions
+q: Which signature lets a `swap` function actually exchange the caller's two variables?
+a: `void swap(int a, int b)`
+*a: `void swap(int &a, int &b)`
+a: `int swap(int a, int b)`
+a: `void swap(const int a, const int b)`
+why: Reference parameters are the caller's actual variables under new names, so assignments inside `swap` change them.
+
+@q f.04
+topic: functions
+q: A function can only `return` one value. How can it give back several results?
+a: It can't
+*a: By taking reference (or pointer) parameters and assigning to them
+a: By returning more than once
+a: By declaring global variables inside it
+why: The notes list this as a key use of pass by reference: a function can change several caller variables at once.
+
+@q f.05
+topic: functions
+q: What does the return type `void` mean?
+a: The function returns 0
+*a: The function does not return a value
+a: The function returns a pointer
+a: The function has no parameters
+why: `void printGreeting()` performs an action but hands no value back to the caller.
+
+@q f.06
+topic: functions
+diff: 2
+q: What does this print?
+code:
+#include <stdio.h>
+double calculateAverage(int arr[], int size) {
+    int sum = 0;
+    for (int i = 0; i < size; i++) sum += arr[i];
+    return (double)sum / size;
+}
+int main() {
+    int scores[] = {85, 90, 78, 92, 88};
+    printf("%.2f\n", calculateAverage(scores, 5));
+    return 0;
+}
+@end
+a: 86.00
+*a: 86.60
+a: 87.00
+a: 86
+why: The scores sum to 433; casting to double before dividing keeps the fraction: 433 / 5 = 86.6.
+verify: output
+
+@q f.07
+topic: functions
+diff: 2
+q: What would `calculateAverage` return for the same scores if it ended with `return sum / size;` (no cast)?
+a: 86.6
+*a: 86.0, because sum / size is integer division before the result becomes a double
+a: 87
+a: A compile error
+why: `sum` and `size` are both ints, so the division truncates to 86 first; converting 86 to double gives 86.0.
+
+@q f.08
+topic: functions
+q: Why are large objects often passed **by reference**?
+a: It makes them read-only
+*a: It avoids copying the whole object
+a: References are smaller than ints
+a: The compiler requires it
+why: Passing by value copies the entire object. A reference just refers to the original - add `const` if the function shouldn't change it.
+
+@q f.09
+topic: functions
+q: What is a function **prototype**, such as `int add(int a, int b);`?
+*a: A declaration that tells the compiler a function's name, parameters and return type before its body appears
+a: A function with no body that does nothing
+a: A template for creating functions
+a: A comment
+why: Prototypes let you call a function before it is defined in the file - or define it in another file.
+
+@q f.10
+topic: functions
+q: Which is true of **pass by value**?
+*a: The function receives a copy, so the caller's variable cannot be changed
+a: The function receives the caller's variable itself
+a: Only arrays can be passed by value
+a: It is slower than pass by reference for an `int`
+why: That's why `add(5, 3)` can't accidentally change anything in `main`.
+
+# ============================================================== POINTERS
+@q p.01
+topic: pointers
+q: Which of the following best describes a pointer?
+a: A variable that stores a character
+*a: A variable that stores a memory address
+a: A variable that stores multiple values
+a: A variable that stores only integers
+why: A pointer's value is the **address** of another variable. Its type (int*, char*...) says what kind of value lives at that address.
+
+@q p.02
+topic: pointers
+q: Which statement correctly declares a pointer to an integer?
+a: `int p;`
+a: `pointer p;`
+*a: `int *p;`
+a: `*int p;`
+why: The `*` in a declaration means "pointer to". `int *p;` declares p as a pointer to int.
+
+@q p.03
+topic: pointers
+q: Which operator obtains the address of a variable?
+a: `*`
+a: `%`
+*a: `&`
+a: `#`
+why: `&` is the address-of operator: `&x` is "the address of x". `*` does the opposite - it dereferences.
+
+@q p.04
+topic: pointers
+q: After this code, what is stored in `p`?
+code:
+int x = 10;
+int *p = &x;
+@end
+a: 10
+a: The value of x multiplied by 2
+*a: The address of x
+a: An undefined value
+why: `p` holds `&x` - the address of x. To get 10 you would dereference: `*p`.
+
+@q p.05
+topic: pointers
+q: What does this print?
+code:
+int x = 15;
+int *p = &x;
+printf("%d\n", *p);
+@end
+a: The address of x
+*a: 15
+a: 0
+a: Error
+why: `*p` dereferences the pointer - it reads the value stored at the address p holds.
+verify: output
+
+@q p.06
+topic: pointers
+q: If `p` points to `x`, what does `printf("%p", p);` display?
+a: The value of x
+a: 0
+*a: The address of x
+a: An error
+why: `%p` prints a pointer value - an address, shown in hexadecimal (like effff5e0 in the slides).
+
+@q p.07
+topic: pointers
+q: `p` points to `x`. What does `*p = 12;` do?
+*a: x becomes 12
+a: p becomes 12
+a: x is unchanged
+a: A compilation error
+why: Assigning through a dereferenced pointer writes into the variable it points to. *p IS x.
+
+@q p.08
+topic: pointers
+q: Which is the safest way to initialise a pointer you aren't using yet?
+a: `int *p;`
+*a: `int *p = NULL;` (or `nullptr` in C++)
+a: `int p = NULL;`
+a: `int *p = 1;`
+why: An uninitialised pointer holds a random address. A null pointer clearly means "points to nothing" and can be tested with `if (p == nullptr)`.
+
+@q p.09
+topic: pointers
+q: What is wrong with this code?
+code:
+int *p;
+*p = 50;
+@end
+a: A syntax error
+*a: The pointer is not initialised - it points to an unknown address
+a: Integers cannot be assigned through pointers
+a: NULL cannot store integers
+why: `p` was never given an address, so `*p = 50` writes 50 to some random location: undefined behaviour, often a crash.
+
+@q p.10
+topic: pointers
+q: Which statement correctly stores the address of `x` in `p`?
+a: `p = x;`
+a: `*p = x;`
+*a: `p = &x;`
+a: `&p = x;`
+why: `&x` produces the address of x, which is exactly what a pointer variable stores.
+
+@q p.11
+topic: pointers
+q: Pointer arithmetic is commonly used for:
+a: Multiplying addresses
+*a: Accessing array elements
+a: Converting integers to strings
+a: Sorting automatically
+why: `*(arr + i)` reaches element i. In fact `arr[i]` is defined as `*(arr + i)`.
+
+@q p.12
+topic: pointers
+q: What does this print?
+code:
+int arr[] = {10, 20, 30};
+int *p = arr;
+printf("%d\n", *(p + 1));
+@end
+a: 10
+*a: 20
+a: 30
+a: The address of arr[1]
+why: `p + 1` points at the next int - arr[1] - and `*` reads it.
+verify: output
+
+@q p.13
+topic: pointers
+q: In most expressions, an array's name represents:
+a: The array's size
+a: Its last element
+*a: The address of its first element
+a: The number of bytes it uses
+why: The array name decays to a pointer to element 0, which is why `int *p = arr;` works without `&`.
+
+@q p.14
+topic: pointers
+q: What does this print?
+code:
+int arr[] = {1, 2, 3};
+int *p = arr;
+printf("%d\n", *p);
+@end
+*a: 1
+a: 2
+a: 3
+a: The address of arr
+why: p points at the first element, so *p is arr[0].
+verify: output
+
+@q p.15
+topic: pointers
+q: Which parameter type lets a C function modify the caller's original variable?
+a: `int x`
+a: `float x`
+a: `char x`
+*a: `int *x`
+why: Passing an address lets the function reach back into the caller's variable with `*x = ...`.
+
+@q p.16
+topic: pointers
+q: What does this print?
+code:
+#include <stdio.h>
+void change(int *p) { *p = 50; }
+int main() {
+    int x = 10;
+    change(&x);
+    printf("%d\n", x);
+    return 0;
+}
+@end
+a: 10
+*a: 50
+a: The address of x
+a: Error
+why: `change` receives x's address and writes 50 into it.
+verify: output
+
+@q p.17
+topic: pointers
+q: What is a pointer to a pointer?
+a: A variable that stores two addresses
+*a: A variable that stores the address of another pointer
+a: A pointer to an array
+a: A pointer that stores characters
+why: `int **pp = &p;` stores where the pointer p lives. This "double indirection" is how InsertAtEnd changes the caller's head pointer.
+
+@q p.18
+topic: pointers
+q: `pp` points to `p`, and `p` points to `x`. What does `**pp` give you?
+a: The address of x
+a: The address of p
+*a: The value stored in x
+a: An error
+why: `*pp` is p (the address of x); dereferencing again, `**pp`, is x itself.
+
+@q p.19
+topic: pointers
+q: Which declaration creates a pointer to a pointer to an integer?
+a: `int p;`
+a: `int *p;`
+*a: `int **p;`
+a: `int ***p;`
+why: Each `*` adds one level of indirection.
+
+@q p.20
+topic: pointers
+q: What does this print?
+code:
+int x = 25;
+int *p = &x;
+printf("%d %d\n", x, *p);
+@end
+*a: 25 25
+a: Address Address
+a: 25 Address
+a: Error
+why: x is 25, and *p reads the same memory - also 25.
+verify: output
+
+@q p.21
+topic: pointers
+diff: 2
+q: This is the "An Illustration" sequence from the Pointers slides. What does it print?
+code:
+int i = 5, j = 10;
+int *ptr;
+ptr = &i;
+*ptr = 3;
+ptr = &j;
+*ptr = -2;
+printf("%d %d\n", i, j);
+@end
+a: 5 10
+a: 3 10
+*a: 3 -2
+a: -2 -2
+why: `*ptr = 3` changes i (ptr points at i). Then ptr is re-aimed at j, so `*ptr = -2` changes j.
+verify: output
+
+@q p.22
+topic: pointers
+diff: 3
+q: The double-indirection exercise from the slides (with i = 2, j = 8). What does it print?
+code:
+int i = 2, j = 8;
+int *ptr;
+int **pptr;
+ptr = &i;
+pptr = &ptr;
+*ptr = 7;
+**pptr = 12;
+ptr = &j;
+**pptr = 34;
+*pptr = &i;
+*ptr = -25;
+printf("%d %d\n", i, j);
+@end
+a: 12 34
+*a: -25 34
+a: -25 8
+a: 7 34
+why: i becomes 7, then 12 (through pptr). ptr moves to j, so **pptr = 34 sets j. `*pptr = &i` aims ptr back at i, and *ptr = -25 sets i.
+verify: output
+
+@q p.23
+topic: pointers
+diff: 3
+q: The pointer-arithmetic walk-through from the slides. What does it print?
+code:
+float a[4];
+float *ptr;
+ptr = &(a[2]);
+*ptr = 3.14f;
+ptr++;
+*ptr = 9.0f;
+ptr = ptr - 3;
+*ptr = 6.0f;
+ptr += 2;
+*ptr = 7.0f;
+printf("%.1f %.1f %.1f\n", a[0], a[2], a[3]);
+@end
+a: 6.0 3.1 9.0
+*a: 6.0 7.0 9.0
+a: 3.1 7.0 9.0
+a: 7.0 9.0 6.0
+why: ptr visits a[2] (3.14), a[3] (9.0), a[0] (6.0) and back to a[2], which is overwritten with 7.0.
+verify: output
+
+@q p.24
+topic: pointers
+q: Which of these is an **invalid** operation on a pointer `ptr`?
+a: `ptr + 1`
+a: `ptr - 1`
+*a: `ptr * 2`
+a: `ptr++`
+why: You can move a pointer forwards or backwards, but multiplying or dividing an address is meaningless and won't compile.
+
+@q p.25
+topic: pointers
+diff: 2
+q: `double *ptr = a;` where `a` is an array of doubles. By how many **bytes** does `ptr + 1` move?
+a: 1
+*a: `sizeof(double)` - usually 8
+a: 4, always
+a: It depends on the value stored
+why: Pointer arithmetic automatically scales by the size of the pointed-to type, so ptr + 1 always means "the next element".
+
+@q p.26
+topic: pointers
+q: Which of these can be a null "points to nothing" value?
+*a: A pointer parameter (`int *x`)
+a: A reference parameter (`int &x`)
+a: Both
+a: Neither
+why: The slides compare them: "Pass by pointer can pass a null pointer, pass by reference cannot."
+
+@q p.27
+topic: pointers
+diff: 2
+q: What does this program print? (It is the swap comparison from the slides.)
+code:
+#include <iostream>
+using namespace std;
+void swap(int* x, int* y) { int z = *x; *x = *y; *y = z; }
+void swap(int& x, int& y) { int z = x; x = y; y = z; }
+int main() {
+    int a = 45, b = 35;
+    swap(&a, &b);
+    cout << a << " " << b << " ";
+    swap(a, b);
+    cout << a << " " << b << endl;
+}
+@end
+a: 45 35 45 35
+*a: 35 45 45 35
+a: 35 45 35 45
+a: It doesn't compile - two functions are called swap
+why: Overloading picks the pointer version for `swap(&a, &b)` and the reference version for `swap(a, b)`. Each really swaps, so the second swap puts them back.
+verify: output
+
+@q p.28
+topic: pointers
+q: `a[2]` is exactly equivalent to which expression?
+a: `*a + 2`
+*a: `*(a + 2)`
+a: `&a + 2`
+a: `a + *2`
+why: Indexing is pointer arithmetic followed by a dereference. Note `*a + 2` is different: it adds 2 to the first element.
+
+@q p.29
+topic: pointers
+diff: 2
+q: What does this print?
+code:
+int arr[] = {4, 6, 7, 8, 9, 0};
+int sum = 0;
+for (int *ptr = arr; *ptr != 0; ptr++) sum += *ptr;
+printf("%d\n", sum);
+@end
+a: 0
+*a: 34
+a: 9
+a: It loops forever
+why: The loop walks the pointer along the array until it finds the 0 sentinel: 4 + 6 + 7 + 8 + 9 = 34. This is the "add until it reaches a 0" exercise from the slides.
+verify: output
+
+# ============================================================== MEMORY
+@q m.01
+topic: memory
+diff: 2
+q: What is printed?
+code:
+int *p;
+if (true) {
+    int x = 5;
+    p = &x;
+}
+cout << *p << endl;
+@end
+a: Always 5
+*a: Undefined - x has gone out of scope, so p is a dangling pointer
+a: 0
+a: A compile error
+why: x's memory is no longer guaranteed to hold its value once the block ends. It might still print 5 - or anything else.
+
+@q m.02
+topic: memory
+q: What is wrong with this function?
+code:
+int* getPtrToFive() {
+    int x = 5;
+    return &x;
+}
+@end
+a: Nothing
+*a: It returns the address of a local variable, which dies when the function returns
+a: It should return x, not &x
+a: Functions cannot return pointers
+why: The fix in the slides: allocate with `new` - `int *x = new int; *x = 5; return x;` - and have the caller `delete` it.
+
+@q m.03
+topic: memory
+q: Where is memory from `new int` allocated?
+a: On the stack
+*a: On the heap
+a: In the CPU registers
+a: In the program's code
+why: `int x;` lives on the stack and disappears at the end of its scope. `new` allocates on the heap; it stays until you `delete` it.
+
+@q m.04
+topic: memory
+diff: 2
+q: Does adding `delete p;` after the loop fix the memory leak?
+code:
+int *p;
+for (int i = 0; i < 3; ++i) {
+    p = getPtrToFive();   // returns new int
+    cout << *p << endl;
+}
+delete p;
+@end
+a: Yes, it frees all three ints
+*a: No - it frees only the last allocation; the first two are leaked
+a: No - delete can't be used after a loop
+a: Yes, but only in debug builds
+why: Each iteration overwrites p, losing the address of the previous int forever. Delete inside the loop instead.
+
+@q m.05
+topic: memory
+q: What happens if you `delete` the same pointer twice?
+a: Nothing - the second delete is ignored
+*a: Undefined behaviour - often a crash or heap corruption
+a: The memory is freed twice as fast
+a: A compile error
+why: After the first delete the memory no longer belongs to you. Setting the pointer to `nullptr` after deleting makes a second delete harmless.
+
+@q m.06
+topic: memory
+q: Is this correct?
+code:
+int x = 5;
+int *xPtr = &x;
+delete xPtr;
+@end
+a: Yes - xPtr is a pointer
+*a: No - only delete memory that was allocated with new
+a: Yes, if x is not used afterwards
+a: No - it should be delete[]
+why: x lives on the stack. Deleting memory you didn't get from `new` is undefined behaviour.
+
+@q m.07
+topic: memory
+q: How do you free `int *arr = new int[numItems];`?
+a: `delete arr;`
+*a: `delete[] arr;`
+a: `free(arr);`
+a: It is freed automatically
+why: Memory allocated with `new[]` must be released with `delete[]`.
+
+@q m.08
+topic: memory
+q: Why is `int arr[numItems];` (with numItems read from the user) not allowed in standard C++?
+*a: The size of a stack array must be a compile-time constant
+a: numItems must be negative
+a: Arrays must be declared globally
+a: It is allowed
+why: For a size known only at run time, allocate on the heap: `int *arr = new int[numItems];`.
+
+@q m.09
+topic: memory
+q: What should you always check after calling `malloc`?
+*a: Whether it returned NULL (allocation failed)
+a: Whether it returned 0 bytes
+a: Whether the memory is zeroed
+a: Nothing - malloc never fails
+why: malloc returns NULL when it can't allocate. The C memory slides check this before using the pointer.
+
+@q m.10
+topic: memory
+q: Which pairs of functions belong together?
+*a: `new` with `delete`, and `malloc` with `free`
+a: `new` with `free`, and `malloc` with `delete`
+a: Any of them can be mixed
+a: `malloc` with `delete[]`
+why: Never mix them. C++ `new`/`delete` also run constructors and destructors; `malloc`/`free` just hand out raw bytes.
+
+@q m.11
+topic: memory
+diff: 2
+q: To free a 2D array built as `int** arr2D = new int*[rows];` with each row from `new int[cols]`, what is the correct order?
+a: `delete[] arr2D;` only
+*a: `delete[]` every row first, then `delete[] arr2D;`
+a: `delete[] arr2D;` then delete each row
+a: `delete arr2D[0];`
+why: If you delete the array of row pointers first, you lose the addresses of the rows and leak them all.
+
+@q m.12
+topic: memory
+diff: 2
+q: What does this print?
+code:
+#include <stdio.h>
+int glVar = 10;
+void f() {
+    int glVar;
+    glVar = 20;
+}
+int main() {
+    f();
+    printf("%d\n", glVar);
+    return 0;
+}
+@end
+*a: 10
+a: 20
+a: Garbage
+a: A compile error
+why: The `int glVar;` inside f creates a new **local** variable that shadows the global. Only the local one becomes 20.
+verify: output
+
+@q m.13
+topic: memory
+q: Which line declares a pointer to a function taking two ints and returning an int?
+a: `int *functionPtr(int, int);`
+*a: `int (*functionPtr)(int, int);`
+a: `int functionPtr*(int, int);`
+a: `function<int> ptr;`
+why: The parentheses around `*functionPtr` matter - without them you've declared a function that returns `int*`.
+
+@q m.14
+topic: memory
+q: What does this print?
+code:
+#include <stdio.h>
+int Add(int num1, int num2) { return num1 + num2; }
+int main() {
+    int (*functionPtr)(int, int);
+    functionPtr = Add;
+    printf("%d\n", functionPtr(20, 10));
+    return 0;
+}
+@end
+a: 10
+*a: 30
+a: 200
+a: The address of Add
+why: Calling through the function pointer calls Add(20, 10).
+verify: output
+
+@q m.15
+topic: memory
+q: What is the difference between `new int(5)` and `new int[5]`?
+*a: `new int(5)` makes ONE int with value 5; `new int[5]` makes an array of five ints
+a: They are the same
+a: `new int(5)` makes five ints
+a: `new int[5]` makes one int with value 5
+why: Round brackets (or braces) initialise a single object; square brackets give the number of elements.
+
+@q m.16
+topic: memory
+q: When is a destructor such as `~TwentyThousandPoints()` called?
+a: Only when you call it yourself
+*a: Automatically, when the object goes out of scope (or is deleted)
+a: When the program starts
+a: Every time a member function is called
+why: The slides show memory use staying flat once the destructor `delete[]`s the points array - without it, every object leaks.
+
+# ============================================================== LINKED LISTS
+@q l.01
+topic: linkedlist
+q: What does each node of a singly linked list contain?
+a: Only its data
+*a: Its data and a pointer to the next node
+a: Pointers to every other node
+a: An index into an array
+why: `struct Node { int data; Node* nextPtr; };` - each node knows only its successor.
+
+@q l.02
+topic: linkedlist
+q: How do you recognise the last node of a singly linked list?
+a: Its data is 0
+*a: Its `nextPtr` is `nullptr`
+a: It points back to the head
+a: It is stored in a variable called tail
+why: A null next pointer marks the end. Traversal loops are `while (cur != nullptr)`.
+
+@q l.03
+topic: linkedlist
+diff: 2
+q: Why does `InsertAtEnd(Node** ptrToHeadPtr, int newData)` take a pointer to the head pointer?
+a: It is faster
+*a: So it can change the caller's head pointer when the list is empty
+a: Because Node is a struct
+a: To make a copy of the list
+why: With a plain `Node*` parameter the function would only change its own copy of the head. `*ptrToHeadPtr = newNode;` updates the caller's.
+
+@q l.04
+topic: linkedlist
+q: Without a tail pointer, how long does `InsertAtEnd` take on a list of n nodes?
+a: Constant time
+*a: Time proportional to n - it must walk to the last node
+a: Time proportional to n squared
+a: It depends on the data
+why: It has to follow every `nextPtr` to find the end. InsertAtBeginning, by contrast, is constant time.
+
+@q l.05
+topic: linkedlist
+diff: 2
+q: What does this program print?
+code:
+#include <iostream>
+using namespace std;
+struct Node { int data; Node* nextPtr; };
+void InsertAtEnd(Node** h, int v) {
+    Node* n = new Node(); n->data = v; n->nextPtr = nullptr;
+    if (*h == nullptr) { *h = n; return; }
+    Node* c = *h;
+    while (c->nextPtr != nullptr) c = c->nextPtr;
+    c->nextPtr = n;
+}
+int main() {
+    Node* head = nullptr;
+    InsertAtEnd(&head, 10);
+    InsertAtEnd(&head, 20);
+    InsertAtEnd(&head, 30);
+    for (Node* c = head; c != nullptr; c = c->nextPtr) cout << c->data << " ";
+    cout << endl;
+}
+@end
+a: 30 20 10
+*a: 10 20 30
+a: 10
+a: Nothing - head is still nullptr
+why: Each value is appended after the current last node, and head was updated through the Node** on the first insert.
+verify: output
+
+@q l.06
+topic: linkedlist
+q: In `DeleteWithValue`, what does `prev->nextPtr = curNodePtr->nextPtr;` do?
+*a: Unlinks the current node by making the previous node skip over it
+a: Deletes the previous node
+a: Moves to the next node
+a: Reverses the list
+why: After re-linking, nothing points to curNodePtr any more - so it must then be freed with `delete curNodePtr;`.
+
+@q l.07
+topic: linkedlist
+q: What goes wrong if `DeleteWithValue` unlinks a node but never calls `delete` on it?
+a: The list breaks
+*a: A memory leak - the node is unreachable but still allocated
+a: The node comes back
+a: Nothing
+why: Every `new` needs a matching `delete`.
+
+@q l.08
+topic: linkedlist
+q: What extra pointer does a `DoublyLinkedNode` have?
+*a: `prevPointer`, pointing to the previous node
+a: A second next pointer
+a: A pointer to the head
+a: None
+why: With prev and next pointers the list can be walked in both directions - and inserting means updating up to four links.
+
+@q l.09
+topic: linkedlist
+q: Which is an advantage of a linked list over an array?
+a: Faster random access by index
+*a: Inserting or deleting in the middle doesn't require shifting other elements
+a: It uses less memory per element
+a: Elements are stored contiguously
+why: You only re-link pointers. The trade-off: no random access - reaching element i means walking i nodes.
+
+@q l.10
+topic: linkedlist
+diff: 2
+q: In the `LinkedList` class, why must you write your own copy constructor?
+a: The compiler doesn't provide one
+*a: The default one copies only the head pointer, so both lists share nodes and both destructors delete them
+a: To make copying faster
+a: Classes with pointers can't be copied
+why: A deep copy creates new nodes with the same values. Without it you get a double delete when both lists are destroyed.
+
+@q l.11
+topic: linkedlist
+q: How is the STL `std::list` implemented?
+a: As a dynamic array
+*a: As a doubly linked list
+a: As a binary tree
+a: As a hash table
+why: That's why it supports `push_front`, `push_back` and `splice`, but not `list[i]`.
+
+@q l.12
+topic: linkedlist
+q: Which operation is O(1) on a singly linked list with only a head pointer?
+*a: Inserting at the beginning
+a: Inserting at the end
+a: Finding the largest value
+a: Accessing the 10th element
+why: The new node simply points at the old head and becomes the head.
+
+# ============================================================== CLASSES
+@q k.01
+topic: classes
+q: What is the difference between a `class` and a `struct` in C++?
+a: Structs can't have methods
+*a: Members of a class are private by default; members of a struct are public by default
+a: Classes can't have data members
+a: There is no difference at all
+why: Otherwise they are essentially the same. Structs are a carry-over from C.
+
+@q k.02
+topic: classes
+q: What is an **instance** of a class?
+*a: An occurrence of the class (an object) with its own set of field values
+a: The class definition itself
+a: A method of the class
+a: A copy of the source code
+why: `Vector vector1; Vector vector2;` creates two instances, each with its own xStart, xEnd, yStart and yEnd.
+
+@q k.03
+topic: classes
+q: What happens if you forget the `;` after a class definition's closing brace?
+a: Nothing
+*a: The compiler reports confusing errors, often on later lines
+a: The class becomes a struct
+a: The class becomes private
+why: The lecture warns: "Don't forget the semi colon!! Can cause cryptic errors if you forget it."
+
+@q k.04
+topic: classes
+diff: 2
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+class Point { public: double x, y; };
+class Vector { public: Point start, end; };
+int main() {
+    Vector vec1, vec2;
+    vec1.start.x = 3.0; vec1.start.y = 4.0;
+    vec2.start = vec1.start;
+    vec2.start.x = 7.0;
+    cout << vec1.start.x << " " << vec2.start.x << endl;
+}
+@end
+a: 7 7
+*a: 3 7
+a: 3 3
+a: 7 3
+why: Assigning one instance to another **copies** all the fields. Changing vec2.start afterwards doesn't affect vec1.
+verify: output
+
+@q k.05
+topic: classes
+diff: 2
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+class Point { public: double x, y; };
+void offsetPoint(Point p, double x, double y) { p.x += x; p.y += y; }
+int main() {
+    Point p;
+    p.x = 3.0; p.y = 4.0;
+    offsetPoint(p, 1.0, 2.0);
+    cout << "(" << p.x << "," << p.y << ")" << endl;
+}
+@end
+*a: (3,4)
+a: (4,6)
+a: (1,2)
+a: (0,0)
+why: The object is passed **by value**, so offsetPoint changes a copy. Pass `Point &p` (or `Point *p`) to change the original.
+verify: output
+
+@q k.06
+topic: classes
+q: Which operator accesses a member through a **pointer** to an object?
+a: `.`
+*a: `->`
+a: `::`
+a: `*.`
+why: `pPtr->x` is shorthand for `(*pPtr).x`.
+
+@q k.07
+topic: classes
+q: When is a constructor called?
+*a: Automatically, when an instance is created
+a: When the program ends
+a: Only when you call it by name
+a: When the object is copied into a function
+why: `Point p;` runs the default constructor; `Point p(2.0, 3.0);` runs the two-parameter one.
+
+@q k.08
+topic: classes
+q: What is `Point(double nx, double ny) : x(nx), y(ny) {}` an example of?
+a: Inheritance
+*a: A constructor initialisation list
+a: Operator overloading
+a: A template
+why: The list after the colon initialises members before the constructor body runs. `y{ny}` brace syntax works too.
+
+@q k.09
+topic: classes
+q: Inside a method, what does `this` point to?
+*a: The object the method was called on
+a: The class definition
+a: The previous object created
+a: The first object of that class
+why: In `vec1.print()`, `this` is `&vec1`. `this->x = 0.0;` is the same as `x = 0.0;`.
+
+@q k.10
+topic: classes
+q: What can a **static** member function NOT do?
+a: Return a value
+*a: Access non-static members (there's no `this`)
+a: Be called without an object
+a: Take parameters
+why: A static function belongs to the class, not to an object - the slides show `this->temp = 10;` failing to compile inside one.
+
+@q k.11
+topic: classes
+q: How do you access the static member `PI` of class `Maths`?
+a: `Maths.PI`
+*a: `Maths::PI`
+a: `Maths->PI`
+a: `PI.Maths`
+why: The scope resolution operator `::` names a member of a class (or namespace) rather than of an object.
+
+@q k.12
+topic: classes
+diff: 2
+q: With the **default** copy constructor, `MITStudent student2 = student1;` copies the `char *name` pointer. What happens after `student2.name[0] = 'b';`?
+a: Only student2's name changes
+*a: student1's name changes too - both point at the same characters
+a: A compile error
+a: Nothing changes
+why: Copying a pointer gives a **shallow** copy. A custom copy constructor that duplicates the string (strdup / new + strcpy) gives each object its own.
+
+@q k.13
+topic: classes
+q: How do you write the destructor for a class called `Point`?
+a: `Point::destroy()`
+*a: `~Point()`
+a: `delete Point()`
+a: `Point(-1)`
+why: A destructor is named with a tilde and the class name. It has no parameters and no return type.
+
+@q k.14
+topic: classes
+q: `Point points[20];` compiles only if Point has...
+*a: A default (no-argument) constructor
+a: A copy constructor
+a: A destructor
+a: Public data members
+why: Creating an array of objects constructs every element with the default constructor.
+
+@q k.15
+topic: classes
+q: `Point* p = new Point();` must eventually be released with:
+a: `delete[] p;`
+*a: `delete p;`
+a: `free(p);`
+a: Nothing - it is freed when p goes out of scope
+why: A single object from `new` is released with `delete`; an array from `new[]` with `delete[]`. The pointer going out of scope does NOT free the object.
+
+@q k.16
+topic: classes
+q: In `void Vector::print() { ... }`, what does `Vector::` mean?
+*a: This is the `print` method belonging to class Vector, defined outside the class body
+a: print returns a Vector
+a: print is static
+a: print is private
+why: Methods declared in a header (vector.h) are implemented in the .cpp file with the `ClassName::` prefix.
+
+@q k.17
+topic: classes
+q: What happens when `main` does `p.x = 5.0;` and `x` is `private` in class Point?
+a: It works
+*a: A compile error - private members are only accessible inside the class
+a: x becomes public
+a: A run-time error
+why: Provide public getters/setters such as `getX()` to give controlled access.
+
+# ============================================================== OVERLOADING
+@q o.01
+topic: operators
+q: Overloaded functions with the same name must differ in...
+*a: The types and/or number of their parameters
+a: Only their return type
+a: Their names
+a: Nothing
+why: You cannot overload functions that differ only by return type - the compiler chooses an overload from the arguments.
+
+@q o.02
+topic: operators
+q: With overloads `print(int)`, `print(double)` and `print(char*)`, which one does `pd.print(500.263);` call?
+a: `print(int)`
+*a: `print(double)`
+a: `print(char*)`
+a: It's ambiguous
+why: 500.263 is a double literal, so the double version is the exact match.
+
+@q o.03
+topic: operators
+q: What is the name of the function that overloads `+` for Box?
+*a: `operator+`
+a: `plus`
+a: `add`
+a: `+operator`
+why: Overloaded operators are functions named with the keyword `operator` followed by the symbol: `Box operator+(const Box& b);`.
+
+@q o.04
+topic: operators
+q: With a member `operator+`, what is `Box3 = Box1 + Box2;` equivalent to?
+*a: `Box3 = Box1.operator+(Box2);`
+a: `Box3 = Box2.operator+(Box1);`
+a: `Box3 = operator+(Box3, Box1, Box2);`
+a: `Box3 += Box1 + Box2;`
+why: The left operand calls the method (it is `this`) and the right operand is the parameter.
+
+@q o.05
+topic: operators
+q: How many parameters does a **non-member** `operator+` for Box take?
+a: 0
+a: 1
+*a: 2
+a: 3
+why: `Box operator+(const Box&, const Box&);` - both operands are passed explicitly because there is no `this`.
+
+@q o.06
+topic: operators
+q: How does C++ tell the postfix `operator++(int)` from the prefix `operator++()`?
+a: By the return type
+*a: Postfix has a dummy `int` parameter
+a: Postfix must be a friend
+a: It can't - you can only overload one
+why: The int is never used - it is just a marker saying "I am the postfix version".
+
+@q o.07
+topic: operators
+diff: 2
+q: `c3` holds 11:00. After `c1 = c3++;`, what are c1 and c3?
+a: c1 11:01, c3 11:01
+*a: c1 11:00, c3 11:01
+a: c1 11:01, c3 11:00
+a: c1 11:00, c3 11:00
+why: Postfix saves a copy of the old value, ticks, then returns the saved copy.
+
+@q o.08
+topic: operators
+diff: 2
+q: Why is `operator<<` for Clock written as a non-member (friend) function?
+*a: Its left operand is an `ostream` (cout), not a Clock, so it can't be a Clock member
+a: Friends are faster
+a: Members can't return references
+a: It must be static
+why: Being a friend lets it read the private hour and min fields.
+
+@q o.09
+topic: operators
+q: Why does `operator<<` return `ostream&`?
+a: It must return something
+*a: So calls can be chained: `cout << c1 << " " << c2;`
+a: To print a newline
+a: To copy the stream
+why: Each `<<` returns the same stream, which becomes the left operand of the next `<<`.
+
+@q o.10
+topic: operators
+q: What does the prefix `Clock operator++()` return in the lecture notes?
+*a: `*this`, after calling `tick()`
+a: A copy of the clock before ticking
+a: Nothing
+a: The number of minutes
+why: Prefix increments first, then hands back the (new) object.
+
+@q o.11
+topic: operators
+diff: 2
+q: What does this program print?
+code:
+#include <iostream>
+using namespace std;
+class Box {
+public:
+    double getVolume() { return length * breadth * height; }
+    void set(double l, double b, double h) { length = l; breadth = b; height = h; }
+    Box operator+(const Box& b) {
+        Box box;
+        box.length = length + b.length;
+        box.breadth = breadth + b.breadth;
+        box.height = height + b.height;
+        return box;
+    }
+private:
+    double length = 0, breadth = 0, height = 0;
+};
+int main() {
+    Box b1, b2;
+    b1.set(6, 7, 5);
+    b2.set(12, 13, 10);
+    Box b3 = b1 + b2;
+    cout << b1.getVolume() << " " << b2.getVolume() << " " << b3.getVolume() << endl;
+}
+@end
+a: 210 1560 1770
+*a: 210 1560 5400
+a: 210 1560 3510
+a: 5400 5400 5400
+why: Box3's dimensions are summed: 18 x 20 x 15 = 5400. Volumes are not simply added.
+verify: output
+
+# ============================================================== TEMPLATES
+@q t.01
+topic: templates
+q: What is the main advantage of templates?
+*a: One generic function or class works for many data types, so you don't write a copy per type
+a: They make programs run faster
+a: They hide data from other classes
+a: They remove the need for header files
+why: Change the algorithm once and every type benefits - no more maintaining an int sum, a float sum, a double sum...
+
+@q t.02
+topic: templates
+q: How does the compiler decide which type `T` is for a template **function**?
+*a: From the types of the arguments passed in
+a: From the return type
+a: It always uses int
+a: From the variable the result is assigned to
+why: The notes stress this: the type of a template function is never determined by its return value, only by the parameters.
+
+@q t.03
+topic: templates
+q: Which line correctly creates an `Adder` that works with ints?
+a: `Adder intAdder;`
+*a: `Adder<int> intAdder;`
+a: `Adder(int) intAdder;`
+a: `template Adder<int>;`
+why: For class templates you name the type explicitly in angle brackets.
+
+@q t.04
+topic: templates
+diff: 2
+q: How is the template member function `add` defined outside the `Adder` class?
+a: `void Adder::add(T number) { ... }`
+*a: `template <typename T> void Adder<T>::add(T number) { ... }`
+a: `template void add(T number) { ... }`
+a: `void Adder<T>::add(T number) { ... }`
+why: Each out-of-class definition needs the `template <typename T>` line and `Adder<T>::`.
+
+@q t.05
+topic: templates
+diff: 3
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+template <typename Sumtype, typename Averagetype>
+Averagetype average(Sumtype const* pArray, Averagetype const ELEMENTS) {
+    Sumtype sum = 0;
+    for (int i = 0; i < ELEMENTS; i++) sum += pArray[i];
+    return (Averagetype)sum / ELEMENTS;
+}
+int main() {
+    int intArray[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    cout << average(intArray, 10) << " " << average(intArray, 10.0f) << endl;
+}
+@end
+a: 5.5 5.5
+*a: 5 5.5
+a: 5 5
+a: 55 55
+why: With 10 (an int) Averagetype is int, so 55 / 10 = 5. With 10.0f it's float: 5.5.
+verify: output
+
+@q t.06
+topic: templates
+q: What does the compiler do when you call a template function with int and then with float arrays?
+*a: It generates a separate version of the function for each type
+a: It converts the floats to int
+a: It reports an error
+a: It runs the same machine code for both
+why: The compiler "performs the drudgery of making multiple copies of the function automatically", replacing T with each actual type.
+
+@q t.07
+topic: templates
+q: How do you write a template with two type parameters?
+a: `template <typename X; typename Y>`
+*a: `template <typename X, typename Y>`
+a: `template <X, Y>`
+a: `template typename<X, Y>`
+why: Parameters are separated by commas inside the angle brackets.
+
+@q t.08
+topic: templates
+q: Must the template parameter be called `T`?
+a: Yes
+*a: No - any name that doesn't clash with an existing type works, e.g. DataType
+a: Only T, U and V are allowed
+a: It must be a single letter
+why: Descriptive names help when there are several parameters, like Sumtype and Averagetype.
+
+@q t.09
+topic: templates
+q: What does this print?
+code:
+#include <iostream>
+using namespace std;
+template <typename T>
+T sum(T const* pArray, int const ELEMENTS) {
+    T total = 0;
+    for (int i = 0; i < ELEMENTS; i++) total += pArray[i];
+    return total;
+}
+int main() {
+    int ints[] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
+    cout << sum(ints, 10) << endl;
+}
+@end
+a: 10
+*a: 55
+a: 45
+a: It doesn't compile
+why: T is deduced as int from the array argument; 1 + 2 + ... + 10 = 55.
+verify: output
+
+# ============================================================== VECTORS
+@q v.01
+topic: vectors
+q: What does this print?
+code:
+vector<int> v;
+v.push_back(10);
+v.push_back(20);
+v.push_back(30);
+v.at(0) = v.at(2);
+v.pop_back();
+cout << v.size() << " " << v[0] << endl;
+@end
+a: 3 30
+*a: 2 30
+a: 2 10
+a: 3 10
+why: v becomes {30, 20, 30} after the copy; pop_back removes the last element, leaving {30, 20}.
+verify: output
+
+@q v.02
+topic: vectors
+q: What is the difference between `v.at(i)` and `v[i]`?
+*a: `at` checks the index is in range (and throws if not); `[]` does no checking
+a: `[]` checks the index; `at` doesn't
+a: `at` returns a copy; `[]` returns a reference
+a: None
+why: Out-of-range `[]` is undefined behaviour; out-of-range `at` throws std::out_of_range.
+
+@q v.03
+topic: vectors
+q: What is a vector's **capacity**?
+a: The number of elements it holds
+*a: How many elements it can hold in the memory already allocated
+a: The largest value it contains
+a: The size of one element
+why: size is how many it holds now; capacity - size is the spare room before the next reallocation.
+
+@q v.04
+topic: vectors
+q: What does `v.reserve(20)` do to a vector with 10 elements?
+a: Adds 10 zeros
+*a: Raises the capacity to at least 20 without changing the size
+a: Removes elements beyond 20
+a: Sets the size to 20
+why: Reserving early avoids repeated reallocations as you push_back.
+
+@q v.05
+topic: vectors
+diff: 2
+q: What can happen to an iterator obtained before a `push_back`?
+a: Nothing - iterators never change
+*a: It may become invalid, because push_back can reallocate the vector's memory
+a: It automatically moves to the new element
+a: It becomes a pointer
+why: The notes show `cout << *iter` after a push_back as a run-time error. Re-acquire iterators after modifying a vector.
+
+@q v.06
+topic: vectors
+q: What does `v.end()` refer to?
+a: The last element
+*a: A position one past the last element - it must not be dereferenced
+a: The first element
+a: The middle of the vector
+why: That's why loops test `iter != v.end()`.
+
+@q v.07
+topic: vectors
+diff: 2
+q: After `remove(v.begin(), v.end(), 3)` on v = {3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9}, what is `v.size()`?
+a: 9
+*a: 11
+a: 2
+a: 0
+why: `remove` only shuffles the kept elements forward and returns the new logical end. You must call `erase` to actually shrink the vector.
+verify: output
+code:
+vector<int> v = {3, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9};
+remove(v.begin(), v.end(), 3);
+cout << v.size() << endl;
+@end
+
+@q v.08
+topic: vectors
+q: Which line removes every 3 from v in one go?
+*a: `v.erase(remove(v.begin(), v.end(), 3), v.end());`
+a: `v.remove(3);`
+a: `remove(v.begin(), v.end(), 3);`
+a: `v.erase(3);`
+why: The erase-remove idiom: remove compacts, erase chops off the junk at the end.
+
+@q v.09
+topic: vectors
+diff: 3
+q: What does this print? (It's the "Vectors and Iterators" example.)
+code:
+vector<int> v;
+v.push_back(30); v.push_back(10); v.push_back(5);
+vector<int>::iterator iter = v.begin();
+*iter = 35;
+v.insert(iter, 3, 100);
+iter = v.begin();
+iter++;
+v.erase(iter);
+iter = v.begin();
+v.erase(iter, iter + 2);
+sort(v.begin(), v.end());
+for (iter = v.begin(); iter != v.end(); iter++) cout << *iter << " ";
+@end
+a: 35 10 5
+*a: 5 10 35
+a: 100 5 10 35
+a: 5 10 35 100
+why: {35,10,5} -> insert three 100s -> {100,100,100,35,10,5} -> erase one -> {100,100,35,10,5} -> erase two -> {35,10,5} -> sorted.
+verify: output
+
+@q v.10
+topic: vectors
+q: `LandmarkContainer.push_back(carlow);` then `LandmarkContainer[0].m_x = 10;`. What happens to `carlow.m_x`?
+a: It becomes 10
+*a: Nothing - the container stores a copy
+a: It becomes 0
+a: A compile error
+why: STL containers always copy in and copy out.
+
+@q v.11
+topic: vectors
+q: A `vector<SomeClass*>` holds pointers from `new`. What happens to those objects when the vector is destroyed?
+a: They are deleted automatically
+*a: Nothing - you must delete them yourself, or they leak
+a: They are copied
+a: The program crashes
+why: The container frees its own storage (the pointers), not the objects they point to.
+
+@q v.12
+topic: vectors
+q: When should you prefer a `list` over a `vector`?
+a: When you need random access by index
+*a: When you frequently insert and remove elements in the middle
+a: When you store ints
+a: Always
+why: Erasing from the middle of a vector copies every later element back one place.
+
+@q v.13
+topic: vectors
+q: What does `vector<int>().swap(products);` achieve?
+*a: It empties products and releases its memory
+a: It doubles the capacity
+a: It sorts the vector
+a: Nothing useful
+why: products swaps contents with a temporary empty vector, which then destroys the old storage. `shrink_to_fit` is the modern way to trim spare capacity.
+
+@q v.14
+topic: vectors
+q: What is a **predicate**, as used with `remove_if`?
+*a: A function that returns true or false for an element
+a: A type of iterator
+a: A sorting algorithm
+a: A vector of booleans
+why: remove_if removes every element for which the predicate (like isExpired) returns true.
+
+# ============================================================== LISTS & MAPS
+@q s.01
+topic: listsmaps
+q: Which of these does `std::list` NOT support?
+a: `push_front`
+a: `push_back`
+*a: `list[i]` random access
+a: Iterators
+why: A list is a doubly linked list - reaching element i means walking through i nodes, so there's no operator[].
+
+@q s.02
+topic: listsmaps
+q: What is special about `splice`?
+*a: It moves elements from one list into another without copying or constructing any elements
+a: It copies all elements
+a: It sorts the list
+a: It works for vectors too
+why: Only std::list offers splice: it simply re-links nodes. Iterators to the moved elements are no longer valid for the old list.
+
+@q s.03
+topic: listsmaps
+q: Why prefer `if (listObject.empty())` over `if (listObject.size() == 0)`?
+*a: empty() is guaranteed constant time; size() may not be for lists in some implementations
+a: size() is not allowed on lists
+a: empty() also clears the list
+a: There is no difference in any case
+why: The notes explain that list::size() may be O(n) because of how splice is implemented.
+
+@q s.04
+topic: listsmaps
+q: What must be true of the keys in a `std::map`?
+a: They must be ints
+*a: They are unique and must be comparable with `<` (the map keeps them sorted)
+a: They may repeat
+a: They must be strings
+why: map is a sorted associative container (a binary tree). Using pointers as keys is a bad idea - it sorts by address, not by what they point at.
+
+@q s.05
+topic: listsmaps
+q: What does this print?
+code:
+map<string, int> freq;
+freq["One"] = 1;
+freq["One"] = 134;
+cout << freq["One"] << " " << freq.size() << endl;
+@end
+a: 1 1
+*a: 134 1
+a: 134 2
+a: 1 2
+why: Each key is stored once. Assigning to an existing key with [] replaces the old value.
+verify: output
+
+@q s.06
+topic: listsmaps
+q: What does `freq.insert(make_pair("One", 1))` do if "One" is already in the map?
+a: Replaces the value with 1
+*a: Nothing - insert never overwrites; the returned pair's `.second` is false
+a: Adds a second "One"
+a: Throws an exception
+why: Check `result.second` to find out whether the insertion happened.
+
+@q s.07
+topic: listsmaps
+q: What does `freq.find("Two")` return if "Two" is not in the map?
+a: nullptr
+a: 0
+*a: `freq.end()`
+a: An iterator to the first element
+why: Always compare the result with end() before dereferencing it.
+
+@q s.08
+topic: listsmaps
+q: For a map iterator `iter`, what are `iter->first` and `iter->second`?
+*a: The key and the value
+a: The value and the key
+a: The first and second elements of the map
+a: Two iterators
+why: Each map element is a pair<const Key, Value>.
+
+@q s.09
+topic: listsmaps
+q: How does `std::unordered_map` differ from `std::map`?
+*a: It uses a hash table, so keys are not kept in sorted order
+a: It allows duplicate keys
+a: It can only store ints
+a: It is slower in every case
+why: unordered_map (C++11) is usually faster for lookups but iterates in no particular order.
+
+@q s.10
+topic: listsmaps
+q: Which pairing is correct?
+*a: stack is LIFO (last in, first out); queue is FIFO (first in, first out)
+a: stack is FIFO; queue is LIFO
+a: Both are FIFO
+a: Both are LIFO
+why: Both are container adapters built on a deque by default.
+
+@q s.11
+topic: listsmaps
+diff: 2
+q: What does this print? (The list example from the notes.)
+code:
+list<int> listObject;
+listObject.push_back(50);
+listObject.push_back(40);
+listObject.push_front(10);
+listObject.push_front(20);
+listObject.sort();
+for (list<int>::iterator it = listObject.begin(); it != listObject.end(); ++it) (*it) *= 2;
+for (int x : listObject) cout << x << " ";
+@end
+a: 40 20 100 80
+*a: 20 40 80 100
+a: 10 20 40 50
+a: 100 80 40 20
+why: The list starts as 20, 10, 50, 40; sorted it is 10, 20, 40, 50; doubled: 20, 40, 80, 100.
+verify: output
+
+@q s.12
+topic: listsmaps
+diff: 3
+q: What does this print? (A shortened version of the splice example.)
+code:
+list<int> mylist1, mylist2;
+for (int i = 1; i <= 4; ++i) mylist1.push_back(i);
+for (int i = 1; i <= 3; ++i) mylist2.push_back(i * 10);
+list<int>::iterator it = mylist1.begin();
+++it;
+mylist1.splice(it, mylist2);
+for (int x : mylist1) cout << x << " ";
+cout << mylist2.size() << endl;
+@end
+a: 10 20 30 1 2 3 4 0
+*a: 1 10 20 30 2 3 4 0
+a: 1 2 3 4 10 20 30 3
+a: 1 10 20 30 2 3 4 3
+why: The whole of mylist2 is inserted before the element `it` points at (2). mylist2 is left empty.
+verify: output
+
+@q s.13
+topic: listsmaps
+q: In what order does this loop print the keys?
+code:
+map<string, int> m;
+m["zero"] = 0; m["one"] = 1; m["two"] = 2;
+for (auto& kv : m) cout << kv.first << " ";
+@end
+a: zero one two
+*a: one two zero
+a: two one zero
+a: In a random order
+why: A map keeps its keys sorted - for strings, alphabetically.
+verify: output
+
+@q s.14
+topic: listsmaps
+q: What does `urlMapping.count(key)` return for a std::map?
+*a: 1 if the key is present, 0 if not
+a: The value stored at key
+a: The number of keys
+a: An iterator
+why: Keys are unique, so count can only be 0 or 1 - a handy existence test, as in generateUniqueKey.
+
+@q s.15
+topic: listsmaps
+q: Which header must you include to use `std::map`?
+a: `<list>`
+*a: `<map>`
+a: `<vector>`
+a: `<pair>`
+why: Similarly `<list>`, `<stack>` and `<queue>` for the other containers.
