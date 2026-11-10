@@ -24,7 +24,6 @@ static Sound MakeSound(float seconds, const std::function<float(int, float)>& ge
     for (int i = 0; i < frames; i++) {
         float v = gen(i, (float)i / kRate);
         if (v > 1.f) v = 1.f; if (v < -1.f) v = -1.f;
-        v = floorf(v * 7.f + 0.5f) / 7.f;          // crush to a handful of levels, like an 8-bit sound chip
         data[i] = (short)(v * 32000.f);
     }
     w.data = data;
@@ -53,15 +52,21 @@ void Init() {
     InitAudioDevice();
     if (!IsAudioDeviceReady()) { TraceLog(LOG_WARNING, "SFX: audio device not available"); return; }
 
-    // --- librarian voice: little square-wave blips, like a text box in an old console game ---
+    // --- librarian voice: glottal pulse train through two formant filters ---
+    const float formants[8][2] = { { 730, 1090 }, { 530, 1840 }, { 570, 840 }, { 300, 870 },
+                                   { 660, 1720 }, { 440, 1020 }, { 390, 1990 }, { 640, 1190 } };
     for (int k = 0; k < 8; k++) {
-        float f0 = 140.f + k * 24.f;
-        float duty = (k % 2) ? 0.25f : 0.5f;
-        g_voice[k] = MakeSound(0.07f, [=](int, float t) {
-            float ph = fmodf(t * f0 * (1.f + 0.05f * sinf(t * 70.f)), 1.f);
-            float sq = ph < duty ? 1.f : -1.f;
-            float env = util::Clamp01(t / 0.006f) * util::Clamp01((0.07f - t) / 0.03f);
-            return sq * env * 0.34f;
+        float f0 = 118.f + (k % 4) * 9.f;
+        BandPass f1(formants[k][0], 5.f), f2(formants[k][1], 7.f);
+        float phase = 0;
+        g_voice[k] = MakeSound(0.085f, [&](int, float t) {
+            float f = f0 * (1.f + 0.06f * sinf(t * 40.f));
+            phase += f / kRate;
+            if (phase > 1.f) phase -= 1.f;
+            float src = (phase < 0.15f) ? 1.f : -0.18f;     // pulse-ish source
+            float y = f1.Run(src) * 1.6f + f2.Run(src) * 0.9f;
+            float env = util::Clamp01(t / 0.012f) * util::Clamp01((0.085f - t) / 0.035f);
+            return y * env * 0.75f;
         });
     }
 

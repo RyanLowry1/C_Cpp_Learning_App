@@ -88,7 +88,7 @@ void Dialogue::Draw(float W, float H, bool interactive) {
     if (ChoicesShowing() && choiceAppear > 0.01f) {
         int n = (int)choices.size();
         int cols = std::min(columns, std::max(1, n));
-        float cw = cols >= 4 ? 252.f : (cols == 3 ? 300.f : 360.f);
+        float cw = cols >= 4 ? 238.f : (cols == 3 ? 290.f : 360.f);
         float ch = 74.f, gap = 12.f;
         int rows = (n + cols - 1) / cols;
         float totalW = cols * cw + (cols - 1) * gap;
@@ -116,20 +116,17 @@ void Dialogue::Draw(float W, float H, bool interactive) {
             if (!c.badge.empty()) {
                 // badge sits under the icon so the title keeps the full width
                 DrawIcon(c.icon, Vector2{ card.x + 34, card.y + 27 }, 24, util::WithAlpha(c.accent, t));
-                std::string bt;
-                for (char ch2 : c.badge) if (ch2 != ' ') bt += ch2;
-                if (bt.rfind("EXAM", 0) == 0) bt = "EX" + bt.substr(4);
-                float bwid = MeasureWidth(FontId::SerifBold, bt, 11) + 10;
+                float bwid = std::min(44.f, MeasureWidth(FontId::SerifBold, c.badge, 11) + 10);
                 Rectangle br{ card.x + 34 - bwid * 0.5f, card.y + ch - 26, bwid, 17 };
                 DrawRectangleRounded(br, 0.5f, 4, util::WithAlpha(c.accent, 0.85f * t));
-                TextCentered(FontId::SerifBold, bt, br, 11, util::WithAlpha(pal::Paper, t));
+                TextCentered(FontId::SerifBold, c.badge, br, 11, util::WithAlpha(pal::Paper, t));
             } else {
                 DrawIcon(c.icon, Vector2{ card.x + 34, card.y + ch * 0.5f }, 28, util::WithAlpha(c.accent, t));
             }
             float fs = 21.f;
-            while (fs > 14 && MeasureWidth(FontId::Serif, c.label, fs) > labelW) fs -= 1;
-            std::string label = Ellipsize(FontId::Serif, c.label, fs, labelW);
-            Text(FontId::Serif, label, tx, card.y + 11 + (21.f - fs) * 0.5f, fs, util::WithAlpha(pal::Ink, t));
+            while (fs > 14 && MeasureWidth(FontId::SerifBold, c.label, fs) > labelW) fs -= 1;
+            std::string label = Ellipsize(FontId::SerifBold, c.label, fs, labelW);
+            Text(FontId::SerifBold, label, tx, card.y + 11 + (21.f - fs) * 0.5f, fs, util::WithAlpha(pal::Ink, t));
             if (!c.sub.empty()) Text(FontId::SerifItalic, Ellipsize(FontId::SerifItalic, c.sub, 15, card.x + card.width - 10 - tx), tx, card.y + 38, 15, util::WithAlpha(pal::InkSoft, t));
             if (c.mastery >= 0) {
                 ProgressBar(Rectangle{ tx, card.y + ch - 14, maxW - 46, 6 }, c.mastery, util::Mix(pal::Red, pal::Green, c.mastery), util::WithAlpha(pal::PaperEdge, t));
@@ -161,8 +158,7 @@ void Dialogue::Draw(float W, float H, bool interactive) {
     TextCentered(FontId::SerifBold, speaker, np, 20, util::WithAlpha(pal::GoldSoft, a));
     // text
     std::string vis = current.substr(0, (size_t)std::min<int>(shown, (int)current.size()));
-    float ts = current.size() < 130 ? 29.f : 23.f;   // short lines get big pixel text, long ones the smaller size
-    Rich(vis, box.x + 30, box.y + 26, box.width - 60, ts, util::WithAlpha(pal::Ink, a), 1.42f);
+    Rich(vis, box.x + 30, box.y + 26, box.width - 60, 23, util::WithAlpha(pal::Ink, a), 1.42f);
     // continue / skip affordance
     bool canAdvance = Typing() || !queue.empty();
     if (canAdvance && !Typing()) {

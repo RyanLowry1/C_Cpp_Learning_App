@@ -2,7 +2,6 @@
 #include "syntax.h"
 #include "ui.h"
 #include <unordered_set>
-#include <algorithm>
 #include <cstring>
 
 namespace syntax {
@@ -109,46 +108,22 @@ static void DrawHighlightedLine(const std::string& line, const std::vector<unsig
     }
 }
 
-// The bitmap font cannot be shrunk to fit, so lines that are too long for the page are wrapped instead
-// (continuation rows are indented two spaces further than the line they continue).
-static std::vector<std::pair<std::string, int>> WrapRows(const std::vector<std::string>& lines, size_t maxChars) {
-    std::vector<std::pair<std::string, int>> rows;
-    for (size_t i = 0; i < lines.size(); i++) {
-        std::string l = lines[i];
-        if (l.size() <= maxChars) { rows.push_back({ l, (int)i + 1 }); continue; }
-        size_t indent = 0;
-        while (indent < l.size() && l[indent] == ' ') indent++;
-        indent = std::min(indent, maxChars / 2);
-        bool first = true;
-        size_t pos = 0;
-        while (pos < l.size()) {
-            size_t room = first ? maxChars : maxChars - indent - 2;
-            std::string chunk = l.substr(pos, room);
-            if (pos + room < l.size()) {
-                size_t sp = chunk.find_last_of(" ,;)");
-                if (sp != std::string::npos && sp > room / 2) chunk = chunk.substr(0, sp + 1);
-            }
-            pos += chunk.size();
-            rows.push_back({ first ? chunk : std::string(indent + 2, ' ') + chunk, first ? (int)i + 1 : 0 });
-            first = false;
-        }
-    }
-    return rows;
-}
-
 float DrawCode(const std::string& code, float x, float y, float width, float size, bool draw, bool lineNumbers, float minSize) {
-    (void)minSize;
     std::vector<std::string> lines = util::SplitLines(code);
     for (auto& l : lines) l = util::ReplaceAll(l, "\t", "    ");
+    size_t longest = 0;
+    for (auto& l : lines) longest = std::max(longest, l.size());
     float pad = 14.f;
     float gutter = lineNumbers ? 34.f : 0.f;
     float avail = width - pad * 2 - gutter;
     float fs = size;
     float cw = ui::MonoCharWidth(fs);
-    size_t maxChars = (size_t)std::max(8.f, floorf(avail / cw + 0.001f));
-    std::vector<std::pair<std::string, int>> rows = WrapRows(lines, maxChars);
+    if (longest > 0 && cw * longest > avail) {
+        fs = std::max(minSize, size * avail / (cw * longest));
+        cw = ui::MonoCharWidth(fs);
+    }
     float lh = fs * 1.34f;
-    float h = rows.size() * lh + pad * 1.4f;
+    float h = lines.size() * lh + pad * 1.4f;
     if (!draw) return h;
     Rectangle box{ x, y, width, h };
     DrawRectangleRounded(box, 0.04f, 6, Color{ 250, 245, 232, 255 });
@@ -158,11 +133,11 @@ float DrawCode(const std::string& code, float x, float y, float width, float siz
     bool inBlock = false;
     std::vector<unsigned char> kinds;
     ui::PushClip(Rectangle{ x + 2, y + 2, width - 4, h - 4 });
-    for (size_t i = 0; i < rows.size(); i++) {
+    for (size_t i = 0; i < lines.size(); i++) {
         float ly = y + pad * 0.7f + i * lh;
-        if (lineNumbers && rows[i].second > 0) ui::TextRight(FontId::Mono, std::to_string(rows[i].second), x + pad + gutter - 14, ly, fs * 0.85f, Color{ 170, 150, 120, 255 });
-        Classify(rows[i].first, inBlock, kinds);
-        DrawHighlightedLine(rows[i].first, kinds, x + pad + gutter, ly, fs, cw);
+        if (lineNumbers) ui::TextRight(FontId::Mono, std::to_string(i + 1), x + pad + gutter - 14, ly, fs * 0.85f, Color{ 170, 150, 120, 255 });
+        Classify(lines[i], inBlock, kinds);
+        DrawHighlightedLine(lines[i], kinds, x + pad + gutter, ly, fs, cw);
     }
     ui::PopClip();
     return h;
@@ -172,16 +147,17 @@ float DrawOutput(const std::string& text, float x, float y, float width, float s
     std::vector<std::string> lines = util::SplitLines(text);
     float fs = size;
     float cw = ui::MonoCharWidth(fs);
-    size_t maxChars = (size_t)std::max(8.f, floorf((width - 28) / cw + 0.001f));
-    std::vector<std::pair<std::string, int>> rows = WrapRows(lines, maxChars);
+    size_t longest = 0;
+    for (auto& l : lines) longest = std::max(longest, l.size());
+    if (longest > 0 && cw * longest > width - 28) { fs = std::max(11.f, fs * (width - 28) / (cw * longest)); }
     float lh = fs * 1.3f;
-    float h = rows.size() * lh + 34.f;
+    float h = lines.size() * lh + 34.f;
     if (!draw) return h;
     Rectangle box{ x, y, width, h };
     DrawRectangleRounded(box, 0.05f, 6, Color{ 44, 40, 36, 255 });
     ui::Text(FontId::SerifItalic, "output", x + width - 60, y + 4, 13, Color{ 160, 150, 130, 255 });
-    for (size_t i = 0; i < rows.size(); i++)
-        ui::Text(FontId::Mono, rows[i].first, x + 14, y + 20 + i * lh, fs, Color{ 226, 222, 200, 255 });
+    for (size_t i = 0; i < lines.size(); i++)
+        ui::Text(FontId::Mono, lines[i], x + 14, y + 20 + i * lh, fs, Color{ 226, 222, 200, 255 });
     return h;
 }
 

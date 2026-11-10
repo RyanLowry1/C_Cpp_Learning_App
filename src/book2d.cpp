@@ -13,8 +13,8 @@ namespace book {
 static const int CW = 390, CH = 500;
 
 void Book2D::Init() {
-    cover = LoadRenderTexture(CW / 3, (CH + 2) / 3);        // low-res cover: it is blown up with hard pixels
-    SetTextureFilter(cover.texture, TEXTURE_FILTER_POINT);
+    cover = LoadRenderTexture(CW, CH);
+    SetTextureFilter(cover.texture, TEXTURE_FILTER_BILINEAR);
     ready = true;
 }
 
@@ -46,10 +46,12 @@ void Book2D::SetLook(const Look& l) {
     look = l;
     if (!ready) return;
     BeginTextureMode(cover);
-    ui::Begin(Vector2{ 0, 0 }, 1.f / 3.f, false);
+    ui::Begin(Vector2{ 0, 0 }, 1.f, false);
     Color base = look.cover;
     DrawRectangleGradientV(0, 0, CW, CH, Shade(base, 1.18f), Shade(base, 0.8f));
     // faint leather grain
+    Rng rng(777);
+    for (int i = 0; i < 700; i++) DrawRectangle((int)rng.R(0, CW), (int)rng.R(0, CH), (int)rng.R(2, 7), 1, WithAlpha(rng.F() < 0.5f ? BLACK : WHITE, 0.05f));
     // spine band
     DrawRectangle(0, 0, 40, CH, Shade(base, 0.62f));
     DrawRectangleGradientH(40, 0, 18, CH, WithAlpha(BLACK, 0.35f), WithAlpha(BLACK, 0.0f));
@@ -82,7 +84,7 @@ void Book2D::DrawClosed(Vector2 c, float w, float squash, float rotDeg, bool sha
     rlRotatef(rotDeg, 0, 0, 1);
     DrawRectangleRec(Rectangle{ -w * 0.5f + w * 0.035f, -h * 0.5f + h * 0.03f, w, h }, Color{ 226, 210, 172, 255 });
     DrawRectangleLinesEx(Rectangle{ -w * 0.5f + w * 0.035f, -h * 0.5f + h * 0.03f, w, h }, 1.f, Color{ 160, 140, 100, 255 });
-    DrawTexturePro(cover.texture, Rectangle{ 0, 0, (float)cover.texture.width, -(float)cover.texture.height }, Rectangle{ -w * 0.5f, -h * 0.5f, w, h }, Vector2{ 0, 0 }, 0, WHITE);
+    DrawTexturePro(cover.texture, Rectangle{ 0, 0, (float)CW, -(float)CH }, Rectangle{ -w * 0.5f, -h * 0.5f, w, h }, Vector2{ 0, 0 }, 0, WHITE);
     rlPopMatrix();
 }
 
@@ -101,19 +103,19 @@ void Book2D::DrawSpread(Vector2 c, float s, float squash, float open, Texture2D 
     float e = std::max(2.f, 7.f * s * 2.f);
     DrawRectangleRec(Rectangle{ spine - 2, top - e, pw + e + 2, h + e * 2 }, board);
     DrawRectangleRec(Rectangle{ spine, top, pw + e * 0.5f, h + e * 0.5f }, Color{ 222, 206, 168, 255 });
-    DrawTexturePro(pageTex, Rectangle{ pageTex.width * 0.5f, 0, pageTex.width * 0.5f, -(float)pageTex.height }, Rectangle{ spine, top, pw, h }, Vector2{ 0, 0 }, 0, WHITE);
+    DrawTexturePro(pageTex, Rectangle{ (float)PageW, 0, (float)PageW, -(float)PageH }, Rectangle{ spine, top, pw, h }, Vector2{ 0, 0 }, 0, WHITE);
     // soft shade where the swinging cover falls across the right page
     if (p > 0.02f && p < 0.98f) DrawRectangleRec(Rectangle{ spine, top, pw, h }, WithAlpha(BLACK, 0.16f * sn));
 
     float cw = pw * cs;   // signed: + = cover over the right half, - = left page over the left half
     if (cw >= 0.f) {
-        DrawTexturePro(cover.texture, Rectangle{ 0, 0, (float)cover.texture.width, -(float)cover.texture.height }, Rectangle{ spine, top - lift, std::max(1.f, cw), h + lift * 2 }, Vector2{ 0, 0 }, 0, WHITE);
+        DrawTexturePro(cover.texture, Rectangle{ 0, 0, (float)CW, -(float)CH }, Rectangle{ spine, top - lift, std::max(1.f, cw), h + lift * 2 }, Vector2{ 0, 0 }, 0, WHITE);
         if (p > 0.f) DrawRectangleRec(Rectangle{ spine, top - lift, std::max(1.f, cw), h + lift * 2 }, WithAlpha(BLACK, 0.22f * sn));
     } else {
         float w = -cw;
         DrawRectangleRec(Rectangle{ spine - w - e, top - e, w + e + 2, h + e * 2 }, board);
         DrawRectangleRec(Rectangle{ spine - w, top - lift, w, h + lift * 2 }, Color{ 222, 206, 168, 255 });
-        DrawTexturePro(pageTex, Rectangle{ 0, 0, pageTex.width * 0.5f, -(float)pageTex.height }, Rectangle{ spine - w, top - lift, std::max(1.f, w), h + lift * 2 }, Vector2{ 0, 0 }, 0, Shade(WHITE, 0.74f + 0.26f * (-cs)));
+        DrawTexturePro(pageTex, Rectangle{ 0, 0, (float)PageW, -(float)PageH }, Rectangle{ spine - w, top - lift, std::max(1.f, w), h + lift * 2 }, Vector2{ 0, 0 }, 0, Shade(WHITE, 0.74f + 0.26f * (-cs)));
     }
 }
 

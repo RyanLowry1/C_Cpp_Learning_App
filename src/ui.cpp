@@ -1,12 +1,85 @@
-// ui.cpp - text layout, immediate-mode widgets and icons (8-bit edition: bitmap font, pixel-snapped widgets)
+// ui.cpp - fonts, text layout and immediate-mode widgets
 #include "ui.h"
-#include "pixfont.h"
-#include "pixel.h"
 #include <cstdlib>
 #include <cstring>
 #include <algorithm>
 
 namespace ui {
+
+// ---------------------------------------------------------------------------
+// Fonts: each family is rasterised at several pixel sizes; drawing picks the
+// atlas closest to the on-screen pixel size, while layout always uses the
+// metrics of the largest atlas so wrapping never depends on zoom level.
+// ---------------------------------------------------------------------------
+static const int kSizes[] = { 16, 24, 34, 50, 76 };
+static const int kNumSizes = 5;
+
+struct Family {
+    Font f[kNumSizes];
+    bool ok = false;
+    bool isDefault = false;
+};
+static Family g_fam[(int)FontId::Count];
+static std::vector<int> g_codepoints;
+static int g_cpIndex[0x2800];   // codepoint -> glyph index (same for all atlases)
+
+static void BuildCodepoints() {
+    g_codepoints.clear();
+    for (int c = 32; c <= 126; c++) g_codepoints.push_back(c);
+    for (int c = 0xA0; c <= 0xFF; c++) g_codepoints.push_back(c);
+    const int extra[] = { 0x2013, 0x2014, 0x2018, 0x2019, 0x201C, 0x201D, 0x2022, 0x2026,
+                          0x2190, 0x2191, 0x2192, 0x2193, 0x2260, 0x2264, 0x2265, 0x221A, 0x2122 };
+    for (int c : extra) g_codepoints.push_back(c);
+    for (int i = 0; i < 0x2800; i++) g_cpIndex[i] = -1;
+    for (int i = 0; i < (int)g_codepoints.size(); i++) g_cpIndex[g_codepoints[i]] = i;
+}
+
+static std::string FindFont(std::initializer_list<const char*> names) {
+    const char* windir = getenv("WINDIR");
+    std::string sys = std::string(windir ? windir : "C:\\Windows") + "\\Fonts\\";
+    for (const char* n : names) {
+        std::string a = util::AssetPath(std::string("fonts/") + n);
+        if (util::FileExistsAt(a)) return a;
+        std::string b = sys + n;
+        if (util::FileExistsAt(b)) return b;
+    }
+    return std::string();
+}
+
+void LoadFonts() {
+    BuildCodepoints();
+    struct Spec { FontId id; std::initializer_list<const char*> files; };
+    const Spec specs[] = {
+        { FontId::Serif,       { "georgia.ttf", "times.ttf", "arial.ttf" } },
+        { FontId::SerifBold,   { "georgiab.ttf", "timesbd.ttf", "arialbd.ttf" } },
+        { FontId::SerifItalic, { "georgiai.ttf", "timesi.ttf", "ariali.ttf" } },
+        { FontId::Mono,        { "consola.ttf", "cour.ttf", "lucon.ttf" } },
+        { FontId::MonoBold,    { "consolab.ttf", "courbd.ttf", "consola.ttf" } },
+        { FontId::Hand,        { "Inkfree.ttf", "segoepr.ttf", "georgiai.ttf" } },
+    };
+    for (const Spec& s : specs) {
+        Family& fam = g_fam[(int)s.id];
+        std::string path = FindFont(s.files);
+        if (path.empty()) {
+            for (int i = 0; i < kNumSizes; i++) fam.f[i] = GetFontDefault();
+            fam.isDefault = true; fam.ok = true;
+            TraceLog(LOG_WARNING, "UI: no TTF found for font %d, using default", (int)s.id);
+            continue;
+        }
+        for (int i = 0; i < kNumSizes; i++) {
+            fam.f[i] = LoadFontEx(path.c_str(), kSizes[i], g_codepoints.data(), (int)g_codepoints.size());
+            SetTextureFilter(fam.f[i].texture, TEXTURE_FILTER_BILINEAR);
+        }
+        fam.ok = true;
+    }
+}
+
+void UnloadFonts() {
+    for (auto& fam : g_fam) {
+        if (!fam.ok || fam.isDefault) continue;
+        for (int i = 0; i < kNumSizes; i++) UnloadFont(fam.f[i]);
+    }
+}
 
 // ---------------------------------------------------------------------------
 // Pass / input state
@@ -20,9 +93,6 @@ static bool g_wheelConsumed = false;
 static bool g_wantHand = false;
 static bool g_handShown = false;
 static std::vector<Rectangle> g_clip;
-
-void LoadFonts() { pixfont::Init(); }
-void UnloadFonts() { pixfont::Shutdown(); }
 
 static bool g_kbCaptured = false;
 static bool g_kbCapturedPrev = false;
@@ -39,7 +109,6 @@ void EndFrameCursor() {
 
 void Begin(Vector2 offset, float scale, bool interactive) {
     g_off = offset; g_scale = scale; g_interactive = interactive; g_inPass = true;
-    pixel::minLine = 1.f / scale;
     Camera2D cam{};
     cam.offset = offset; cam.target = Vector2{ 0, 0 }; cam.rotation = 0; cam.zoom = scale;
     BeginMode2D(cam);
@@ -50,8 +119,6 @@ void End() {
     EndMode2D();
     g_inPass = false;
 }
-
-void SetScaleHint(float scale) { if (!g_inPass) g_scale = scale; }
 
 float Scale() { return g_scale; }
 Vector2 Offset() { return g_off; }
@@ -87,38 +154,32 @@ void ConsumeWheel() { g_wheelConsumed = true; }
 void WantHand() { g_wantHand = true; }
 
 // ---------------------------------------------------------------------------
-// Pixel grid helpers: one canvas pixel = 1 / scale drawing units
+// Text
 // ---------------------------------------------------------------------------
-static inline float Px() { return 1.f / g_scale; }
-static inline float SnapX(float v) { return (floorf(g_off.x + v * g_scale + 0.5f) - g_off.x) / g_scale; }
-static inline float SnapY(float v) { return (floorf(g_off.y + v * g_scale + 0.5f) - g_off.y) / g_scale; }
-
-static Rectangle SnapRect(Rectangle r) {
-    float x0 = SnapX(r.x), y0 = SnapY(r.y), x1 = SnapX(r.x + r.width), y1 = SnapY(r.y + r.height);
-    return Rectangle{ x0, y0, x1 - x0, y1 - y0 };
+static inline int GlyphIndex(int cp) {
+    if (cp == '\t') cp = ' ';
+    if (cp >= 0 && cp < 0x2800 && g_cpIndex[cp] >= 0) return g_cpIndex[cp];
+    return g_cpIndex['?'];
 }
 
-// ---------------------------------------------------------------------------
-// Text: a 5x7 bitmap font magnified by a whole number. The magnification follows the requested size.
-// ---------------------------------------------------------------------------
-struct Style { bool mono, bold, italic; };
-static Style StyleOf(FontId f) {
-    switch (f) {
-        case FontId::SerifBold: return Style{ false, true, false };
-        case FontId::SerifItalic: case FontId::Hand: return Style{ false, false, true };
-        case FontId::Mono: return Style{ true, false, false };
-        case FontId::MonoBold: return Style{ true, true, false };
-        default: return Style{ false, false, false };
-    }
+static const Font& PickFont(FontId f, float size) {
+    const Family& fam = g_fam[(int)f];
+    float px = size * g_scale;
+    for (int i = 0; i < kNumSizes; i++) if (kSizes[i] >= px * 0.92f) return fam.f[i];
+    return fam.f[kNumSizes - 1];
 }
-static inline int KFor(float size) {
-    int k = (int)(size * g_scale / 9.5f + 0.35f);
-    return k < 1 ? 1 : k;
+static const Font& RefFont(FontId f) { return g_fam[(int)f].f[kNumSizes - 1]; }
+
+static inline float Advance(const Font& ref, int idx, float size) {
+    if (g_fam[0].isDefault || idx < 0 || idx >= ref.glyphCount) return size * 0.5f;
+    float sc = size / (float)ref.baseSize;
+    const GlyphInfo& g = ref.glyphs[idx];
+    return (g.advanceX == 0 ? ref.recs[idx].width : (float)g.advanceX) * sc;
 }
 
 float MeasureWidth(FontId f, const std::string& s, float size, float spacing) {
-    Style st = StyleOf(f);
-    float unit = (float)KFor(size) * Px();
+    const Font& ref = RefFont(f);
+    if (g_fam[(int)f].isDefault) return MeasureTextEx(ref, s.c_str(), size, spacing).x;
     float w = 0, best = 0;
     const char* p = s.c_str();
     while (*p) {
@@ -126,9 +187,9 @@ float MeasureWidth(FontId f, const std::string& s, float size, float spacing) {
         int cp = GetCodepointNext(p, &n);
         p += n;
         if (cp == '\n') { best = std::max(best, w); w = 0; continue; }
-        int adv = pixfont::Advance(pixfont::Index(cp), st.mono) + ((st.bold && !st.mono) ? 1 : 0);
+        float adv = Advance(ref, GlyphIndex(cp), size);
         if (cp == '\t') adv *= 4;
-        w += adv * unit + spacing;
+        w += adv + spacing;
     }
     return std::max(best, w);
 }
@@ -153,28 +214,35 @@ Vector2 Measure(FontId f, const std::string& s, float size, float spacing) {
     return Vector2{ MeasureWidth(f, s, size, spacing), size * lines * 1.2f };
 }
 
-float MonoCharWidth(float size) { return 6.f * (float)KFor(size) * Px(); }
+float MonoCharWidth(float size) { return Advance(RefFont(FontId::Mono), GlyphIndex('M'), size); }
 
 void Text(FontId f, const std::string& s, float x, float y, float size, Color c, float spacing) {
     if (s.empty()) return;
-    Style st = StyleOf(f);
-    int k = KFor(size);
-    float pix = Px();
-    float unit = (float)k * pix;
-    float capH = 7.f * unit;
-    float top = y + std::max(0.f, (size * 1.05f - capH) * 0.5f + size * 0.04f);
-    float ox = SnapX(x), cy = SnapY(top), cx = ox;
+    const Family& fam = g_fam[(int)f];
+    if (fam.isDefault) { DrawTextEx(fam.f[0], s.c_str(), Vector2{ x, y }, size, spacing + 1, c); return; }
+    const Font& df = PickFont(f, size);
+    const Font& ref = RefFont(f);
+    float sc = size / (float)df.baseSize;
+    float cx = x, cy = y;
     const char* p = s.c_str();
     while (*p) {
         int n = 0;
         int cp = GetCodepointNext(p, &n);
         p += n;
-        if (cp == '\n') { cx = ox; cy = SnapY(cy + size * 1.2f); continue; }
-        int g = pixfont::Index(cp);
-        int adv = pixfont::Advance(g, st.mono) + ((st.bold && !st.mono) ? 1 : 0);
-        if (cp != ' ' && cp != '\t') pixfont::Draw(g, SnapX(cx), cy, pix, k, c, st.mono, st.bold, st.italic);
+        if (cp == '\n') { cx = x; cy += size * 1.2f; continue; }
+        int idx = GlyphIndex(cp);
+        if (idx < 0) continue;
+        if (cp != ' ' && cp != '\t') {
+            const Rectangle& rc = df.recs[idx];
+            const GlyphInfo& g = df.glyphs[idx];
+            float pad = (float)df.glyphPadding;
+            Rectangle src{ rc.x - pad, rc.y - pad, rc.width + 2 * pad, rc.height + 2 * pad };
+            Rectangle dst{ cx + (g.offsetX - pad) * sc, cy + (g.offsetY - pad) * sc, (rc.width + 2 * pad) * sc, (rc.height + 2 * pad) * sc };
+            DrawTexturePro(df.texture, src, dst, Vector2{ 0, 0 }, 0.f, c);
+        }
+        float adv = Advance(ref, idx, size);
         if (cp == '\t') adv *= 4;
-        cx += adv * unit + spacing;
+        cx += adv + spacing;
     }
 }
 
@@ -256,7 +324,7 @@ float Rich(const std::string& s, float x, float y, float width, float size, Colo
     float cx = 0, cy = y;
     float spaceW = MeasureWidth(FontId::Serif, " ", size);
     const float codeScale = 0.9f;
-    Color codeBg = util::WithAlpha(pal::Ink, 0.12f);
+    Color codeBg = util::WithAlpha(pal::Ink, 0.08f);
     Color codeInk = util::Mix(c, Color{ 120, 30, 30, 255 }, 0.55f);
     bool chained = false;   // the previous code chip runs on into this one
     for (size_t i = 0; i < toks.size(); i++) {
@@ -269,14 +337,17 @@ float Rich(const std::string& s, float x, float y, float width, float size, Colo
         if (cx > 0 && cx + w > width) { cx = 0; cy += lh; chained = false; }
         bool extend = code && t.spaceAfter && i + 1 < toks.size() && (toks[i + 1].style & ST_CODE) && !toks[i + 1].newline;
         if (draw) {
+            float ty = cy + (code ? size * 0.07f : 0.f);
             if (code) {
-                float left = x + cx - (chained ? 0.f : Px());
-                float right = extend ? x + cx + w + spaceW : x + cx + w + Px();
-                Rectangle chip = SnapRect(Rectangle{ left, cy + size * 0.02f, right - left, size * 1.18f });
-                DrawRectangleRec(chip, codeBg);
-                Text(fid, t.text, x + cx, cy, sz, codeInk);
+                // multi-word code spans become one continuous chip (segments butt together, no overlap)
+                float left = x + cx - (chained ? 0.f : 3.f);
+                float right = extend ? x + cx + w + spaceW : x + cx + w + 3;
+                Rectangle chip{ left, cy + size * 0.02f, right - left, size * 1.18f };
+                if (chained || extend) DrawRectangleRec(chip, codeBg);
+                else DrawRectangleRounded(chip, 0.3f, 4, codeBg);
+                Text(fid, t.text, x + cx, ty, sz, codeInk);
             } else {
-                Text(fid, t.text, x + cx, cy, sz, c);
+                Text(fid, t.text, x + cx, ty, sz, c);
             }
         }
         cx += w;
@@ -312,23 +383,11 @@ void PopClip() {
 }
 
 // ---------------------------------------------------------------------------
-// Widgets: square-ish panels with a notch cut out of each corner, like a 16-bit dialogue frame
+// Widgets
 // ---------------------------------------------------------------------------
-static void NotchRect(Rectangle r, int n, Color c) {
-    float p = Px() * (float)n;
-    if (n <= 0 || r.width <= 2 * p || r.height <= 2 * p) { DrawRectangleRec(r, c); return; }
-    DrawRectangleRec(Rectangle{ r.x + p, r.y, r.width - 2 * p, r.height }, c);
-    DrawRectangleRec(Rectangle{ r.x, r.y + p, r.width, r.height - 2 * p }, c);
-}
-
 void Panel(Rectangle r, Color fill, Color border, float roundness, float borderW) {
-    Rectangle s = SnapRect(r);
-    int notch = (roundness > 0.2f && std::min(s.width, s.height) * g_scale > 24.f) ? 2 : 1;
-    int bw = borderW > 0 ? std::max(1, (int)floorf(borderW * g_scale + 0.5f)) : 0;
-    if (bw > 0) NotchRect(s, notch, border);
-    float b = (float)bw * Px();
-    Rectangle in{ s.x + b, s.y + b, s.width - 2 * b, s.height - 2 * b };
-    NotchRect(in, bw > 0 ? notch - 1 : notch, fill);
+    DrawRectangleRounded(r, roundness, 8, fill);
+    if (borderW > 0) DrawRectangleRoundedLinesEx(r, roundness, 8, borderW, border);
 }
 
 bool Button(Rectangle r, const std::string& label, ButtonStyle style, bool enabled, float fontSize) {
@@ -347,7 +406,7 @@ bool Button(Rectangle r, const std::string& label, ButtonStyle style, bool enabl
             float w = MeasureWidth(FontId::SerifItalic, label, fs);
             float tx = r.x + (r.width - w) * 0.5f, ty = r.y + (r.height - fs * 1.12f) * 0.5f;
             Text(FontId::SerifItalic, label, tx, ty, fs, lc);
-            if (hov) DrawRectangleRec(SnapRect(Rectangle{ tx, ty + fs * 1.0f, w, Px() }), lc);
+            if (hov) DrawLineEx(Vector2{ tx, ty + fs * 1.1f }, Vector2{ tx + w, ty + fs * 1.1f }, 1.5f, lc);
             return hit;
         }
         default: fill = pal::PaperDark; border = pal::InkSoft; ink = pal::Ink; break;
@@ -355,13 +414,12 @@ bool Button(Rectangle r, const std::string& label, ButtonStyle style, bool enabl
     if (!enabled) { fill = util::Mix(fill, pal::PaperEdge, 0.6f); ink = util::WithAlpha(ink, 0.45f); border = util::WithAlpha(border, 0.4f); }
     else if (hov) fill = util::Shade(fill, style == BtnPaper ? 1.05f : 1.18f);
     Rectangle rr = r;
-    if (down) { rr.y += 2.f * Px(); }
-    if (style != BtnGhost) NotchRect(SnapRect(Rectangle{ rr.x + 2.f * Px(), rr.y + 2.f * Px(), rr.width, rr.height }), 1, util::WithAlpha(BLACK, 0.3f));
+    if (down) { rr.y += 1.5f; }
+    // drop shadow
+    if (style != BtnGhost) DrawRectangleRounded(Rectangle{ rr.x + 2, rr.y + 3, rr.width, rr.height }, 0.25f, 6, util::WithAlpha(BLACK, 0.18f));
     Panel(rr, fill, border, 0.25f, 2.f);
-    if (style == BtnWood || style == BtnPrimary) {
-        Rectangle in = SnapRect(Rectangle{ rr.x + 4 * Px(), rr.y + 4 * Px(), rr.width - 8 * Px(), rr.height - 8 * Px() });
-        DrawRectangleLinesEx(in, Px(), util::WithAlpha(pal::Gold, 0.5f));
-    }
+    if (style == BtnWood || style == BtnPrimary)
+        DrawRectangleRoundedLinesEx(Rectangle{ rr.x + 4, rr.y + 4, rr.width - 8, rr.height - 8 }, 0.25f, 6, 1.f, util::WithAlpha(pal::Gold, 0.5f));
     TextCentered(FontId::SerifBold, label, rr, fs, ink);
     return hit;
 }
@@ -373,17 +431,16 @@ bool IconButton(Rectangle r, Icon icon, ButtonStyle style, bool enabled) {
     Color ink = (style == BtnWood || style == BtnPrimary) ? pal::GoldSoft : pal::Ink;
     if (hov) fill = util::Shade(fill, 1.15f);
     if (!enabled) ink = util::WithAlpha(ink, 0.4f);
-    NotchRect(SnapRect(Rectangle{ r.x + 2.f * Px(), r.y + 2.f * Px(), r.width, r.height }), 1, util::WithAlpha(BLACK, 0.3f));
+    DrawRectangleRounded(Rectangle{ r.x + 2, r.y + 3, r.width, r.height }, 0.3f, 6, util::WithAlpha(BLACK, 0.2f));
     Panel(r, fill, style == BtnWood ? pal::Gold : pal::InkSoft, 0.3f, 2.f);
     DrawIcon(icon, Vector2{ r.x + r.width * 0.5f, r.y + r.height * 0.5f }, std::min(r.width, r.height) * 0.56f, ink);
     return hit;
 }
 
 void ProgressBar(Rectangle r, float t, Color fill, Color back) {
-    Rectangle s = SnapRect(r);
-    DrawRectangleRec(s, back);
+    DrawRectangleRounded(r, 0.5f, 6, back);
     t = util::Clamp01(t);
-    if (t > 0.001f) DrawRectangleRec(SnapRect(Rectangle{ r.x, r.y, std::max(r.height, r.width * t), r.height }), fill);
+    if (t > 0.001f) DrawRectangleRounded(Rectangle{ r.x, r.y, std::max(r.height, r.width * t), r.height }, 0.5f, 6, fill);
 }
 
 void Ornament(float cx, float y, float width, Color c) {
@@ -418,20 +475,19 @@ bool Slider(Rectangle r, float* value) {
         if (v != *value) { *value = v; changed = true; }
     }
     float cy = r.y + r.height * 0.5f;
-    DrawRectangleRec(SnapRect(Rectangle{ r.x, cy - 4, r.width, 8 }), pal::PaperEdge);
-    DrawRectangleRec(SnapRect(Rectangle{ r.x, cy - 4, r.width * *value, 8 }), pal::Green);
-    float kx = r.x + r.width * *value;
-    DrawRectangleRec(SnapRect(Rectangle{ kx - 10, cy - 12, 20, 24 }), pal::Wood);
-    DrawRectangleRec(SnapRect(Rectangle{ kx - 6, cy - 8, 12, 16 }), pal::Gold);
+    DrawRectangleRounded(Rectangle{ r.x, cy - 4, r.width, 8 }, 0.5f, 6, pal::PaperEdge);
+    DrawRectangleRounded(Rectangle{ r.x, cy - 4, r.width * *value, 8 }, 0.5f, 6, pal::Green);
+    DrawCircleV(Vector2{ r.x + r.width * *value, cy }, 11, pal::Wood);
+    DrawCircleV(Vector2{ r.x + r.width * *value, cy }, 7, pal::Gold);
     return changed;
 }
 
 // ---------------------------------------------------------------------------
-// Icons (drawn from primitives; strokes never thinner than one canvas pixel)
+// Vector icons (drawn from primitives so they scale cleanly)
 // ---------------------------------------------------------------------------
 void DrawIcon(Icon icon, Vector2 c, float s, Color col) {
     float h = s * 0.5f;
-    float t = std::max(std::max(1.5f, s * 0.09f), 1.5f * Px());
+    float t = std::max(1.5f, s * 0.09f);
     auto L = [&](float x0, float y0, float x1, float y1) { DrawLineEx(Vector2{ c.x + x0 * h, c.y + y0 * h }, Vector2{ c.x + x1 * h, c.y + y1 * h }, t, col); };
     switch (icon) {
     case Icon::Book:

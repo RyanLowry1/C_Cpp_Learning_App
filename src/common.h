@@ -71,22 +71,3 @@ std::string FormatDuration(float seconds);       // "12:05"
 long long NowEpoch();
 
 } // namespace util
-
-// ---------------------------------------------------------------------------
-// 8-bit edition: everything is drawn onto a small canvas that is scaled up afterwards, so a line thinner than
-// one canvas pixel would simply vanish. These wrappers widen thin lines to exactly one canvas pixel.
-// pixel::minLine is the size of one canvas pixel in the units of the current drawing pass (set by ui::Begin).
-// (The wrappers are defined before the macros so their bodies still call raylib's own functions.)
-// ---------------------------------------------------------------------------
-namespace pixel {
-extern float minLine;
-inline float Thick(float t) { return t > minLine ? t : minLine; }
-inline void LineEx(Vector2 a, Vector2 b, float t, Color c) { DrawLineEx(a, b, Thick(t), c); }
-inline void RectLinesEx(Rectangle r, float t, Color c) { DrawRectangleLinesEx(r, Thick(t), c); }
-inline void RoundedLinesEx(Rectangle r, float round, int seg, float t, Color c) { DrawRectangleRoundedLinesEx(r, round, seg, Thick(t), c); }
-inline void BezierQ(Vector2 a, Vector2 b, Vector2 d, float t, Color c) { DrawSplineSegmentBezierQuadratic(a, b, d, Thick(t), c); }
-}
-#define DrawLineEx(...) pixel::LineEx(__VA_ARGS__)
-#define DrawRectangleLinesEx(...) pixel::RectLinesEx(__VA_ARGS__)
-#define DrawRectangleRoundedLinesEx(...) pixel::RoundedLinesEx(__VA_ARGS__)
-#define DrawSplineSegmentBezierQuadratic(...) pixel::BezierQ(__VA_ARGS__)

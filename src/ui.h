@@ -48,7 +48,6 @@ void EndFrameCursor();    // apply hand cursor if a clickable element was hovere
 // ---- passes ----
 void Begin(Vector2 offset, float scale, bool interactive);
 void End();
-void SetScaleHint(float scale);   // layout outside a pass (e.g. paginating a chapter) measures at the scale it will be drawn at
 float Scale();
 Vector2 Offset();
 Vector2 ToScreen(Vector2 v);

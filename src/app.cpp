@@ -1,7 +1,6 @@
 // app.cpp - Malloc's Library (2D edition): the director that runs the whole show
 #include "app.h"
 #include "art.h"
-#include "pixel.h"
 #include "ui.h"
 #include "audio.h"
 #include "content.h"
@@ -16,7 +15,7 @@ using namespace util;
 namespace pal = ui::pal;
 
 static const char* kTabNames[6] = { "Reading Room", "Multiple Choice", "Written Test", "Coding Exams", "Problem Areas", "Past Results" };
-static const char* kTabSubs[6] = { "Tutorials from lectures", "Quick-fire quizzes", "Predict, fill in, fix", "Lab exam practice", "Your weak spots", "Ledger of results" };
+static const char* kTabSubs[6] = { "Tutorials from your lectures", "Quick-fire quizzes", "Predict, fill in & fix", "Lab exam practice", "Your weak spots, diagnosed", "The ledger of results" };
 static const Icon kTabIcons[6] = { Icon::Book, Icon::Quiz, Icon::Quill, Icon::Code, Icon::Target, Icon::Ledger };
 static const Color kTabColors[6] = { { 46, 98, 70, 255 }, { 44, 74, 120, 255 }, { 120, 60, 40, 255 }, { 92, 40, 96, 255 }, { 150, 44, 40, 255 }, { 120, 90, 40, 255 } };
 
@@ -45,7 +44,7 @@ static const char* kQuips[] = {
 void App::Init() {
     Prog().Load();
     SetConfigFlags(FLAG_MSAA_4X_HINT | FLAG_WINDOW_RESIZABLE | FLAG_VSYNC_HINT);
-    InitWindow(1280, 720, "Malloc's Library (8-bit) - an interactive C & C++ study hall");
+    InitWindow(1280, 720, "Malloc's Library (2D) - an interactive C & C++ study hall");
     int mon = GetCurrentMonitor();
     int mw = GetMonitorWidth(mon), mh = GetMonitorHeight(mon);
     if (mw > 0 && mh > 0) {
@@ -59,7 +58,6 @@ void App::Init() {
     SetTargetFPS(60);
 
     ui::LoadFonts();
-    pixel::Init();
     sfx::Init();
     art::Init();
     Data().Load();
@@ -67,8 +65,7 @@ void App::Init() {
     bk.Init();
     lib.carriedBook = &bk;
     lib.onFootstep = [this]() { sfx::Play(sfx::Footstep, 0.32f, 0.9f + 0.2f * fmodf(time * 7.f, 1.f)); };
-    pageRT = LoadRenderTexture(780, 500);
-    SetTextureFilter(pageRT.texture, TEXTURE_FILTER_POINT);
+    pageRT = LoadRenderTexture(1560, 1000);
     Image v = GenImageGradientRadial(640, 360, 0.25f, Color{ 0, 0, 0, 0 }, Color{ 0, 0, 0, 255 });
     vignette = LoadTextureFromImage(v);
     UnloadImage(v);
@@ -93,7 +90,6 @@ void App::Shutdown() {
     bk.Shutdown();
     stage.Shutdown();
     art::Shutdown();
-    pixel::Shutdown();
     ui::UnloadFonts();
     sfx::Shutdown();
     CloseWindow();
@@ -575,7 +571,6 @@ void App::RunSteps(float dt) {
 }
 
 void App::BeginPresenting() {
-    ui::SetScaleHint(0.5f);
     view = MakeView(current);
     bk.visible = true;
     bookAsSpread = true;
@@ -707,9 +702,8 @@ void App::Update(float dt) {
     time += dt;
     phaseT += dt;
     ui::NewFrame();
-    pixel::UpdateMouseMapping();
-    hudScale = (float)pixel::CanvasH / 900.f;
-    hudW = (float)pixel::CanvasW() / hudScale;
+    hudScale = GetScreenHeight() / 900.f;
+    hudW = GetScreenWidth() / hudScale;
     hudH = 900.f;
 
     if (IsKeyPressed(KEY_F11)) { ToggleBorderlessWindowed(); Prog().settings.fullscreen = !Prog().settings.fullscreen; }
@@ -787,7 +781,7 @@ void App::Update(float dt) {
 }
 
 void App::UpdatePan(float dt) {
-    float sw = (float)pixel::CanvasW(), sh = (float)pixel::CanvasH;
+    float sw = (float)GetScreenWidth(), sh = (float)GetScreenHeight();
     Vector2 m = GetMousePosition();
     Vector2 want{ Clamp((m.x / sw - 0.5f) * 2.f, -1.f, 1.f), Clamp((m.y / sh - 0.5f) * 2.f, -1.f, 1.f) };
     bool allow = (phase == Phase::Hub || phase == Phase::Intro) && Prog().settings.mouseLook && !settingsOpen && !helpOpen;
@@ -803,16 +797,18 @@ void App::RenderPagesToTexture() {
     if (!view) return;
     BeginTextureMode(pageRT);
     ClearBackground(pal::Paper);
-    ui::Begin(Vector2{ 0, 0 }, 0.5f, false);
+    ui::Begin(Vector2{ 0, 0 }, 1.f, false);
     view->Draw(false);
     ui::End();
     EndTextureMode();
+    GenTextureMipmaps(&pageRT.texture);
+    SetTextureFilter(pageRT.texture, TEXTURE_FILTER_TRILINEAR);
 }
 
 App::Cam App::ComputeCam(float e) const {
-    float sw = (float)pixel::CanvasW(), sh = (float)pixel::CanvasH;
+    float sw = (float)GetScreenWidth(), sh = (float)GetScreenHeight();
     Cam c;
-    c.spreadScale = std::min(0.5f, 0.97f * sw / 1560.f);
+    c.spreadScale = std::min(0.93f * sh / 1000.f, 0.97f * sw / 1560.f);
     float zFinal = c.spreadScale * (float)book::PageW / bookW;     // scale at which the desk book is as large as one page of the spread
     c.z = hudScale * powf(zFinal / hudScale, e);
     Vector2 a0{ (hudW - world::W) * 0.5f * hudScale + world::BookOnDesk.x * hudScale, world::BookOnDesk.y * hudScale };
@@ -856,7 +852,7 @@ void App::DrawScene(const Cam& cam) {
 }
 
 void App::DrawDeskBackdrop(float alpha) {
-    float sw = (float)pixel::CanvasW(), sh = (float)pixel::CanvasH;
+    float sw = (float)GetScreenWidth(), sh = (float)GetScreenHeight();
     DrawRectangleGradientV(0, 0, (int)sw, (int)sh, WithAlpha(Color{ 40, 88, 64, 255 }, alpha), WithAlpha(Color{ 26, 62, 44, 255 }, alpha));
     // faint tooled border so the leather doesn't read as flat colour
     float m = 26.f * hudScale;
@@ -870,10 +866,8 @@ void App::Render() {
     stage.BuildLightmap(time, lib.HeadPos(), lib.seated ? 0.22f : 1.f);
 
     BeginDrawing();
-    ClearBackground(BLACK);
-    pixel::BeginCanvas();
     ClearBackground(Color{ 12, 9, 7, 255 });
-    float sw = (float)pixel::CanvasW(), sh = (float)pixel::CanvasH;
+    float sw = (float)GetScreenWidth(), sh = (float)GetScreenHeight();
     float e = EaseInOutCubic(bookBlend);
     Cam cam = ComputeCam(e);
     if (e < 0.995f) DrawScene(cam);
@@ -897,14 +891,13 @@ void App::Render() {
     DrawHud();
     DrawOverlays();
     if (fade > 0.001f) DrawRectangle(0, 0, (int)sw, (int)sh, WithAlpha(BLACK, fade));
-    pixel::EndCanvas();
     ui::EndFrameCursor();
     EndDrawing();
 }
 
 void App::DrawTabs(bool interactive) {
     hoverTab = -1;
-    float tw = 330, th = 112, gap = 22;
+    float tw = 292, th = 112, gap = 22;
     float total = 3 * th + 2 * gap;
     float y0 = (hudH - total) * 0.5f - 30;
     for (int i = 0; i < 6; i++) {
@@ -1017,7 +1010,7 @@ void App::DrawOverlays() {
 }
 
 void App::DrawSettings() {
-    Rectangle r{ hudW * 0.5f - 330, 150 + (1 - overlayAnim) * 30, 660, 560 };
+    Rectangle r{ hudW * 0.5f - 300, 170 + (1 - overlayAnim) * 30, 600, 520 };
     DrawRectangleRounded(Rectangle{ r.x + 6, r.y + 8, r.width, r.height }, 0.06f, 8, WithAlpha(BLACK, 0.4f));
     ui::Panel(r, pal::Paper, pal::Wood, 0.06f, 3.f);
     ui::Text(FontId::SerifBold, "Settings", r.x + 34, r.y + 26, 34, pal::Ink);
@@ -1051,7 +1044,7 @@ void App::DrawSettings() {
 }
 
 void App::DrawHelp() {
-    Rectangle r{ hudW * 0.5f - 450, 40 + (1 - overlayAnim) * 30, 900, 820 };
+    Rectangle r{ hudW * 0.5f - 420, 110 + (1 - overlayAnim) * 30, 840, 660 };
     DrawRectangleRounded(Rectangle{ r.x + 6, r.y + 8, r.width, r.height }, 0.05f, 8, WithAlpha(BLACK, 0.4f));
     ui::Panel(r, pal::Paper, pal::Wood, 0.05f, 3.f);
     ui::Text(FontId::SerifBold, "How the library works", r.x + 36, r.y + 26, 34, pal::Ink);
@@ -1074,7 +1067,7 @@ void App::DrawHelp() {
         "Click the librarian, the bell or the cat...",
     };
     for (int i = 0; i < 7; i++) {
-        ui::Text(FontId::Serif, keys[i], r.x + 36, y + i * 28, 16, pal::InkSoft);
+        ui::Text(FontId::Serif, keys[i], r.x + 36 + (i % 2) * 400, y + (i / 2) * 30, 16, pal::InkSoft);
     }
     if (ui::Button(Rectangle{ r.x + r.width - 160, r.y + r.height - 70, 126, 48 }, "Close", ui::BtnPrimary, true, 20)) helpOpen = false;
 }
