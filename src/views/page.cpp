@@ -7,8 +7,48 @@ using namespace ui;
 
 namespace page {
 
+static Texture2D g_paper{};
+static bool g_paperReady = false;
+
+static void MakePaper() {
+    // opaque, very low-contrast grain (every pixel stays fully opaque so the desk
+    // never shows through the page)
+    const int w = 780, h = 1000;
+    Color* px = (Color*)MemAlloc((unsigned int)(w * h * sizeof(Color)));
+    util::Rng rng(8086);
+    // smooth large-scale mottling from a few random blobs
+    struct Blob { float x, y, r, k; };
+    std::vector<Blob> blobs;
+    for (int i = 0; i < 14; i++) blobs.push_back(Blob{ rng.R(0, (float)w), rng.R(0, (float)h), rng.R(120, 320), rng.R(-0.018f, 0.018f) });
+    for (int y = 0; y < h; y++) {
+        for (int x = 0; x < w; x++) {
+            float k = 1.f + (rng.F() - 0.5f) * 0.035f;          // fine grain
+            for (const Blob& b : blobs) {
+                float dx = x - b.x, dy = y - b.y;
+                float d2 = (dx * dx + dy * dy) / (b.r * b.r);
+                if (d2 < 1.f) k += b.k * (1.f - d2);
+            }
+            if ((x * 7 + y * 13) % 97 == 0 && rng.F() < 0.3f) k -= 0.03f;   // occasional fibre fleck
+            Color c = pal::Paper;
+            c.r = (unsigned char)std::min(255.f, c.r * k);
+            c.g = (unsigned char)std::min(255.f, c.g * k);
+            c.b = (unsigned char)std::min(255.f, c.b * k * 0.995f);
+            c.a = 255;
+            px[y * w + x] = c;
+        }
+    }
+    Image img{ px, w, h, 1, PIXELFORMAT_UNCOMPRESSED_R8G8B8A8 };
+    g_paper = LoadTextureFromImage(img);
+    UnloadImage(img);
+    GenTextureMipmaps(&g_paper);
+    SetTextureFilter(g_paper, TEXTURE_FILTER_TRILINEAR);
+    g_paperReady = true;
+}
+
 void DrawPaper() {
-    DrawRectangle(0, 0, (int)W, (int)H, pal::Paper);   // flat paper: the palette dithering supplies the shading
+    if (!g_paperReady) MakePaper();
+    DrawTexturePro(g_paper, Rectangle{ 0, 0, (float)g_paper.width, (float)g_paper.height }, Rectangle{ 0, 0, PW, H }, Vector2{ 0, 0 }, 0, WHITE);
+    DrawTexturePro(g_paper, Rectangle{ (float)g_paper.width, 0, -(float)g_paper.width, (float)g_paper.height }, Rectangle{ PW, 0, PW, H }, Vector2{ 0, 0 }, 0, WHITE);
     // gutter shadow towards the spine
     DrawRectangleGradientH((int)(PW - 90), 0, 90, (int)H, Color{ 120, 90, 50, 0 }, Color{ 110, 80, 45, 70 });
     DrawRectangleGradientH((int)PW, 0, 90, (int)H, Color{ 110, 80, 45, 70 }, Color{ 120, 90, 50, 0 });
