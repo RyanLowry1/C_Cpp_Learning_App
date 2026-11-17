@@ -1,4 +1,7 @@
+# kept on this computer only: build output, your own progress and screenshots, source snapshots, coursework reports
 build/
 save/
+backups/
+reports/
 *.exe
 *.obj

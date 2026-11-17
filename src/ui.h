@@ -61,6 +61,7 @@ bool AnyPress();             // unconsumed left press anywhere
 bool MouseDown();
 float Wheel();               // unconsumed wheel movement
 void ConsumePress();
+void FakePress();            // autopilot scripts: act as if the left button was pressed this frame
 void ConsumeWheel();
 void WantHand();             // request pointing-hand cursor
 void CaptureKeyboard();      // a text field has focus this frame: global hotkeys should be ignored

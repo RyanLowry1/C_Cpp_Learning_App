@@ -1,121 +1,177 @@
-# Malloc's Library - 2D edition (V2)
+# Malloc's Library
 
-*An interactive C & C++ study hall as a polished, hand-painted 2D illustration. Written in C++17 with raylib.*
+*An interactive C & C++ study hall, written in C++17 with raylib.*
 
-This is a **complete, self-contained** copy of the app: the lecture content, the quizzes, the coding exams, the
-test harness, raylib and the build script are all in this folder. Nothing outside it is used, so the folder can be
-copied to another computer as it is.
+You sit at a desk in an old library, looking across it at **Mr. Malloc**, the librarian. The services are on cards around the edges of the screen. When you pick one, Mr. Malloc talks you through the options (topics, exam mixes, workbooks). Then he gets up from his chair, walks to the bookshelves behind him, takes down the right book and carries it back. He places it in front of you, the camera tilts down to the desk, and the book opens. That book is your tutorial, quiz or coding exam. When you're done you hand the book back, and he comments on how you did.
 
-You sit at a desk in an old library. **Mr. Malloc**, the librarian, sits opposite. The services are on cards around the
-edges of the screen. Pick one and he talks you through your options, climbs out of his chair, walks to the bookshelves
-behind him, pulls out the right book, carries it back and sets it on the desk. The camera swoops down onto the book,
-it opens, and the book *is* your tutorial, quiz or coding exam. When you finish you hand it back and he comments on how you did.
-
-| Service | What it does |
-|---|---|
-| **Reading Room** | 12 chapters from the lecture notes, with memory diagrams, tips, warnings and exam-focus notes |
-| **Multiple Choice** | 171 questions (topic quizzes or Exam 1 / Exam 2 / C++ / Everything mixes) |
-| **Written Test** | 85 predict-the-output, fill-in-the-blank, fix-the-bug and short answer questions |
-| **Coding Exams** | 55 LeetCode-style problems in 3 workbooks, compiled and judged by real tests, plus a timed Mock Exam |
-| **Problem Areas** | finds your weakest topic and drills the questions you keep missing |
-| **Past Results** | a ledger of every session with a score trend |
+![Hub](docs/screenshots/01_hub_librarian.png)
 
 ---
 
-## What makes this edition special
+## What's in the library
 
-* **A painted, lit set.** The library is drawn entirely from vector shapes: about 700 books on the shelves, a wall clock
-  that tells the real time, a tufted leather chair, a rug, a brass-and-green desk lamp, an inkwell with a quill, a service bell and a
-  sleeping cat who wakes if you click him. Nothing is loaded from image files.
-* **Real 2D lighting.** A small light map (ambient glow, the desk lamp that flickers, a soft light that follows the librarian)
-  is multiplied over the whole scene, with drifting dust catching the lamp light.
-* **Parallax.** Move the mouse and the wall, floor, chair and desk slide at different speeds, so the flat scene feels like a
-  place you are looking around.
-* **A puppet librarian.** Mr. Malloc is built from layered shapes and animated with poses and two-bone arms (inverse kinematics):
-  he breathes, blinks, follows your mouse with his eyes and head, gestures while he talks, lip-syncs to his own voice,
-  stands up, pushes his chair back, walks round the end of the desk, reaches for the right shelf, carries the book (the book
-  is painted with its own cover), slides it across the desk and sits down again. He is hidden behind the desk or the chair
-  correctly as he moves through the room.
-* **A cinematic "pan down to the book".** The camera zooms and tilts onto the desk while the cover swings open across the spine
-  and the page spread fades in - the pages are live interface, not a picture.
-* **The same lessons.** Quizzes, written tests, tutorials and coding exams are identical to the other editions.
+| Service | What it does |
+|---|---|
+| **Reading Room** | 12 illustrated chapters written from the lecture notes. They include syntax-highlighted code, console output, **memory diagrams with pointer arrows**, tips, "Careful" warnings and *Exam focus* callouts. Each chapter has a contents page, page turning and a bookmark that remembers how far you got. |
+| **Multiple Choice** | 171 questions across 12 topics, including every question from *C_Pointers_Quiz*. Take a single topic, or an **Exam 1 / Exam 2 / C++ / Everything** mix. Options are shuffled, each answer is explained right away, and you can retry the ones you missed. |
+| **Written Test** | 85 questions in four styles: *predict the output*, *fill in the blank*, *find & fix the bug* and *short answer*. Spacing and case are forgiven, and you can overrule the marker ("my answer means the same"). |
+| **Coding Exams** | 55 LeetCode-style problems in 3 workbooks: **Lab 1** (Coding Exam 1), the **Pointers & Linked List Lab** (Coding Exam 2), and a **C++ / STL** set. You write the function in a built-in editor. **Run** compiles it with the real compiler and runs the sample tests; **Submit** adds the hidden edge-case tests. There's also a timed **Mock Exam** (5 random problems, 60 minutes). |
+| **Problem Areas** | Works out your mastery per topic from every answer and solved problem, names your weakest area, lists the questions that keep catching you, and offers a **targeted drill** of exactly those. |
+| **Past Results** | A ledger of every session, with totals per workbook and a score-trend chart. |
 
-## Build and run
+All progress is saved in `save/` next to the program.
 
-You need Windows 10/11 and **Visual Studio 2019 or later with "Desktop development with C++"** (or the Build Tools).
-raylib is included in `lib/` and `include/`.
+### The librarians
+Mr. Malloc is always on duty. Four more librarians can be earned, and once earned they are yours for good. Pick who sits at the desk under the **star button**, top right. Each has their own look, voice and way of speaking.
+
+![The librarians](docs/screenshots/21_librarians_lineup.png)
+
+| Librarian | How to unlock |
+|---|---|
+| **Professor Pointer**, a wizard of addresses | finish a Reading Room chapter |
+| **Dr. Heap**, lab coat and wild hair | score 100% on a multiple choice quiz |
+| **Ada the Compiler**, fast and cheerful | solve a coding problem |
+| **B.Y.T.E.**, a tutor robot | answer 100 questions in total |
+
+Whoever is on duty **trains as you learn**. Their fitness follows your mastery across the topics, so it goes up when you do well and slips back when you slack off: sleeves get rolled, then come off. Leave the hub alone for half a minute and they get up for a set of bicep curls and a flex.
+
+**For a demo:** Settings (the gear button) ends with **Developer options**. Tick **Unlock every librarian** and all five can be called in straight away. Tick **Set fitness by hand**, or just drag its slider, to choose how fit the librarian is. Press **Start a workout now** to see the curls and the flex without the half-minute wait. None of this changes what you have earned: untick the two boxes and the roster and the fitness go back to your own.
+
+### Why the approach is different
+* **Spatial and characterful.** The interface is a place you sit in, not a menu. Mr. Malloc's choreography (standing, walking, reaching for the shelf, carrying, presenting, the camera move) is all procedural animation. He speaks with a lip-synced, synthesised "mumble" voice, reacts to your results, and remembers what you did last time. The cat and the desk bell can be clicked.
+* **Honest marking.** Coding answers aren't string-matched. They are compiled by MSVC and run against unit tests, with crash and infinite-loop protection. The Lab 1 *binary-to-decimal* exercise really does reject `<<` and `>>`, just like the lab sheet.
+* **Exam-aligned.** Every topic is tagged Exam 1, Exam 2 or C++. The workbooks use the exact function signatures from `Lab1.cpp` and the Pointers lab, and the mock exam mirrors the lab-exam format.
+* **Closed loop.** Read a chapter → the last page offers a quiz on it → wrong answers feed Problem Areas → the drill serves those questions first → re-read the weak chapter.
+
+---
+
+## Building and running
+
+Requirements: Windows 10/11 and **Visual Studio 2019 or later with "Desktop development with C++"**. That's the same setup as the labs; raylib is included in `lib/` and `include/`.
 
 ```bash
 build.bat
 ```
 
 ```bash
-MallocsLibrary_V2.exe
+MallocsLibrary.exe
 ```
 
-`build.bat debug` builds with a console window so you can see raylib's log. In VS Code, **Terminal > Run Build Task** does the same.
+`build.bat debug` builds with a console window so you can see raylib's log. In VS Code, **Terminal → Run Build Task** runs the same script.
 
-The prebuilt `MallocsLibrary_V2.exe` needs the Microsoft Visual C++ runtime (installed with Visual Studio, and with most
-games and apps). The **Coding Exams** compile your code with the Visual Studio C++ compiler (or g++ / clang if found),
-so Run and Submit need one of those installed; without a compiler the books still open and the app says so.
+The Coding Exams need the C++ compiler at run time. The app finds it automatically (`cl` on the PATH, or through `vswhere`). If it can't find one, the workbooks still open and show a clear message.
 
 ### Controls
 | Key | Action |
 |---|---|
-| Mouse | choose cards, answers and buttons; the view drifts slightly with the mouse |
+| Mouse | choose cards, answers and buttons; the view follows the mouse slightly |
 | `Esc` | return the book / close a menu |
 | `Space` or hold right mouse | hurry the librarian |
 | `1-4` / `A-D` | answer multiple choice |
-| `Left` / `Right` | turn pages |
+| `←` `→` | turn pages |
 | `Ctrl+Enter` / `Ctrl+Shift+Enter` | run / submit code |
 | `F11` / `F12` | full screen / screenshot (saved to `save/shots/`) |
 
-Click Mr. Malloc, the bell on the desk or the cat for a surprise. Progress is saved in `save/` next to the program.
+---
 
-## Checking the content: `--selftest`
+## Verifying the content: `--selftest`
 
 ```bash
-MallocsLibrary_V2.exe --selftest
+MallocsLibrary.exe --selftest
 ```
 
-Compiles and runs every model solution against its tests, checks every starter compiles, and runs every
-"predict the output" question to prove its answer key is what the program really prints. Result: **201 / 201 checks passed.**
-Add a word to test only some items, e.g. `--selftest e2.`
+The self-test proves the answer keys are right by running them through the real compiler:
 
-## How the code is organised
+* every model solution must pass **all** of its tests (sample and hidden),
+* every starter file must compile, so students start from something that builds,
+* every *predict the output* MCQ (`verify: output`, 47 of them) and written question (`run: yes`, 44 of them) is compiled and run, and the program's real output must equal the answer key.
+
+Current result: **201 / 201 checks passed**. Add a filter to test just some items, e.g. `--selftest e2.` for the Exam 2 workbook.
+
+---
+
+## How it works
 
 ```
 src/
-  main.cpp          entry point and --selftest
-  app.*             the director: phases (hub > fetching > presenting > reading > closing), choreography, camera zoom, HUD
-  stage.*           the library set: shelves, floor, rug, chair, desk, props, light map, dust
-  puppet.*          Mr. Malloc: poses, two-bone arms, walk cycle, face, lip-sync
-  book2d.*          the book: painted cover, closed book, open spread with the swinging cover
-  art.*             shape helpers (ellipses, polygons, glows, soft shadows, arm IK)
-  ui.*              fonts (Georgia / Consolas from Windows), text layout, widgets and icons
+  main.cpp          entry point, --selftest
+  app.*             the "director": phases (hub -> fetching -> presenting -> reading -> closing),
+                    librarian choreography, camera blending, HUD cards, dialogue, settings/help
+  scene.*           the library: procedurally built shelves, books, desk, lamp, cat, bell
+  librarian.*       the librarian: procedural skeleton, poses, walk cycle, gestures, look-at, lip-sync
+  librarian_draw.cpp    draws whoever is on duty: limbs, clothes details, eyes, lids, brows, mouth, glasses
+  librarian_sculpt.cpp  each librarian's palette and their sculpted head, hair, torso and hands (librarian_look.h)
+  sdf.*             sculpting: shapes that melt together, turned into fine meshes with baked colour and shading
+  unlocks.*         the roster of librarians and the achievements that unlock them
+  book3d.*          the hinged 3D book; the page UI is rendered to a texture mapped onto its pages
+  gfx.*             lit GLSL shader (4 point lights, hemisphere ambient, fog), primitives, mesh batching
+  ui.*              fonts, rich text (**bold**, __italic__, `code`), widgets, clipping
   dialogue.*        speech box with typewriter text and choice cards
-  audio.*           synthesised voice and effects (no audio files)
-  content.*         loads questions, chapters and problems from assets/content
-  progress.*        save file, per-item history and mastery per topic
-  harness.*, code_runner.*   build and run the student's code against tests with time limits
-  syntax.*, code_editor.*    highlighting and the in-book code editor
-  views/            the books: reading, multiple choice, written, coding, ledger
+  audio.*           procedurally synthesised voice and sound effects (no audio files)
+  content.*         loads every question, chapter and problem from assets/content
+  progress.*        save file, per-item history, mastery per topic, code drafts
+  harness.*         turns a student's function + test list into a complete test program
+  code_runner.*     finds MSVC, compiles and runs jobs on a background thread with timeouts
+  syntax.*, code_editor.*   highlighting and the in-book code editor
+  views/            the books: reading, MCQ, written, coding, stats (+ shared page drawing)
 assets/content/     all learning content as plain text (format: assets/content/README.txt)
-tools/              autopilot scripts that drive the app to record demos and screenshots
+tools/              autopilot scripts used to record demos and verification screenshots
 ```
 
-### Recording a demo
+**Rendering.** Everything is generated in code: no 3D models or textures are loaded. The room is built from batched procedural meshes and lit by a custom shader with warm lamp light, fog and blob shadows. Each book's pages are an immediate-mode UI drawn into a render texture, which is then mapped onto the 3D page geometry.
+
+**Characters.** The librarians are sculpted in code too. A head, its hair, a torso or a hand is described as a few dozen simple shapes (balls, ellipsoids, tapered locks) that melt into one another like clay; `sdf.cpp` turns that into a mesh of about 100,000 triangles with colour and soft shading baked in, in roughly a tenth of a second on first use. The parts that move (eyes, eyelids, brows, mouth, glasses) are drawn on top every frame.
+
+**Running student code.** `harness.cpp` builds one program: the prelude headers, any given support code, the student's code (with `#line` so compiler errors point at *their* line numbers), then a `main` that runs each test. Tests report back over stdout using a small protocol. Crashes are caught with structured exception handling, and each test has a time limit, so a null-pointer crash or an infinite loop fails just that test with a readable message. `code_runner.cpp` captures the Visual Studio environment once, compiles each job in its own folder, and retries if antivirus briefly locks a freshly written file.
+
+**Content is data.** Questions, chapters and problems are plain text files (`assets/content/`), documented in `assets/content/README.txt`. New material needs no recompiling, and the self-test checks it.
+
+### Autopilot (demo and screenshot scripts)
 ```bash
-MallocsLibrary_V2.exe --script tools/shots_coding.txt
+MallocsLibrary.exe --script tools/shots_coding.txt
 ```
-Scripts drive the real app (open a service, pick choices, answer, run code, turn pages) and save screenshots to
-`save/shots/`. `shots_hub`, `shots_mcq`, `shots_written`, `shots_reading`, `shots_coding`, `shots_ledger` and `shots_misc`
-cover every service.
+Scripts drive the real app (open a service, pick choices, answer, run code, turn pages) and save screenshots to `save/shots/`. `shots_coding`, `shots_mcq`, `shots_written`, `shots_reading` and `shots_misc` cover every service; `shots_demo_unlock` clicks through the developer options (run that one with `--sandbox`). They're handy for recording a screencast without fumbling. Note that scripts use the real save file, so they add sessions to the ledger. The `quick` command also turns on *Quick fetch* in Settings. Add `--sandbox` to run a script without writing your progress or code drafts (screenshots are still saved):
 
-## Related versions
-* **V1** - the same app in 8-bit pixel art (low-res canvas, 40-colour palette, bitmap font).
-* The 3D version (a first-person view with a real 3D librarian and book) lives in the main project folder.
+```bash
+MallocsLibrary.exe --sandbox --script tools/shots_coding.txt
+```
 
-All three share the same lessons, questions and coding exams, and the same marking.
+---
 
-raylib is (c) Ramon Santamaria, zlib licence (`lib/raylib-LICENSE.txt`).
+## Content sources
+Built from the module material: *Intro to C*, *Pointers*, *Lecture on Pointers in C++ and linked lists*, *Pointers & LinkedList lab*, *memory management and pointers*, *Classes*, *Operator Overloading*, *templates and stl*, *STL Lists and Maps*, *C_Pointers_Quiz* and *Lab1.cpp*.
+
+| Topic | Exam | MCQs | Written | Reading |
+|---|---|---|---|---|
+| C Basics | 1 | 14 | 8 | ✓ |
+| Decisions & Loops | 1 | 12 | 8 | ✓ |
+| Arrays & Strings | 1 | 12 | 7 | ✓ |
+| Functions & Parameters | 1 | 10 | 6 | ✓ |
+| Pointers | 2 | 29 | 8 | ✓ |
+| Memory Management | 2 | 16 | 8 | ✓ |
+| Linked Lists | 2 | 12 | 7 | ✓ |
+| Classes & Objects | 2 | 17 | 7 | ✓ |
+| Overloading | C++ | 11 | 6 | ✓ |
+| Templates | C++ | 9 | 6 | ✓ |
+| STL Vector & Iterators | C++ | 14 | 7 | ✓ |
+| STL List & Map | C++ | 15 | 7 | ✓ |
+
+Plus 55 coding problems: 24 from Lab 1, 15 from the Pointers & Linked List lab, and 16 C++ / STL problems.
+
+raylib is © Ramon Santamaria, zlib licence (`lib/raylib-LICENSE.txt`).
+
+---
+
+## Three editions
+
+The same app exists in three self-contained editions. Each folder has its own source, content, raylib and build script,
+so any one of them can be copied to another computer on its own.
+
+| Folder | Edition | Look |
+|---|---|---|
+| *(this folder)* | **3D** | a first-person 3D library with a real 3D librarian, book and lighting |
+| `V1/` | **8-bit** | chunky pixel art: a 540-pixel canvas, a 40-colour dithered palette, a bitmap font, chiptune sound |
+| `V2/` | **2D** | a polished 2D illustration: a vector-painted, lit set, a puppet librarian, parallax, a zooming camera |
+
+All three use the same lessons, quizzes and coding exams and the same marking (`--selftest` passes 201 / 201 in each).
+Each has its own README with build and run instructions (`V1/README.md`, `V2/README.md`).

@@ -1,5 +1,6 @@
 // view_stats.cpp - "Problem Areas" analysis and the "Past Results" ledger
 #include "view.h"
+#include "../unlocks.h"
 #include <algorithm>
 
 using namespace ui;
@@ -27,7 +28,8 @@ public:
 
     void Draw(bool interactive) override {
         page::DrawPaper();
-        page::RunningHeader(problemAreas ? "Problem Areas" : "The Ledger", problemAreas ? "Mr. Malloc's assessment" : "Past results");
+        const LibrarianDef* duty = unlocks::Find(Prog().librarian);   // the assessment is by whoever is on duty
+        page::RunningHeader(problemAreas ? "Problem Areas" : "The Ledger", problemAreas ? (duty ? duty->name : std::string("The librarian")) + "'s assessment" : "Past results");
         if (page::ReturnRibbon(interactive)) { wantClose = true; return; }
         if (problemAreas) DrawAreas(interactive); else DrawLedger(interactive);
     }

@@ -63,7 +63,7 @@ void Dialogue::Update(float dt) {
             bool vowel = std::string("aeiouAEIOU").find(c) != std::string::npos;
             if (isalpha((unsigned char)c)) {
                 mouthTarget = vowel ? 1.f : 0.45f;
-                if (++blipCounter % 3 == 0) sfx::Voice(vowel ? 1.0f : 0.94f);
+                if (++blipCounter % 3 == 0) sfx::Voice(voicePitch * (vowel ? 1.0f : 0.94f));
             } else mouthTarget = 0.f;
         }
         idle = 0;

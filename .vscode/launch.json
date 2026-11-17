@@ -5,7 +5,7 @@
             "name": "Run Malloc's Library",
             "type": "cppvsdbg",
             "request": "launch",
-            "program": "${workspaceFolder}\\MallocsLibrary_V1.exe",
+            "program": "${workspaceFolder}\\MallocsLibrary.exe",
             "args": [],
             "stopAtEntry": false,
             "cwd": "${workspaceFolder}",

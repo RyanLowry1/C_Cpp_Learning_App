@@ -37,8 +37,10 @@ public:
     }
     void Finish() { shown = (int)current.size(); }
     void SetSpeaker(const std::string& s) { speaker = s; }
+    void SetVoicePitch(float p) { voicePitch = p; }   // each librarian sounds different
 
 private:
+    float voicePitch = 1.f;
     std::string speaker = "Mr. Malloc";
     std::string current;
     std::vector<std::string> queue;

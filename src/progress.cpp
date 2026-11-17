@@ -38,7 +38,11 @@ void Progress::Load() {
         else if (k == "quick") settings.quickFetch = v == "1";
         else if (k == "fullscreen") settings.fullscreen = v == "1";
         else if (k == "mouselook") settings.mouseLook = v == "1";
+        else if (k == "demounlock") settings.demoUnlock = v == "1";
+        else if (k == "demofitness") settings.demoFitness = std::min(1.f, (float)atof(v.c_str()));
         else if (k == "returned") booksReturned = atoi(v.c_str());
+        else if (k == "unlock") unlocked.insert(v);
+        else if (k == "librarian") librarian = v;
         else if (k == "item") {
             auto p = Split(v, ',');
             if (p.size() >= 5) {
@@ -76,6 +80,7 @@ void Progress::Load() {
 }
 
 void Progress::Save() {
+    if (readOnly) return;
     std::ostringstream o;
     o << "# Malloc's Library progress file\n";
     o << "volume=" << settings.volume << "\n";
@@ -83,7 +88,11 @@ void Progress::Save() {
     o << "quick=" << (settings.quickFetch ? 1 : 0) << "\n";
     o << "fullscreen=" << (settings.fullscreen ? 1 : 0) << "\n";
     o << "mouselook=" << (settings.mouseLook ? 1 : 0) << "\n";
+    o << "demounlock=" << (settings.demoUnlock ? 1 : 0) << "\n";
+    o << "demofitness=" << settings.demoFitness << "\n";
     o << "returned=" << booksReturned << "\n";
+    o << "librarian=" << librarian << "\n";
+    for (auto& u : unlocked) o << "unlock=" << u << "\n";
     for (auto& kv : items)
         o << "item=" << kv.first << "," << kv.second.attempts << "," << kv.second.correct << "," << kv.second.last << "," << (kv.second.lastCorrect ? 1 : 0) << "\n";
     for (auto& kv : code)
@@ -105,8 +114,10 @@ void Progress::Save() {
 
 void Progress::Reset() {
     Settings keep = settings;
+    bool ro = readOnly;
     *this = Progress();
     settings = keep;
+    readOnly = ro;
     Save();
 }
 
@@ -150,6 +161,7 @@ std::string Progress::LoadDraft(const std::string& problemId) const {
 }
 
 void Progress::SaveDraft(const std::string& problemId, const std::string& text) const {
+    if (readOnly) return;
     WriteTextFile(SavePath("code/" + SafeName(problemId) + ".cpp"), text);
 }
 
@@ -196,6 +208,16 @@ int Progress::TotalAnswered() const {
     int n = 0;
     for (auto& kv : items) n += kv.second.attempts;
     return n;
+}
+
+float Progress::Fitness() const {
+    float sum = 0.f;
+    int n = 0;
+    for (const TopicMastery& m : Mastery()) if (m.score >= 0.f) { sum += m.score; n++; }
+    if (n == 0) return 0.f;
+    // a handful of lucky answers must not bulk him up: confidence ramps in over the first 40 answers
+    float confidence = std::min(1.f, (float)TotalAnswered() / 40.f);
+    return std::max(0.f, std::min(1.f, sum / n * confidence));
 }
 
 float Progress::OverallAccuracy() const {

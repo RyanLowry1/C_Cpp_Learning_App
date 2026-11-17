@@ -96,7 +96,10 @@ static std::vector<Rectangle> g_clip;
 
 static bool g_kbCaptured = false;
 static bool g_kbCapturedPrev = false;
-void NewFrame() { g_pressConsumed = false; g_wheelConsumed = false; g_wantHand = false; g_kbCapturedPrev = g_kbCaptured; g_kbCaptured = false; }
+static bool g_fakePress = false;   // a click injected by an autopilot script; lasts one frame
+void FakePress() { g_fakePress = true; }
+static bool LeftPressed() { return g_fakePress || IsMouseButtonPressed(MOUSE_BUTTON_LEFT); }
+void NewFrame() { g_pressConsumed = false; g_fakePress = false; g_wheelConsumed = false; g_wantHand = false; g_kbCapturedPrev = g_kbCaptured; g_kbCaptured = false; }
 void CaptureKeyboard() { g_kbCaptured = true; }
 bool KeyboardCaptured() { return g_kbCaptured || g_kbCapturedPrev; }
 
@@ -142,11 +145,11 @@ bool Hover(Rectangle r) {
 bool Pressed(Rectangle r) {
     if (!Hover(r)) return false;
     WantHand();
-    if (g_pressConsumed || !IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) return false;
+    if (g_pressConsumed || !LeftPressed()) return false;
     g_pressConsumed = true;
     return true;
 }
-bool AnyPress() { return g_interactive && !g_pressConsumed && IsMouseButtonPressed(MOUSE_BUTTON_LEFT); }
+bool AnyPress() { return g_interactive && !g_pressConsumed && LeftPressed(); }
 bool MouseDown() { return g_interactive && IsMouseButtonDown(MOUSE_BUTTON_LEFT); }
 float Wheel() { return (g_interactive && !g_wheelConsumed) ? GetMouseWheelMove() : 0.f; }
 void ConsumePress() { g_pressConsumed = true; }
@@ -467,9 +470,10 @@ bool Slider(Rectangle r, float* value) {
     bool changed = false;
     bool hov = Hover(r);
     if (hov) WantHand();
-    if (hov && IsMouseButtonPressed(MOUSE_BUTTON_LEFT)) { s_active = r; ConsumePress(); }
-    bool dragging = s_active.width > 0 && s_active.x == r.x && s_active.y == r.y && IsMouseButtonDown(MOUSE_BUTTON_LEFT);
-    if (!IsMouseButtonDown(MOUSE_BUTTON_LEFT)) s_active = Rectangle{ 0, 0, 0, 0 };
+    bool down = g_fakePress || IsMouseButtonDown(MOUSE_BUTTON_LEFT);   // a script's click counts as held for its one frame
+    if (hov && LeftPressed()) { s_active = r; ConsumePress(); }
+    bool dragging = s_active.width > 0 && s_active.x == r.x && s_active.y == r.y && down;
+    if (!down) s_active = Rectangle{ 0, 0, 0, 0 };
     if (dragging && Interactive()) {
         float v = util::Clamp01((Mouse().x - r.x) / r.width);
         if (v != *value) { *value = v; changed = true; }

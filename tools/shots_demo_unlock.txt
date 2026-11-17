@@ -1,0 +1,79 @@
+# Autopilot: the developer options in Settings, driven with real clicks:
+# "Unlock every librarian", "Set fitness by hand" and "Start a workout now".
+# Run it with --sandbox, so none of it is saved:
+#   MallocsLibrary.exe --sandbox --script tools/shots_demo_unlock.txt
+# It assumes both tick boxes start unticked and a 16:9 window (the default); the click positions are fractions of the window.
+mouse 0.5 0.95
+phase hub
+wait 0.5
+finish
+libs 1
+wait 1.2
+shot u01_roster_earned
+libs 0
+settings 1
+wait 0.7
+shot u02_settings_developer_options
+# tick the switch
+mouse 0.3748 0.6744
+wait 0.2
+click
+wait 0.3
+shot u03_switch_on
+settings 0
+wait 0.4
+libs 1
+wait 2.5
+shot u04_roster_everyone
+# "Call in" on Ada the Compiler
+mouse 0.7086 0.5756
+wait 0.2
+click
+wait 1.5
+shot u05_borrowed_librarian_on_duty
+settings 1
+wait 0.7
+# untick it: a librarian who was not earned hands the desk back to Mr. Malloc
+mouse 0.3748 0.6744
+wait 0.2
+click
+wait 0.3
+settings 0
+wait 1.5
+shot u06_switch_off_malloc_back
+libs 1
+wait 1.0
+shot u07_roster_earned_again
+libs 0
+# fitness by hand: a click near the top end of the slider, which ticks its box
+settings 1
+wait 0.7
+mouse 0.6125 0.7189
+wait 0.2
+click
+wait 0.3
+shot u08_fitness_by_hand
+# "Start a workout now": Settings closes and the librarian gets up, at the new fitness
+mouse 0.4119 0.82
+wait 0.2
+click
+wait 8.0
+shot u09_workout_curls
+wait 6.4
+shot u10_workout_flex
+phase hub
+wait 1.0
+finish
+wait 0.2
+shot u11_after_workout
+# untick "Set fitness by hand": fitness follows real progress again
+settings 1
+wait 0.7
+mouse 0.3748 0.7189
+wait 0.2
+click
+wait 0.3
+settings 0
+wait 5.0
+shot u12_real_fitness_again
+quit
