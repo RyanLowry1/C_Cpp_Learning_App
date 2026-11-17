@@ -164,14 +164,15 @@ raylib is © Ramon Santamaria, zlib licence (`lib/raylib-LICENSE.txt`).
 
 ## Three editions
 
-The same app exists in three self-contained editions. Each folder has its own source, content, raylib and build script,
+The same app exists in three self-contained editions. Each one has its own source, content, raylib and build script,
 so any one of them can be copied to another computer on its own.
 
-| Folder | Edition | Look |
+| Edition | Where to find it | Look |
 |---|---|---|
-| *(this folder)* | **3D** | a first-person 3D library with a real 3D librarian, book and lighting |
-| `V1/` | **8-bit** | chunky pixel art: a 540-pixel canvas, a 40-colour dithered palette, a bitmap font, chiptune sound |
-| `V2/` | **2D** | a polished 2D illustration: a vector-painted, lit set, a puppet librarian, parallax, a zooming camera |
+| **3D** | the current files of this repository | a first-person 3D library with a real 3D librarian, book and lighting |
+| **8-bit** (V1) | commit [`877f74b`](https://github.com/RyanLowry1/C_Cpp_Learning_App/tree/877f74b39cdf8c82632be1d77adec0a2a08945f4) | chunky pixel art: a 540-pixel canvas, a 40-colour dithered palette, a bitmap font, chiptune sound |
+| **2D** (V2) | commit [`a4fa738`](https://github.com/RyanLowry1/C_Cpp_Learning_App/tree/a4fa738886be29f51b15d3b46a3bf6a43e7bd7b6) | a polished 2D illustration: a vector-painted, lit set, a puppet librarian, parallax, a zooming camera |
 
 All three use the same lessons, quizzes and coding exams and the same marking (`--selftest` passes 201 / 201 in each).
-Each has its own README with build and run instructions (`V1/README.md`, `V2/README.md`).
+The 8-bit and 2D editions are earlier versions in this repository's history. Each link opens that edition's files, with
+its own README and build instructions; **Code → Download ZIP** on that page downloads it.
