@@ -39,7 +39,6 @@ void Progress::Load() {
         else if (k == "fullscreen") settings.fullscreen = v == "1";
         else if (k == "mouselook") settings.mouseLook = v == "1";
         else if (k == "demounlock") settings.demoUnlock = v == "1";
-        else if (k == "demofitness") settings.demoFitness = std::min(1.f, (float)atof(v.c_str()));
         else if (k == "returned") booksReturned = atoi(v.c_str());
         else if (k == "unlock") unlocked.insert(v);
         else if (k == "librarian") librarian = v;
@@ -89,7 +88,6 @@ void Progress::Save() {
     o << "fullscreen=" << (settings.fullscreen ? 1 : 0) << "\n";
     o << "mouselook=" << (settings.mouseLook ? 1 : 0) << "\n";
     o << "demounlock=" << (settings.demoUnlock ? 1 : 0) << "\n";
-    o << "demofitness=" << settings.demoFitness << "\n";
     o << "returned=" << booksReturned << "\n";
     o << "librarian=" << librarian << "\n";
     for (auto& u : unlocked) o << "unlock=" << u << "\n";
@@ -208,16 +206,6 @@ int Progress::TotalAnswered() const {
     int n = 0;
     for (auto& kv : items) n += kv.second.attempts;
     return n;
-}
-
-float Progress::Fitness() const {
-    float sum = 0.f;
-    int n = 0;
-    for (const TopicMastery& m : Mastery()) if (m.score >= 0.f) { sum += m.score; n++; }
-    if (n == 0) return 0.f;
-    // a handful of lucky answers must not bulk him up: confidence ramps in over the first 40 answers
-    float confidence = std::min(1.f, (float)TotalAnswered() / 40.f);
-    return std::max(0.f, std::min(1.f, sum / n * confidence));
 }
 
 float Progress::OverallAccuracy() const {

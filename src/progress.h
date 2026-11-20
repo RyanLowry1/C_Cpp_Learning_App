@@ -37,7 +37,6 @@ struct Settings {
     bool fullscreen = false;
     bool mouseLook = true;
     bool demoUnlock = false;   // developer option: every librarian can be called in; what was really earned (`unlocked`) is left alone
-    float demoFitness = -1.f;  // developer option: the librarian's fitness set by hand, 0..1; negative = follow the learner's real mastery
 };
 
 struct TopicMastery {
@@ -77,8 +76,6 @@ public:
     std::vector<TopicMastery> Mastery() const;   // one entry per topic (content order)
     int TotalAnswered() const;
     float OverallAccuracy() const;
-    // 0..1, how fit the librarian on duty is. Dynamic: follows the current mean topic mastery, so it can fall as well as rise.
-    float Fitness() const;
 };
 
 Progress& Prog();

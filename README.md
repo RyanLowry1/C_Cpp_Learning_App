@@ -22,7 +22,7 @@ You sit at a desk in an old library, looking across it at **Mr. Malloc**, the li
 All progress is saved in `save/` next to the program.
 
 ### The librarians
-Mr. Malloc is always on duty. Four more librarians can be earned, and once earned they are yours for good. Pick who sits at the desk under the **star button**, top right. Each has their own look, voice and way of speaking.
+Mr. Malloc is always on duty. Seven more librarians can be earned, and once earned they are yours for good. Pick who sits at the desk under the **star button**, top right. Each has their own look, voice and way of speaking, and their own take on C and C++.
 
 ![The librarians](docs/screenshots/21_librarians_lineup.png)
 
@@ -32,10 +32,11 @@ Mr. Malloc is always on duty. Four more librarians can be earned, and once earne
 | **Dr. Heap**, lab coat and wild hair | score 100% on a multiple choice quiz |
 | **Ada the Compiler**, fast and cheerful | solve a coding problem |
 | **B.Y.T.E.**, a tutor robot | answer 100 questions in total |
+| **Captain Stack**, last in, first out | solve 5 coding problems |
+| **Nana Free**, frees everything she allocates | score 100% on a written test |
+| **Kernel Panic**, pink mohawk, mostly calm | score 50% or more in a mock exam |
 
-Whoever is on duty **trains as you learn**. Their fitness follows your mastery across the topics, so it goes up when you do well and slips back when you slack off: sleeves get rolled, then come off. Leave the hub alone for half a minute and they get up for a set of bicep curls and a flex.
-
-**For a demo:** Settings (the gear button) ends with **Developer options**. Tick **Unlock every librarian** and all five can be called in straight away. Tick **Set fitness by hand**, or just drag its slider, to choose how fit the librarian is. Press **Start a workout now** to see the curls and the flex without the half-minute wait. None of this changes what you have earned: untick the two boxes and the roster and the fitness go back to your own.
+**For a demo:** Settings (the gear button) ends with **Developer options**. Tick **Unlock every librarian** and all eight can be called in straight away. It does not change what you have earned: untick it and the roster goes back to the librarians you unlocked yourself.
 
 ### Why the approach is different
 * **Spatial and characterful.** The interface is a place you sit in, not a menu. Mr. Malloc's choreography (standing, walking, reaching for the shelf, carrying, presenting, the camera move) is all procedural animation. He speaks with a lip-synced, synthesised "mumble" voice, reacts to your results, and remembers what you did last time. The cat and the desk bell can be clicked.
@@ -130,7 +131,7 @@ tools/              autopilot scripts used to record demos and verification scre
 ```bash
 MallocsLibrary.exe --script tools/shots_coding.txt
 ```
-Scripts drive the real app (open a service, pick choices, answer, run code, turn pages) and save screenshots to `save/shots/`. `shots_coding`, `shots_mcq`, `shots_written`, `shots_reading` and `shots_misc` cover every service; `shots_demo_unlock` clicks through the developer options (run that one with `--sandbox`). They're handy for recording a screencast without fumbling. Note that scripts use the real save file, so they add sessions to the ledger. The `quick` command also turns on *Quick fetch* in Settings. Add `--sandbox` to run a script without writing your progress or code drafts (screenshots are still saved):
+Scripts drive the real app (open a service, pick choices, answer, run code, turn pages) and save screenshots to `save/shots/`. `shots_coding`, `shots_mcq`, `shots_written`, `shots_reading` and `shots_misc` cover every service; `shots_demo_unlock` clicks through the developer option (run that one with `--sandbox`). They're handy for recording a screencast without fumbling. Note that scripts use the real save file, so they add sessions to the ledger. The `quick` command also turns on *Quick fetch* in Settings. Add `--sandbox` to run a script without writing your progress or code drafts (screenshots are still saved):
 
 ```bash
 MallocsLibrary.exe --sandbox --script tools/shots_coding.txt

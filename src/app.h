@@ -14,7 +14,7 @@ public:
     int Run(int argc, char** argv);
 
 private:
-    enum class Phase { Intro, Hub, Fetching, Presenting, Reading, Closing, Gym };
+    enum class Phase { Intro, Hub, Fetching, Presenting, Reading, Closing };
 
     struct Request {
         std::string kind;     // read, mcq, written, coding, mock, stats, areas, drill
@@ -69,20 +69,14 @@ private:
     float overlayAnim = 0.f;
     int funIndex = 0;
 
-    // gym + librarians
-    float idleT = 0.f;             // seconds the visitor has left the hub alone
-    Vector2 lastMouse{ 0, 0 };
-    int pendingTab = -1;           // a card clicked while he was working out
-    bool gymAbort = false;
-    float fitnessTimer = 0.f;
-    float fitOverride = -1.f;      // autopilot: force a fitness level for screenshots
-    int closeup = 0;               // autopilot: inspection camera orbiting the librarian (0 = off)
+    // librarians
+    int closeup = 0;              // autopilot: inspection camera orbiting the librarian (0 = off)
     float closeYaw = 0.f, closePitch = 0.f;
     bool hudOff = false;           // autopilot: draw the 3D scene only
     bool sceneOff = false;         // autopilot: hide the room, so the librarian can be seen from every side
     std::string unlockNote;        // unlocks earned while away, announced in the greeting
     bool newLibBadge = false;
-    struct Portrait { RenderTexture2D rt{}; int level = -1; };   // level: the 5% fitness step it was drawn at (-1 = not drawn yet)
+    struct Portrait { RenderTexture2D rt{}; bool drawn = false; };
     std::map<std::string, Portrait> portraits;                   // faces for the Librarians screen, by librarian id
 
     // autopilot (for scripted screenshots / demos)
@@ -113,10 +107,6 @@ private:
     void HandleWorldClicks();
     void ApplyLibrarian();
     void SelectLibrarian(const std::string& id);
-    float TargetFitness() const;
-    void StartGym();
-    void BuildGym();
-    void AbortGym();
 
     // flow
     void SetPhase(Phase p);

@@ -137,7 +137,6 @@ void Librarian::Update(float dt, float time) {
     if (blinkTimer <= 0) { blink = 0.16f; blinkTimer = 2.2f + fmodf(time * 7.31f, 3.5f); }
     if (blink > 0) blink -= dt;
 
-    muscle = util::Damp(muscle, muscleTarget, 0.8f, dt);   // slow, so a change in form is seen gradually
     mouth = util::Damp(mouth, talk, 22.f, dt);
     brow = util::Damp(brow, Clamp(talk * 0.6f + excitement, 0.f, 1.f), 6.f, dt);
     if (debugMouth >= 0.f) mouth = debugMouth;

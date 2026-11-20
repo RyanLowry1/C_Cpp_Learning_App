@@ -20,10 +20,8 @@ constexpr float SHOULDER_X = 0.20f, HIP_X = 0.072f;
 // ---------------------------------------------------------------------------
 struct Rig {
     Matrix pelvis, spine, neck, head, shoulder[2], elbow[2], hand[2], hip[2], knee[2], foot[2];
-    float muscle = 0.f, mouth = 0.f, brow = 0.f, blink = 0.f, clock = 0.f;
-    float sculpt = 0.f;              // the fitness the torso is sculpted for: the target, so a change rebuilds it once, not at every step on the way
-    bool dumbbells = false, fists = false;
-    bool legs = true;                // legs are skipped while seated (the desk hides them)
+    float mouth = 0.f, brow = 0.f, blink = 0.f, clock = 0.f;
+    bool legs = true;               // legs are skipped while seated (the desk hides them)
 };
 
 // ---------------------------------------------------------------------------
@@ -74,26 +72,19 @@ using look::MakeSpec;
 const Color kGold = RGBA(244, 204, 104);
 
 // ---------------------------------------------------------------------------
-// torso: a lathe of thin ellipsoid discs; training broadens the chest and slims the paunch
+// the robot's torso: half-width, half-depth and forward offset of a thin disc at height y
 // ---------------------------------------------------------------------------
 struct TP { float hw, hd, zc; };
-TP TorsoProfile(float y, float m, float belly) {
+TP TorsoProfile(float y) {
     static const float Y[9]  = { -0.03f, 0.05f, 0.13f, 0.22f, 0.31f, 0.40f, 0.47f, 0.52f, 0.555f };
     static const float HW[9] = { 0.165f, 0.170f, 0.165f, 0.178f, 0.200f, 0.222f, 0.215f, 0.170f, 0.085f };
     static const float HD[9] = { 0.115f, 0.122f, 0.125f, 0.128f, 0.128f, 0.126f, 0.112f, 0.095f, 0.075f };
     static const float ZC[9] = { 0, 0, 0.01f, 0.02f, 0.015f, 0.01f, -0.005f, -0.01f, -0.01f };
-    static const float MW[9] = { 0, 0, -0.012f, 0, 0.03f, 0.07f, 0.075f, 0.05f, 0 };
-    static const float MD[9] = { 0, 0, 0, 0.005f, 0.012f, 0.02f, 0.012f, 0, 0 };
-    static const float BD[9] = { 0, 0.012f, 0.035f, 0.04f, 0.012f, 0, 0, 0, 0 };
     int i = 0;
     while (i < 7 && y > Y[i + 1]) i++;
     float t = Clamp((y - Y[i]) / (Y[i + 1] - Y[i]), 0.f, 1.f);
     auto L = [&](const float* a) { return a[i] + (a[i + 1] - a[i]) * t; };
-    TP p;
-    p.hw = L(HW) + m * L(MW);
-    p.hd = L(HD) + m * L(MD) + belly * L(BD);
-    p.zc = L(ZC) + belly * L(BD) * 0.5f;
-    return p;
+    return TP{ L(HW), L(HD), L(ZC) };
 }
 
 // fingers: each is three spheres bending towards +Z (the way a fist closes). curl 0 = relaxed, 1 = gripping a bar
@@ -125,23 +116,6 @@ void Thumb(gfx::TubeSet& ts, float side, float curl, Color c, float r0) {
     }
     ts.Taper(pts, r0 * 1.05f, r0, r0 * 0.7f, c);
 }
-// a dumbbell across the fist (axis along the hand's X)
-void Dumbbell(const Matrix& f) {
-    Color iron = RGBA(74, 76, 90), steel = RGBA(170, 172, 182), plate = RGBA(110, 112, 126);
-    float by = -0.078f, bz = 0.034f;   // where the closed fist holds it (see SculptHand)
-    Cy(f, 0.11f, by, bz, 0.0105f, 0.22f, steel, 0.f, PI * 0.5f);   // bar
-    for (int e = -1; e <= 1; e += 2) {
-        float x = e * 0.105f;
-        Cy(f, x + 0.011f, by, bz, 0.062f, 0.022f, iron, 0.f, PI * 0.5f);
-        Cy(f, x + e * 0.024f + 0.008f, by, bz, 0.048f, 0.016f, plate, 0.f, PI * 0.5f);
-        S(f, e * 0.138f, by, bz, 0.016f, steel);
-        for (int k = 0; k < 6; k++) {   // bolts around the plate
-            float a = 2.f * PI * k / 6;
-            S(f, x + e * 0.001f, by + cosf(a) * 0.05f, bz + sinf(a) * 0.05f, 0.0045f, steel);
-        }
-    }
-}
-
 // ---------------------------------------------------------------------------
 // smooth swept surfaces: limbs, torso, neck are single lathe meshes (see gfx::Lathe)
 // ---------------------------------------------------------------------------
@@ -167,12 +141,11 @@ inline float Zero(float) { return 0.f; }
 // the human body
 // ---------------------------------------------------------------------------
 void DrawHumanBody(const Rig& R, const Spec& L, const std::string& id) {
-    const float m = R.muscle;
     const bool robe = id == "pointer", coat = L.labCoat, hoodie = L.hood;
 
     // ---- legs: straight trouser legs with a turn-up, socks and round-toed shoes ----
     for (int i = 0; i < 2 && R.legs; i++) {
-        auto thighR = [&](float t) { return 0.072f - 0.008f * t + 0.006f * m * (1.f - t); };
+        auto thighR = [&](float t) { return 0.072f - 0.008f * t; };
         Sweep(kThigh + i, R.hip[i], 0.f, -THIGH, 8, thighR, thighR, Zero, Zero, [&](float) { return L.trousers; });
         S(R.knee[i], 0, 0, 0, 0.066f, L.trousers);
         auto shinR = [&](float t) { return 0.066f - 0.01f * t; };
@@ -185,10 +158,10 @@ void DrawHumanBody(const Rig& R, const Spec& L, const std::string& id) {
     }
     // ---- pelvis ----
     E(R.pelvis, 0, -0.03f, 0, 0.128f, 0.092f, 0.1f, L.trousers);
-    for (int s = -1; s <= 1; s += 2) S(R.pelvis, s * HIP_X, 0, 0, 0.072f + 0.006f * m, L.trousers);
+    for (int s = -1; s <= 1; s += 2) S(R.pelvis, s * HIP_X, 0, 0, 0.072f, L.trousers);
 
     // ---- torso: one sculpt (jacket, waistcoat, lapels, collar, shoulders); thin details are laid on its surface ----
-    const look::Sculpt& torso = look::GetTorso(id, R.sculpt);
+    const look::Sculpt& torso = look::GetTorso(id);
     for (const Mesh& mesh : torso.meshes) gfx::DrawMeshLit(mesh, R.spine, WHITE);
     auto zf = [&](float x, float y) { return torso.Z(x, y); };
     gfx::TubeSet bt;
@@ -229,36 +202,28 @@ void DrawHumanBody(const Rig& R, const Spec& L, const std::string& id) {
     }
     bt.Flush(4, R.spine);
 
-    // ---- arms: smooth muscular sweeps; sleeves roll up, then come off ----
-    // sleeves change with the torso sculpt, which is rebuilt in steps of 5% fitness (see look::GetTorso)
-    const float mq = floorf(R.sculpt * 20.f + 0.5f) / 20.f;
-    const bool bare = mq >= 0.8f, rolled = mq >= 0.45f && mq < 0.8f;
+    // ---- arms: smooth sweeps with a soft bulge for the biceps ----
     for (int i = 0; i < 2; i++) {
-        auto bump = [&](float t) { return (0.006f + 0.026f * m) * expf(-powf((t - 0.42f) / 0.24f, 2.f)); };
-        auto upperR = [&](float t) { return 0.043f + 0.014f * m - 0.006f * t + 0.016f * m * expf(-t * t / 0.04f); };   // fuller under the shoulder
+        auto bump = [&](float t) { return 0.006f * expf(-powf((t - 0.42f) / 0.24f, 2.f)); };
+        auto upperR = [&](float t) { return 0.043f - 0.006f * t; };
         Sweep(kUpperArm + i, R.shoulder[i], 0.f, -UPPER, 14,
               [&](float t) { return upperR(t) + 0.6f * bump(t); },                 // side to side
-              [&](float t) { return upperR(t) + 1.3f * bump(t); },                 // front to back: the biceps / triceps
+              [&](float t) { return upperR(t) + 1.3f * bump(t); },                 // front to back
               Zero, [&](float t) { return 0.35f * bump(t); },
-              [&](float) { return bare ? L.skin : L.jacket; });   // bare arms: the sculpted torso has bare shoulders to match
-        float flare = (robe && !bare && !rolled) ? 1.f : 0.f;   // wide wizard sleeves, while he still has sleeves
-        auto foreBase = [&](float t) { return 0.036f + 0.012f * m - 0.011f * t + 0.012f * m * expf(-powf((t - 0.15f) / 0.2f, 2.f)); };
+              [&](float) { return L.jacket; });
+        float flare = robe ? 1.f : 0.f;   // wide wizard sleeves
+        auto foreBase = [&](float t) { return 0.036f - 0.011f * t; };
         auto foreR = [&](float t) { return foreBase(t) + flare * 0.04f * t * t; };
         Sweep(kForearm + i, R.elbow[i], 0.f, -FORE, 12, foreR, [&](float t) { return foreBase(t) * 0.92f + flare * 0.04f * t * t; }, Zero, Zero,
-              [&](float t) { return (!bare && !rolled) ? L.jacket : (rolled ? (t <= 0.12f ? L.jacket : L.skin) : L.skin); }, { 0.12f });
-        S(R.elbow[i], 0, 0, 0, 0.038f + 0.014f * m, (bare || rolled) ? L.skin : L.jacket);
-        if (rolled) Ring(R.elbow[i], -0.03f, 0.046f + 0.012f * m, 14, 0.0115f, L.jacket);       // rolled-up sleeve cuff
-        if (!bare && !rolled) {
-            if (robe) Ring(R.elbow[i], -FORE + 0.012f, 0.07f, 18, 0.0075f, L.accent, 0.95f);
-            else Ring(R.elbow[i], -FORE + 0.008f, 0.036f + 0.004f * m, 14, 0.0082f, coat ? L.vest : L.shirt);   // shirt cuff
-        }
-        // hand: a sculpted cartoon hand, drawn a little large. A resting hand turns its palm towards the body
-        // (thumb forward); a hand gripping a dumbbell keeps its palm forward so the bar lies across the body.
-        const bool closed = R.dumbbells || R.fists;
-        const float turn = closed ? 0.f : (i == 0 ? 0.5f * PI : -0.5f * PI);
+              [&](float) { return L.jacket; });
+        S(R.elbow[i], 0, 0, 0, 0.038f, L.jacket);
+        if (robe) Ring(R.elbow[i], -FORE + 0.012f, 0.07f, 18, 0.0075f, L.accent, 0.95f);
+        else Ring(R.elbow[i], -FORE + 0.008f, 0.036f, 14, 0.0082f, coat ? L.vest : L.shirt);   // shirt cuff
+        if (L.uniform) for (int k = 0; k < 2; k++) Ring(R.elbow[i], -FORE + 0.042f + 0.016f * k, 0.0285f, 14, 0.0027f, L.accent, 0.87f);   // gold cuff stripes
+        // hand: a sculpted cartoon hand, drawn a little large, its palm turned towards the body (thumb forward)
+        const float turn = i == 0 ? 0.5f * PI : -0.5f * PI;
         const Matrix hm = M(M(MatrixScale(1.12f, 1.12f, 1.12f), MatrixRotateY(turn)), R.hand[i]);
-        for (const Mesh& mesh : look::GetHand(id, i, closed).meshes) gfx::DrawMeshLit(mesh, hm, WHITE);
-        if (R.dumbbells) Dumbbell(hm);
+        for (const Mesh& mesh : look::GetHand(id, i).meshes) gfx::DrawMeshLit(mesh, hm, WHITE);
     }
 }
 
@@ -270,6 +235,7 @@ Vector2 Rim(int style, float a) {
     float c = cosf(a), s = sinf(a);
     if (style == 2) return Vector2{ 0.027f * c, s < 0.f ? 0.019f * s : 0.004f * s };   // half-moon: flat on top
     if (style == 3) return Vector2{ 0.035f * copysignf(sqrtf(fabsf(c)), c), 0.028f * copysignf(sqrtf(fabsf(s)), s) };   // rounded square
+    if (style == 5) return Vector2{ 0.037f * c, 0.026f * s + 0.015f * std::max(c, 0.f) * std::max(c, 0.f) };           // cat-eye: the outer corner flicks upwards
     float r = style == 4 ? 0.038f : 0.0345f;
     return Vector2{ r * c, r * s };
 }
@@ -400,6 +366,24 @@ void DrawHumanHead(const Rig& R, const Spec& L, const std::string& id) {
             S(H, r * sinf(ang) + 0.02f * t * t, 0.205f + 0.34f * t, -0.01f - 0.1f * t * t * t - 0.012f * t + r * cosf(ang) + 0.005f, 0.0095f, L.accent, 0.6f);
         }
     }
+    // ---- Captain Stack's cap: a white crown over a navy band with gold braid, a black peak and a gold badge ----
+    if (L.cap) {
+        std::vector<LatheRing> rg;
+        auto ring = [&](float y, float rx, float rz, Color c) { rg.push_back(LatheRing{ y, 0.f, -0.008f, rx, rz, c }); };
+        ring(0.196f, 0.100f, 0.108f, L.jacketDark);   // band
+        ring(0.226f, 0.106f, 0.114f, L.jacketDark);
+        ring(0.2265f, 0.1065f, 0.1145f, L.accent);    // gold braid (two rings a hair apart make a hard colour edge)
+        ring(0.2315f, 0.108f, 0.116f, L.accent);
+        ring(0.232f, 0.1085f, 0.1165f, L.shirt);      // crown
+        ring(0.248f, 0.122f, 0.130f, L.shirt);
+        ring(0.262f, 0.128f, 0.136f, L.shirt);
+        ring(0.272f, 0.118f, 0.126f, L.shirt);
+        ring(0.278f, 0.070f, 0.076f, L.shirt);
+        ring(0.2795f, 0.012f, 0.012f, L.shirt);
+        gfx::Lathe(kExtra + 2, H, rg, 36);
+        E(M(M(MatrixRotateX(0.06f), MatrixTranslate(0, 0.202f, 0.1f)), H), 0, 0, 0.036f, 0.064f, 0.005f, 0.044f, RGBA(26, 26, 30));   // peak (T is the tube set here)
+        E(H, 0, 0.211f, 0.105f, 0.019f, 0.016f, 0.005f, L.accent);                                                    // badge
+    }
     T.Flush(0, H);
 }
 
@@ -412,15 +396,14 @@ float VisorZ(float x, float y) {
 }
 
 void DrawRobot(const Rig& R) {
-    const float m = R.muscle;
     const Color shell = RGBA(228, 232, 238), dark = RGBA(58, 66, 82), steel = RGBA(150, 160, 176);
     const Color teal = RGBA(36, 168, 182), glow = RGBA(96, 232, 255), amber = RGBA(255, 176, 56);
     const float pulse = 0.65f + 0.35f * sinf(R.clock * 3.f);
-    auto zf = [&](float y) { TP p = TorsoProfile(y, m, 0.f); return p.zc + p.hd * 0.97f; };
+    auto zf = [&](float y) { TP p = TorsoProfile(y); return p.zc + p.hd * 0.97f; };
 
     // ---- legs ----
     for (int i = 0; i < 2 && R.legs; i++) {
-        auto thighR = [&](float t) { return 0.062f - 0.012f * t + 0.006f * m; };
+        auto thighR = [&](float t) { return 0.062f - 0.012f * t; };
         Sweep(kThigh + i, R.hip[i], 0.f, -THIGH, 10, thighR, thighR, Zero, Zero, [&](float t) { return (t > 0.18f && t <= 0.24f) || (t > 0.48f && t <= 0.54f) || (t > 0.78f && t <= 0.84f) ? steel : dark; },
               { 0.18f, 0.24f, 0.48f, 0.54f, 0.78f, 0.84f });
         S(R.knee[i], 0, 0, 0, 0.056f, steel);
@@ -449,7 +432,7 @@ void DrawRobot(const Rig& R) {
         std::vector<LatheRing> rg;
         for (int k = 0; k < 44; k++) {
             float y = Lf(-0.05f, 0.56f, k / 43.f);
-            TP p = TorsoProfile(y, m, 0.f);
+            TP p = TorsoProfile(y);
             bool rib = y < 0.17f;
             float f = rib ? (k % 2 ? 0.955f : 1.f) : 1.f;
             Color c = rib ? (k % 2 ? dark : steel) : (y > 0.52f ? dark : shell);
@@ -489,38 +472,37 @@ void DrawRobot(const Rig& R) {
         E(R.spine, (k - 4) * 0.0145f, 0.255f + h * 0.5f, zf(0.255f) + 0.003f, 0.0052f, h, 0.005f, k % 3 == 0 ? amber : glow, 0.f, 0.8f);
     }
     for (int s = -1; s <= 1; s += 2) for (int k = 0; k < 4; k++)   // side vents
-        E(R.spine, s * (0.2f + 0.035f * m + 0.012f), 0.28f + k * 0.026f, 0.0, 0.006f, 0.0048f, 0.07f, dark);
+        E(R.spine, s * 0.212f, 0.28f + k * 0.026f, 0.0, 0.006f, 0.0048f, 0.07f, dark);
     // neck: stacked rings and cables
-    for (int k = 0; k < 4; k++) E(R.neck, 0, -0.045f + k * 0.022f, 0, 0.052f + 0.008f * m - 0.003f * k, 0.014f, 0.052f + 0.008f * m - 0.003f * k, k % 2 ? steel : dark);
+    for (int k = 0; k < 4; k++) E(R.neck, 0, -0.045f + k * 0.022f, 0, 0.052f - 0.003f * k, 0.014f, 0.052f - 0.003f * k, k % 2 ? steel : dark);
     for (int s = -1; s <= 1; s += 2) TubeC(R.neck, Vector3{ s * 0.03f, -0.05f, -0.03f }, Vector3{ s * 0.034f, 0.01f, -0.036f }, [](float) { return 0.0065f; }, amber);
     // shoulders: pauldrons with rivets
     for (int s = -1; s <= 1; s += 2) {
-        for (int k = 0; k < 6; k++) { float u = k / 5.f; S(R.spine, s * Lf(0.07f, 0.17f, u), Lf(0.545f, 0.5f, u), -0.012f, 0.038f + 0.008f * m, dark); }
-        S(R.spine, s * SHOULDER_X, TORSO - 0.06f, 0, 0.074f + 0.036f * m, shell);
-        S(R.spine, s * (SHOULDER_X + 0.02f), TORSO - 0.06f, 0, 0.056f + 0.03f * m, teal);
+        for (int k = 0; k < 6; k++) { float u = k / 5.f; S(R.spine, s * Lf(0.07f, 0.17f, u), Lf(0.545f, 0.5f, u), -0.012f, 0.038f, dark); }
+        S(R.spine, s * SHOULDER_X, TORSO - 0.06f, 0, 0.074f, shell);
+        S(R.spine, s * (SHOULDER_X + 0.02f), TORSO - 0.06f, 0, 0.056f, teal);
         for (int k = 0; k < 8; k++) {
             float a = 2.f * PI * k / 8;
-            S(R.spine, s * (SHOULDER_X + 0.052f + 0.02f * m), TORSO - 0.06f + cosf(a) * 0.046f, sinf(a) * 0.046f, 0.0046f, steel);
+            S(R.spine, s * (SHOULDER_X + 0.052f), TORSO - 0.06f + cosf(a) * 0.046f, sinf(a) * 0.046f, 0.0046f, steel);
         }
     }
     // ---- arms: hydraulic ----
     for (int i = 0; i < 2; i++) {
         float sd = i == 0 ? -1.f : 1.f;
-        auto bump = [&](float t) { return (0.008f + 0.02f * m) * expf(-powf((t - 0.4f) / 0.25f, 2.f)); };
-        auto upR = [&](float t) { return 0.044f + 0.012f * m + bump(t); };
+        auto bump = [&](float t) { return 0.008f * expf(-powf((t - 0.4f) / 0.25f, 2.f)); };
+        auto upR = [&](float t) { return 0.044f + bump(t); };
         Sweep(kUpperArm + i, R.shoulder[i], 0.f, -UPPER, 14, upR, upR, Zero, Zero,
               [&](float t) { return ((t > 0.3f && t <= 0.37f) || (t > 0.62f && t <= 0.68f)) ? teal : shell; }, { 0.3f, 0.37f, 0.62f, 0.68f });
-        TubeC(R.shoulder[i], Vector3{ 0, -0.02f, 0.052f + 0.014f * m }, Vector3{ 0, -0.25f, 0.05f + 0.014f * m }, [](float) { return 0.0068f; }, steel);   // biceps piston
-        if (m > 0.3f) for (int k = 0; k < 5; k++) E(R.shoulder[i], 0, -0.1f - 0.025f * k, 0.052f + 0.03f * m, 0.012f, 0.006f, 0.005f, glow, 0.f, 0.8f);
-        S(R.elbow[i], 0, 0, 0, 0.05f + 0.01f * m, steel);
+        TubeC(R.shoulder[i], Vector3{ 0, -0.02f, 0.052f }, Vector3{ 0, -0.25f, 0.05f }, [](float) { return 0.0068f; }, steel);   // upper-arm piston
+        S(R.elbow[i], 0, 0, 0, 0.05f, steel);
         S(R.elbow[i], 0, 0, 0.0, 0.034f, dark);
-        auto fR = [&](float t) { return 0.038f + 0.012f * m - 0.01f * t + 0.012f * expf(-powf((t - 0.2f) / 0.2f, 2.f)); };
+        auto fR = [&](float t) { return 0.038f - 0.01f * t + 0.012f * expf(-powf((t - 0.2f) / 0.2f, 2.f)); };
         Sweep(kForearm + i, R.elbow[i], 0.f, -FORE, 12, fR, fR, Zero, Zero,
               [&](float t) { return ((t > 0.28f && t <= 0.34f) || (t > 0.6f && t <= 0.66f)) ? teal : (t > 0.92f ? dark : shell); }, { 0.28f, 0.34f, 0.6f, 0.66f, 0.92f });
         Ring(R.elbow[i], -FORE + 0.01f, 0.036f, 14, 0.0085f, dark);
-        TubeC(R.elbow[i], Vector3{ 0, -0.02f, 0.045f + 0.008f * m }, Vector3{ 0, -0.2f, 0.038f }, [](float) { return 0.006f; }, steel);
+        TubeC(R.elbow[i], Vector3{ 0, -0.02f, 0.045f }, Vector3{ 0, -0.2f, 0.038f }, [](float) { return 0.006f; }, steel);
         // claw hand: palm, three fingers, opposing thumb
-        float curl = (R.dumbbells || R.fists) ? 1.f : 0.3f;
+        const float curl = 0.3f;
         E(R.hand[i], 0, -0.038f, 0.0f, 0.034f, 0.034f, 0.02f, dark);
         S(R.hand[i], 0, -0.035f, 0.016f, 0.012f, glow, 0.7f);
         {
@@ -529,7 +511,6 @@ void DrawRobot(const Rig& R) {
             Thumb(hs, sd, curl, steel, 0.0115f);
             hs.Flush(1 + i, R.hand[i]);
         }
-        if (R.dumbbells) Dumbbell(R.hand[i]);
     }
 
     // ---- head ----
@@ -595,9 +576,7 @@ void Librarian::Draw() const {
         R.shoulder[i] = mShoulder[i]; R.elbow[i] = mElbow[i]; R.hand[i] = mHand[i];
         R.hip[i] = mHip[i]; R.knee[i] = mKnee[i]; R.foot[i] = mFoot[i];
     }
-    R.muscle = Clamp(muscle, 0.f, 1.f);
-    R.sculpt = Clamp(muscleTarget, 0.f, 1.f);
-    R.mouth = mouth; R.brow = brow; R.blink = blink; R.clock = clock; R.dumbbells = dumbbells; R.fists = fists;
+    R.mouth = mouth; R.brow = brow; R.blink = blink; R.clock = clock;
     R.legs = !seated;
     if (look == "byte") { DrawRobot(R); return; }
     Spec spec = MakeSpec(look);

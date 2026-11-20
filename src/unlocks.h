@@ -9,6 +9,7 @@ struct LibrarianDef {
     std::string how;        // how to unlock, shown while locked
     Color accent;
     std::string initial;
+    std::string plate;      // the desk nameplate: two lines, name then title
 };
 
 namespace unlocks {
@@ -18,6 +19,4 @@ bool IsUnlocked(const std::string& id);   // earned, or the "unlock every librar
 // Evaluates every achievement against the saved history. Unlocks are permanent: nothing is ever re-locked.
 // Returns the ids unlocked by this call (already saved).
 std::vector<std::string> Check();
-// Human-readable fitness tier ("Bookworm" ... "Gym Legend")
-const char* TierName(float fitness);
 }

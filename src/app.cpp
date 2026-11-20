@@ -45,7 +45,7 @@ static const char* kQuips[] = {
 struct Persona {
     float pitch;
     std::vector<std::string> quips;       // said in turn when the librarian is clicked
-    std::string bell, cat, gym, select;
+    std::string bell, cat, select;
 };
 
 // the name of whoever is on duty, for hints and labels that mention the librarian
@@ -59,7 +59,6 @@ static const Persona& PersonaFor(const std::string& id) {
         1.0f, std::vector<std::string>(std::begin(kQuips), std::end(kQuips)),
         "Yes, yes, I'm right here! No need to ring. What can I fetch for you?",
         "That's **Segfault**, the library cat. He sleeps on the warm end of the desk and wanders into memory he doesn't own. Don't dereference him.",
-        "Don't mind me - a healthy mind needs a healthy body! Every correct answer is another rep.",
         "Back behind my own desk. **Mr. Malloc**, as ever. Shall we?" };
     static const Persona pointer{
         0.78f, {
@@ -79,7 +78,6 @@ static const Persona& PersonaFor(const std::string& id) {
         },
         "Ring thy bell not so, apprentice! I am here. What scroll dost thou seek?",
         "Behold **Segfault**, familiar of this library. He wanders into memory he owns not. Do not dereference him.",
-        "A wizard must keep his wand arm strong! Pay me no mind - do carry on.",
         "Ah, a fresh pair of eyes! **Professor Pointer** at thy service. I know where everything lives. Mostly." };
     static const Persona heap{
         1.14f, {
@@ -99,7 +97,6 @@ static const Persona& PersonaFor(const std::string& id) {
         },
         "Ding! Eureka - a visitor! What shall we investigate today?",
         "Subject: **Segfault**, feline. Observed sleeping 23 hours a day. Fascinating! Do NOT poke him with a pointer.",
-        "Lab safety tip: always warm up before a heavy lift. Don't mind me!",
         "**Dr. Heap** reporting for duty! Please keep all hands, feet and dangling pointers inside the library." };
     static const Persona ada{
         1.32f, {
@@ -119,7 +116,6 @@ static const Persona& PersonaFor(const std::string& id) {
         },
         "ding ding! I'm here, I'm here. What are we building?",
         "that's **Segfault**. Best QA engineer we have - crashes on everything. Don't wake him.",
-        "Cardio, curls, compile, repeat. Don't mind me!",
         "Hi! **Ada** here. Let's get compiling - and mind your semicolons." };
     static const Persona robot{
         0.62f, {
@@ -133,14 +129,72 @@ static const Persona& PersonaFor(const std::string& id) {
             "LOADING JOKE.EXE... WHY DID THE FUNCTION RETURN EARLY? IT HAD NOTHING MORE TO GIVE. HA. HA. HA.",
             "TIP: PASS BY `const` REFERENCE. COPYING IS INEFFICIENT. EFFICIENCY IS HAPPINESS.",
             "ANALYSIS: YOU ARE DOING WELL. CONFIDENCE LEVEL: 87%. MARGIN OF ERROR: ONE CAT.",
-            "WHIRRR. MY HYDRAULIC BICEPS ARE POWERED BY YOUR EXAM RESULTS. NO PRESSURE.",
+            "WHIRRR. MY SERVOS RUN ON TEA AND CLEAN CODE. THE TEA IS OPTIONAL.",
             "RECURSION: SEE `RECURSION`.",
             "A `struct` AND A `class` DIFFER ONLY IN DEFAULT ACCESS. I FIND THIS... SATISFYING.",
         },
         "DING DETECTED. ATTENTION ROUTED TO USER. HOW MAY I ASSIST?",
         "FELINE UNIT **SEGFAULT** LOCATED. STATUS: ASLEEP. THREAT LEVEL: ADORABLE.",
-        "INITIATING WORKOUT.EXE. BICEP CURL SEQUENCE: ENGAGED. PLEASE DO NOT DISTURB MY SERVOS.",
         "SYSTEMS ONLINE. **B.Y.T.E.** AT YOUR SERVICE. LET US LEARN, HUMAN." };
+    static const Persona captain{
+        0.72f, {
+            "Ahoy! The stack be a pile of plates, matey: the last one ye PUSH is the first one ye POP. Last in, first out!",
+            "Every function call lays a fresh frame on the stack, and when she returns the frame goes overboard. So never hand back the address of a local - it sinks with the ship!",
+            "Stack overflow? That be recursion with no base case. She keeps sailing deeper until she hits the bottom of the sea.",
+            "Local variables live on the stack and vanish when the function ends. Here one minute, scraped off the hull the next.",
+            "The stack tidies up after itself. The heap makes ye swab yer own deck: every `new` needs its `delete`.",
+            "A stack frame holds yer locals, yer parameters and the return address. That last one be the map home.",
+            "Recursion be a ship in a bottle in a bottle in a bottle. Know when to stop: that be yer base case.",
+            "`std::stack` gives ye `push`, `pop` and `top`. No peeking at the bottom, sailor!",
+            "Matching brackets be the classic stack puzzle. Push on every open, pop on every close. Empty at the end? Shipshape.",
+            "Check yer array bounds, or ye'll sail right off the edge of the map. That be undefined behaviour.",
+            "Man overboard? That be a dangling reference. Don't dive in after it.",
+            "Steady as she goes: one thing at a time, in order, and ye'll make port before the exam starts.",
+        },
+        "Ahoy! No need to ring the bell, matey. I heard ye from the crow's nest. What do ye need?",
+        "That be **Segfault**, the ship's cat. Best mouser on the seven seas, worst sailor. Keep him away from the heap.",
+        "All hands on deck! **Captain Stack** takes the helm. Last in, first out, and I run a tight ship." };
+    static const Persona nana{
+        1.22f, {
+            "Oh, sweetheart. Whatever you `new`, you must `delete`. I always wash my own teacup.",
+            "Smart pointers, dear! A `unique_ptr` is a teacup with one owner. A `shared_ptr` is the biscuit tin: the last one out turns off the light.",
+            "Never `delete` the same thing twice, love. That's like drying a dish that's already in the cupboard.",
+            "A memory leak is a tap left running. Pop upstairs and turn it off.",
+            "Initialise your variables, darling. An uninitialised one holds whatever the last tenant left behind.",
+            "`const` is just good manners: it says 'I'll look, I won't touch'.",
+            "Pass big things by reference, dear. You wouldn't post the whole piano to your sister, you'd just give her the address.",
+            "In my day we only had pointers and arrays. And we were grateful!",
+            "Check for `nullptr` before you use a pointer, dear. Knock before you enter.",
+            "RAII, my darling: grab the resource in the constructor, let go in the destructor, and the house cleans itself.",
+            "A copy constructor is like a recipe card: copy the whole card, not just the address of mine.",
+            "Mind the rule of three: if you need a destructor, you probably need a copy constructor and a copy assignment too.",
+            "You're doing ever so well. Have a biscuit. Then try question seven again.",
+        },
+        "Ooh, the bell! Hello, dear. I'm right here. Shall I put the kettle on?",
+        "That's **Segfault**, dear. He's allowed on the desk because he sleeps so nicely. He's never been dereferenced, I checked.",
+        "Hello, my darlings! **Nana Free** here. I always free what I allocate. Now - tea first, then some questions?" };
+    static const Persona punk{
+        0.9f, {
+            "AAAH! ...oh, it's just a `nullptr`. Only dereference it if you want to see me panic. Kernel panic. Get it?",
+            "Buffer overflow: you write eleven things into a box that holds ten, and the eleventh lands somewhere it shouldn't. Check your bounds. Always.",
+            "Undefined behaviour means ANYTHING can happen. It might work. It might not. It will definitely fail during your demo.",
+            "Off-by-one: `i <= n` instead of `i < n`. Guaranteed chaos. I've cried over that one.",
+            "Segfault? Congrats, you touched memory that isn't yours. The OS is not impressed.",
+            "Uninitialised variable? It holds whatever garbage was there before. Like a locker nobody cleaned.",
+            "Stack overflow: infinite recursion eats the call stack until there's none left. Boom. Not the website - the actual thing.",
+            "Don't `delete` twice. Double free. The heap just goes: nope.",
+            "Dangling pointer: it points at memory you gave back. A ghost holding a house key.",
+            "Turn the compiler warnings all the way up. Seriously. It's free therapy.",
+            "I only panic when it's `nullptr`. Or when it isn't `nullptr`. Or on Tuesdays.",
+            "Magic numbers in your code? Name them. `const int MAX_USERS = 100;` Your future self will thank you.",
+            "Breathe in. Check for `nullptr`. Breathe out. Everything's fine.",
+        },
+        "AAH! ...oh, it's the bell. Don't do that. I'm fine. I'm FINE. What do you need?",
+        "That's **Segfault**. He's the only one in here who never panics. Honestly? Goals.",
+        "Yo. **Kernel Panic**. Don't panic. ...I'm panicking a bit. Let's learn something." };
+    if (id == "stack") return captain;
+    if (id == "nana") return nana;
+    if (id == "kernel") return punk;
     if (id == "pointer") return pointer;
     if (id == "heap") return heap;
     if (id == "ada") return ada;
@@ -201,15 +255,7 @@ void App::Init() {
     }
     if (!unlocks::IsUnlocked(Prog().librarian)) Prog().librarian = "malloc";
     ApplyLibrarian();
-    lib.muscleTarget = lib.muscle = TargetFitness();
     SetPhase(Phase::Intro);
-}
-
-// the fitness to show: forced by a script, else set by hand under Developer options, else what the learner has earned
-float App::TargetFitness() const {
-    if (fitOverride >= 0.f) return fitOverride;
-    float byHand = Prog().settings.demoFitness;
-    return byHand >= 0.f ? byHand : Prog().Fitness();
 }
 
 // puts the librarian on duty: look, desk nameplate, speaker name
@@ -218,9 +264,7 @@ void App::ApplyLibrarian() {
     const LibrarianDef* d = unlocks::Find(id);
     if (!d) return;
     lib.look = id;
-    const char* plate = id == "pointer" ? "PROF. POINTER\nWizard of Addresses" : id == "heap" ? "DR. HEAP\nDynamic Memory" : id == "ada" ? "ADA\nChief Compiler"
-                      : id == "byte" ? "B.Y.T.E.\nTutor Engine" : "A. MALLOC\nHead Librarian";
-    scene.SetNameplate(plate);
+    scene.SetNameplate(d->plate);
     dlg.SetSpeaker(d->name);
     dlg.SetVoicePitch(PersonaFor(id).pitch);
 }
@@ -328,7 +372,6 @@ void App::AskCount(const std::string& kind, const std::string& key) {
 }
 
 void App::OnTab(int i) {
-    if (phase == Phase::Gym) { pendingTab = i; AbortGym(); return; }   // finish the rep, then serve the visitor
     sfx::Play(sfx::Click);
     settingsOpen = helpOpen = libsOpen = false;
     switch (i) {
@@ -649,90 +692,6 @@ void App::BuildShelfFetch() {
     steps.push_back(SitDown());
 }
 
-// ---------------------------------------------------------------------------
-// the gym: left alone for a while, the librarian stands up and does bicep curls
-// ---------------------------------------------------------------------------
-void App::StartGym() {
-    dlg.Say(PersonaFor(Prog().librarian).gym);
-    pendingTab = -1;
-    gymAbort = false;
-    BuildGym();
-    SetPhase(Phase::Gym);
-}
-
-void App::BuildGym() {
-    steps.clear();
-    stepIdx = 0; stepT = 0; stepStarted = false;
-    Vector3 w1{ 0.62f, 0, -0.46f }, spot{ 0.74f, 0, -1.35f };
-    steps.push_back(StandUp());
-    steps.push_back(WalkTo(w1, 0.9f));
-    steps.push_back(WalkTo(spot, 1.0f));
-    steps.push_back(TurnTo(0.f, 0.6f));
-    {   // alternating bicep curls
-        Step s;
-        s.dur = 9.f;
-        s.enter = [this]() { lib.dumbbells = true; lib.carrying = false; };
-        s.tick = [this](float t, float dt) {
-            lib.walk = Damp(lib.walk, 0.f, 8.f, dt);
-            float ph = t * 6.f * 2.f * PI;                       // six curls per arm
-            float a = 0.5f - 0.5f * cosf(ph), b = 0.5f + 0.5f * cosf(ph);
-            Pose p = poses::Stand();
-            for (int i = 0; i < 2; i++) { p.shPitch[i] = 0.1f; p.shRoll[i] = 0.1f; }
-            p.elbow[0] = 0.12f + 2.25f * a;
-            p.elbow[1] = 0.12f + 2.25f * b;
-            p.spine += 0.03f * sinf(ph);
-            p.headPitch = 0.04f * sinf(ph * 2.f);
-            lib.base = p;
-            lib.lookAt = cam.position;
-            lib.excitement = 0.5f;
-        };
-        steps.push_back(s);
-    }
-    {   // double-biceps flex, held for a moment
-        Step s;
-        s.dur = 3.2f;
-        s.enter = [this]() { lib.dumbbells = false; lib.fists = true; };
-        s.tick = [this](float t, float dt) {
-            lib.walk = Damp(lib.walk, 0.f, 8.f, dt);
-            float e = Smooth(Clamp01(t * 3.f)) * (t < 0.85f ? 1.f : Smooth(Clamp01((1.f - t) / 0.15f)));
-            float pump = 0.05f * sinf(t * 30.f) * e;
-            Pose p = poses::Stand();
-            for (int i = 0; i < 2; i++) {   // upper arms out level, forearms up, fists by the head
-                p.shRoll[i] = Lerp(0.08f, 1.4f, e);
-                p.shTwist[i] = Lerp(0.f, 1.5f, e);
-                p.elbow[i] = Lerp(0.18f, 1.9f + pump, e);
-                p.shPitch[i] = Lerp(0.06f, 0.f, e);
-            }
-            p.spine -= 0.06f * e;
-            p.headPitch = -0.05f * e;
-            lib.base = p;
-            lib.lookAt = cam.position;
-            lib.excitement = 0.9f;
-        };
-        s.exit = [this]() { lib.excitement = 0.f; lib.fists = false; };
-        steps.push_back(s);
-    }
-    steps.push_back(WalkTo(w1, 1.0f));
-    steps.push_back(WalkTo(Vector3{ 0.f, 0.f, -0.38f }, 0.8f));
-    steps.push_back(SitDown());
-}
-
-// the visitor wants something: head back to the chair quickly, then serve them
-void App::AbortGym() {
-    if (gymAbort) return;
-    gymAbort = true;
-    lib.dumbbells = false;
-    lib.fists = false;
-    lib.excitement = 0.f;
-    bool alreadySitting = stepIdx >= (int)steps.size() - 1;
-    if (alreadySitting) return;
-    steps.clear();
-    stepIdx = 0; stepT = 0; stepStarted = false;
-    steps.push_back(WalkTo(Vector3{ 0.62f, 0, -0.46f }, 1.2f));
-    steps.push_back(WalkTo(Vector3{ 0.f, 0.f, -0.38f }, 1.0f));
-    steps.push_back(SitDown());
-}
-
 void App::BuildDrawerFetch() {
     steps.clear();
     stepIdx = 0; stepT = 0; stepStarted = false;
@@ -944,28 +903,11 @@ void App::Update(float dt) {
     bool hurry = (IsKeyDown(KEY_SPACE) && !ui::KeyboardCaptured()) || IsMouseButtonDown(MOUSE_BUTTON_RIGHT);
     float baseSpeed = Prog().settings.quickFetch ? 2.0f : 1.0f;
     timeScale = baseSpeed * (hurry ? 3.5f : 1.f);
-    if (phase == Phase::Gym && gymAbort) timeScale *= 2.f;
 
     RunAutopilot(dt);
     scene.Update(dt, time);
     dlg.Update(dt);
     lib.talk = dlg.Mouth();
-
-    // fitness follows the learner's current mastery - it can fall as well as rise, and eases in slowly
-    fitnessTimer -= dt;
-    if (fitnessTimer <= 0.f && !settingsOpen) {   // not behind Settings: its fitness slider would re-sculpt the torso at every step of a drag
-        fitnessTimer = 1.f;
-        lib.muscleTarget = TargetFitness();
-    }
-    // left alone in the hub for a while: time for a workout
-    {
-        Vector2 mp = GetMousePosition();
-        bool active = Vector2Distance(mp, lastMouse) > 3.f || IsMouseButtonDown(MOUSE_BUTTON_LEFT) || GetKeyPressed() != 0 ||
-                      dlg.HasChoices() || dlg.Typing() || AnyOverlay() || phase != Phase::Hub;
-        lastMouse = mp;
-        idleT = active ? 0.f : idleT + dt;
-        if (phase == Phase::Hub && idleT > 30.f && lib.seated) { idleT = 0.f; StartGym(); }
-    }
 
     // Escape key
     if (IsKeyPressed(KEY_ESCAPE)) {
@@ -1025,21 +967,6 @@ void App::Update(float dt) {
         bk.pageEmissive = Lerp(0.45f, 0.92f, Smooth(bookBlend));
         RunSteps(dt * timeScale);
         break;
-    case Phase::Gym:
-        fade = 0;
-        RunSteps(dt * timeScale);
-        if (stepIdx >= (int)steps.size()) {
-            gymAbort = false;
-            idleT = 0.f;
-            SetPhase(Phase::Hub);
-            if (pendingTab >= 0) { int t = pendingTab; pendingTab = -1; OnTab(t); }
-            else {
-                float f = lib.muscleTarget;
-                dlg.Say(std::string("Ahh, that's better. Current form: **") + unlocks::TierName(f) + "** (" + std::to_string((int)(f * 100.f + 0.5f)) +
-                        "%). Learn more and I'll lift more - slack off and the gains fade!");
-            }
-        }
-        break;
     }
 
     UpdateLibrarianIdle(dt);
@@ -1079,9 +1006,10 @@ void App::UpdateCamera(float dt) {
     cam.target = Vector3Lerp(tgt, bc, tt);
     cam.up = Vector3Normalize(Vector3Lerp(Vector3{ 0, 1, 0 }, Vector3{ 0, 0, -1 }, tp));
     cam.fovy = Lerp(fov, 42.f, tp);
-    if (closeup > 0) {   // autopilot only: orbit the librarian for inspection (1 head, 2 bust, 3 whole body)
+    if (closeup > 0) {   // autopilot only: orbit the librarian for inspection (1 head, 2 bust, 3 whole body, 4 head with hat or hair on top)
         Vector3 hp = lib.HeadPos();
-        float dist = closeup == 1 ? 0.62f : (closeup == 2 ? 1.3f : 3.9f), drop = closeup == 1 ? 0.01f : (closeup == 2 ? 0.16f : 0.74f);
+        float dist = closeup == 1 ? 0.62f : closeup == 2 ? 1.3f : closeup == 4 ? 1.1f : 3.9f;
+        float drop = closeup == 1 ? 0.01f : closeup == 2 ? 0.16f : closeup == 4 ? -0.1f : 0.74f;
         float a = closeYaw * DEG2RAD, e = closePitch * DEG2RAD;
         cam.target = Vector3{ hp.x, hp.y - drop, hp.z };
         cam.position = Vector3{ cam.target.x + sinf(a) * cosf(e) * dist, cam.target.y + sinf(e) * dist, cam.target.z + cosf(a) * cosf(e) * dist };
@@ -1110,15 +1038,13 @@ void App::RenderPagesToTexture() {
 // librarian sits in the hub and lit by the same lamps, drawn into a texture. At most one a frame: a librarian who has
 // not been on duty yet has to be sculpted first, which takes a fraction of a second.
 void App::RenderPortrait() {
-    const int level = (int)floorf(Clamp(lib.muscleTarget, 0.f, 1.f) * 20.f + 0.5f);   // the same 5% steps as the sculpted torso
     for (const LibrarianDef& d : unlocks::Roster()) {
         if (!unlocks::IsUnlocked(d.id)) continue;
         Portrait& p = portraits[d.id];
-        if (p.level == level) continue;
+        if (p.drawn) continue;
         if (!p.rt.id) p.rt = LoadRenderTexture(512, 512);   // shown at a quarter of this size or less, so its mipmaps smooth every edge
         Librarian sitter;
         sitter.look = d.id;
-        sitter.muscle = sitter.muscleTarget = level / 20.f;
         sitter.Init();
         Vector3 hp = sitter.HeadPos();
         Camera3D pc{};
@@ -1142,7 +1068,7 @@ void App::RenderPortrait() {
         EndTextureMode();
         GenTextureMipmaps(&p.rt.texture);
         SetTextureFilter(p.rt.texture, TEXTURE_FILTER_TRILINEAR);
-        p.level = level;
+        p.drawn = true;
         return;
     }
 }
@@ -1261,7 +1187,7 @@ void App::DrawTabs(bool interactive) {
 
 void App::DrawHud() {
     bool modal = AnyOverlay();
-    bool hubLike = phase == Phase::Hub || phase == Phase::Gym;
+    bool hubLike = phase == Phase::Hub;
     hudVisible = Damp(hudVisible, hubLike ? 1.f : 0.f, 6.f, GetFrameTime());
     bool interactive = !modal;
     ui::Begin(Vector2{ 0, 0 }, hudScale, interactive);
@@ -1274,7 +1200,7 @@ void App::DrawHud() {
         ui::Text(FontId::SerifItalic, "an interactive C & C++ study hall", 32, 66, 17, WithAlpha(pal::GoldSoft, 0.85f * ta));
     }
     // top-right buttons
-    if (phase == Phase::Hub || phase == Phase::Gym) {
+    if (phase == Phase::Hub) {
         Rectangle people{ hudW - 188, 22, 48, 48 }, help{ hudW - 132, 22, 48, 48 }, gear{ hudW - 76, 22, 48, 48 };
         if (ui::IconButton(people, Icon::Star, ui::BtnWood, interactive)) { libsOpen = !libsOpen; settingsOpen = helpOpen = false; newLibBadge = false; sfx::Play(sfx::Click); }
         if (newLibBadge) {   // a new librarian is waiting
@@ -1286,7 +1212,7 @@ void App::DrawHud() {
         if (ui::IconButton(gear, Icon::Gear, ui::BtnWood, interactive)) { settingsOpen = !settingsOpen; helpOpen = libsOpen = false; confirmReset = false; sfx::Play(sfx::Click); }
     }
     // dialogue
-    if (phase != Phase::Reading && phase != Phase::Presenting) dlg.Draw(hudW, hudH, interactive && (phase == Phase::Hub || phase == Phase::Fetching || phase == Phase::Closing || phase == Phase::Gym));
+    if (phase != Phase::Reading && phase != Phase::Presenting) dlg.Draw(hudW, hudH, interactive && (phase == Phase::Hub || phase == Phase::Fetching || phase == Phase::Closing));
     // hints
     if (phase == Phase::Fetching || phase == Phase::Closing) {
         std::string h = "Hold SPACE (or the right mouse button) to hurry " + DutyName() + " along";
@@ -1343,7 +1269,7 @@ void App::DrawOverlays() {
 }
 
 void App::DrawSettings() {
-    Rectangle r{ hudW * 0.5f - 300, 120 + (1 - overlayAnim) * 30, 600, 664 };
+    Rectangle r{ hudW * 0.5f - 300, 120 + (1 - overlayAnim) * 30, 600, 640 };
     DrawRectangleRounded(Rectangle{ r.x + 6, r.y + 8, r.width, r.height }, 0.06f, 8, WithAlpha(BLACK, 0.4f));
     ui::Panel(r, pal::Paper, pal::Wood, 0.06f, 3.f);
     ui::Text(FontId::SerifBold, "Settings", r.x + 34, r.y + 26, 34, pal::Ink);
@@ -1383,15 +1309,7 @@ void App::DrawSettings() {
     if (ui::Checkbox(Rectangle{ r.x + 34, y, 520, 34 }, "Unlock every librarian (for demos)", &s.demoUnlock) && !unlocks::IsUnlocked(Prog().librarian))
         SelectLibrarian("malloc");   // switched off while a borrowed librarian was at the desk: Mr. Malloc takes over again
     y += 40;
-    bool byHand = s.demoFitness >= 0.f;
-    float fit = byHand ? s.demoFitness : Prog().Fitness();   // unticked, the slider shows what has really been earned
-    if (ui::Checkbox(Rectangle{ r.x + 34, y, 236, 34 }, "Set fitness by hand", &byHand)) s.demoFitness = byHand ? fit : -1.f;
-    if (ui::Slider(Rectangle{ r.x + 290, y + 4, 190, 26 }, &fit)) s.demoFitness = fit;   // dragging it ticks the box
-    ui::Text(FontId::Serif, TextFormat("%d%%", (int)(fit * 100.f + 0.5f)), r.x + 498, y + 5, 22, pal::Ink);
-    y += 42;
-    ui::Text(FontId::SerifItalic, "Your real progress is kept. Untick these to go back to it.", r.x + 34, y, 16, pal::InkSoft);
-    bool canGym = phase == Phase::Hub && lib.seated && !dlg.HasChoices();   // when the librarian could start one unprompted
-    if (ui::Button(Rectangle{ r.x + 34, r.y + r.height - 70, 250, 48 }, "Start a workout now", ui::BtnWood, canGym, 18)) { settingsOpen = false; Prog().Save(); StartGym(); }
+    ui::Text(FontId::SerifItalic, "What you have really earned is kept. Switch it off to go back to that.", r.x + 34, y, 16, pal::InkSoft);
     if (ui::Button(Rectangle{ r.x + r.width - 160, r.y + r.height - 70, 126, 48 }, "Done", ui::BtnPrimary, true, 20)) { settingsOpen = false; Prog().Save(); }
 }
 
@@ -1400,25 +1318,20 @@ void App::DrawLibrarians() {
     DrawRectangleRounded(Rectangle{ r.x + 6, r.y + 8, r.width, r.height }, 0.05f, 8, WithAlpha(BLACK, 0.4f));
     ui::Panel(r, pal::Paper, pal::Wood, 0.05f, 3.f);
     ui::Text(FontId::SerifBold, "The Librarians", r.x + 36, r.y + 20, 34, pal::Ink);
-    const LibrarianDef* cur = unlocks::Find(Prog().librarian);
-    float fit = lib.muscleTarget;
-    ui::Text(FontId::Serif, TextFormat("%s's form:  %s  (%d%%)", cur ? cur->name.c_str() : "", unlocks::TierName(fit), (int)(fit * 100.f + 0.5f)),
-             r.x + 36, r.y + 68, 22, pal::Ink);
-    ui::ProgressBar(Rectangle{ r.x + 36, r.y + 100, r.width - 72, 16 }, fit, pal::Green, pal::PaperDark);
-    ui::Rich("Whoever is on duty trains as you learn: do well and they bulk up, slack off and they slim back down. Librarians you unlock are yours for good.",
-             r.x + 36, r.y + 126, r.width - 72, 16, pal::InkSoft, 1.3f);
+    ui::Rich("Pick who sits at the desk. Each librarian has their own look, voice and way of speaking. Librarians you unlock are yours for good.",
+             r.x + 36, r.y + 70, r.width - 72, 16, pal::InkSoft, 1.3f);
 
     const std::vector<LibrarianDef>& roster = unlocks::Roster();
-    float cw = (r.width - 72 - 20) * 0.5f, ch = 156;
+    float cw = (r.width - 72 - 20) * 0.5f, ch = 150;
     for (size_t i = 0; i < roster.size(); i++) {
         const LibrarianDef& d = roster[i];
-        float cx = r.x + 36 + (float)(i % 2) * (cw + 20), cy = r.y + 186 + (float)(i / 2) * (ch + 14);
+        float cx = r.x + 36 + (float)(i % 2) * (cw + 20), cy = r.y + 124 + (float)(i / 2) * (ch + 10);
         bool open = unlocks::IsUnlocked(d.id), onDuty = Prog().librarian == d.id;
         Rectangle card{ cx, cy, cw, ch };
         ui::Panel(card, onDuty ? Mix(pal::Paper, pal::GoldSoft, 0.55f) : (open ? pal::Paper : pal::PaperDark), onDuty ? pal::Gold : pal::PaperEdge, 0.08f, onDuty ? 3.f : 2.f);
-        Vector2 c{ cx + 54, cy + 58 };
+        Vector2 c{ cx + 54, cy + 54 };
         auto pt = portraits.find(d.id);
-        bool face = open && pt != portraits.end() && pt->second.level >= 0;   // the portrait arrives a frame or so after the screen opens
+        bool face = open && pt != portraits.end() && pt->second.drawn;   // the portrait arrives a frame or so after the screen opens
         if (face) DrawDisc(pt->second.rt.texture, c, 39.5f);                  // tucked under the ring
         else DrawCircleV(c, 38, open ? d.accent : Color{ 150, 140, 128, 255 });
         DrawRing(c, 38, 42, 0, 360, 40, open ? pal::Gold : Color{ 120, 110, 98, 255 });
@@ -1426,8 +1339,8 @@ void App::DrawLibrarians() {
         else if (!face) ui::TextCentered(FontId::SerifBold, d.initial, Rectangle{ c.x - 38, c.y - 30, 76, 60 }, 42, pal::GoldSoft);
         ui::Text(FontId::SerifBold, open ? d.name : std::string("???"), cx + 106, cy + 12, 24, open ? pal::Ink : pal::InkSoft);
         ui::Wrap(FontId::SerifItalic, open ? d.title : std::string("A mystery librarian, waiting to be earned."), cx + 106, cy + 44, cw - 122, 15, pal::InkSoft);
-        if (open) ui::Text(FontId::SerifBold, onDuty ? "On duty" : "Unlocked", cx + 18, cy + ch - 36, 17, onDuty ? pal::Amber : pal::Green);
-        else ui::Wrap(FontId::Serif, "To unlock: " + d.how, cx + 18, cy + ch - 50, cw - 36, 16, pal::Red);
+        if (open) ui::Text(FontId::SerifBold, onDuty ? "On duty" : "Unlocked", cx + 18, cy + ch - 34, 17, onDuty ? pal::Amber : pal::Green);
+        else ui::Wrap(FontId::Serif, "To unlock: " + d.how, cx + 18, cy + ch - 48, cw - 36, 16, pal::Red);
         if (open && !onDuty && ui::Button(Rectangle{ cx + cw - 142, cy + ch - 48, 124, 36 }, "Call in", ui::BtnPrimary, true, 17)) SelectLibrarian(d.id);
     }
     if (ui::Button(Rectangle{ r.x + r.width - 160, r.y + r.height - 62, 126, 46 }, "Done", ui::BtnPrimary, true, 20)) libsOpen = false;
@@ -1492,7 +1405,7 @@ void App::RunAutopilot(float dt) {
         const AutoCmd& c = autoCmds[autoIdx];
         if (c.cmd == "wait") { autoWait = (float)atof(c.arg.c_str()); autoIdx++; return; }
         if (c.cmd == "phase") {
-            const char* names[] = { "intro", "hub", "fetching", "presenting", "reading", "closing", "gym" };
+            const char* names[] = { "intro", "hub", "fetching", "presenting", "reading", "closing" };
             if (c.arg != names[(int)phase]) return;
             autoIdx++; continue;
         }
@@ -1512,7 +1425,7 @@ void App::RunAutopilot(float dt) {
         if (c.cmd == "quick") { Prog().settings.quickFetch = c.arg == "1"; autoIdx++; continue; }
         if (c.cmd == "help") { helpOpen = c.arg == "1"; autoIdx++; continue; }
         if (c.cmd == "settings") { settingsOpen = c.arg == "1"; autoIdx++; continue; }
-        if (c.cmd == "closeup") {   // closeup <0 off | 1 head | 2 bust | 3 body> [yaw degrees] [pitch degrees]
+        if (c.cmd == "closeup") {   // closeup <0 off | 1 head | 2 bust | 3 body | 4 head and what is on top of it> [yaw degrees] [pitch degrees]
             auto p = Split(c.arg, ' ');
             closeup = p.empty() ? 0 : atoi(p[0].c_str());
             closeYaw = p.size() > 1 ? (float)atof(p[1].c_str()) : 0.f;
@@ -1533,20 +1446,14 @@ void App::RunAutopilot(float dt) {
         }
         if (c.cmd == "pose") {
             Pose p = poses::Stand();
-            lib.dumbbells = false;
-            lib.fists = c.arg == "flex";
             if (c.arg == "carry") p = poses::Carry();
             else if (c.arg == "sit") p = poses::Sit();
-            else if (c.arg == "flex") { for (int i = 0; i < 2; i++) { p.shRoll[i] = 1.4f; p.shTwist[i] = 1.5f; p.elbow[i] = 1.9f; p.shPitch[i] = 0.f; } p.spine -= 0.06f; }
-            else if (c.arg == "curl") { p.elbow[0] = 2.37f; p.elbow[1] = 0.12f; lib.dumbbells = true; }
             lib.base = p;
             autoIdx++; continue;
         }
         if (c.cmd == "mouth") { lib.debugMouth = (float)atof(c.arg.c_str()); autoIdx++; continue; }
         if (c.cmd == "blink") { lib.debugBlink = (float)atof(c.arg.c_str()); autoIdx++; continue; }
         if (c.cmd == "libs") { libsOpen = c.arg == "1"; settingsOpen = helpOpen = false; autoIdx++; continue; }
-        if (c.cmd == "gym") { if (phase == Phase::Hub) StartGym(); autoIdx++; continue; }
-        if (c.cmd == "fit") { fitOverride = (float)atof(c.arg.c_str()); lib.muscleTarget = lib.muscle = fitOverride; autoIdx++; continue; }
         if (c.cmd == "unlockall") { for (auto& d : unlocks::Roster()) Prog().unlocked.insert(d.id); autoIdx++; continue; }
         if (c.cmd == "look") { Prog().librarian = c.arg; ApplyLibrarian(); autoIdx++; continue; }
         if (c.cmd == "quit") { autoQuit = true; autoIdx++; return; }

@@ -17,9 +17,10 @@ Spec MakeSpec(const std::string& id) {
     s.skin = RGBA(238, 190, 154); s.skinShade = RGBA(214, 162, 126); s.hair = RGBA(240, 237, 230); s.brow = RGBA(232, 228, 220);
     s.jacket = RGBA(128, 86, 58); s.jacketDark = RGBA(98, 64, 44); s.vest = RGBA(228, 176, 88); s.shirt = RGBA(240, 236, 224);
     s.accent = RGBA(214, 46, 56); s.trousers = RGBA(92, 80, 88); s.shoes = RGBA(62, 42, 34); s.glasses = RGBA(70, 46, 32);
-    s.iris = RGBA(70, 104, 128); s.lip = RGBA(190, 110, 100);
+    s.iris = RGBA(70, 104, 128); s.lip = RGBA(190, 110, 100); s.button = RGBA(244, 204, 104);
     s.moustache = true; s.beard = false; s.hat = false; s.bowTie = true; s.chain = true; s.hood = false;
-    s.lashes = false; s.labCoat = false; s.glassesStyle = 1; s.belly = 1.f; s.browSlope = 1.f; s.browBulk = 1.25f;
+    s.lashes = false; s.labCoat = false; s.cap = false; s.uniform = false; s.brooch = false;
+    s.glassesStyle = 1; s.belly = 1.f; s.open = 0.f; s.browSlope = 1.f; s.browBulk = 1.25f;
     if (id == "pointer") {          // Professor Pointer: wizard robes, tall hat, flowing white beard
         s.skin = RGBA(232, 186, 154); s.skinShade = RGBA(208, 158, 124); s.hair = RGBA(244, 242, 246); s.brow = RGBA(238, 236, 240);
         s.jacket = RGBA(106, 66, 160); s.jacketDark = RGBA(76, 46, 120); s.vest = RGBA(56, 38, 98); s.shirt = RGBA(242, 238, 226);
@@ -32,6 +33,28 @@ Spec MakeSpec(const std::string& id) {
         s.accent = RGBA(60, 140, 224); s.trousers = RGBA(70, 76, 98); s.shoes = RGBA(52, 52, 62); s.glasses = RGBA(40, 44, 56);
         s.iris = RGBA(92, 58, 38); s.lip = RGBA(150, 82, 74);
         s.moustache = false; s.bowTie = false; s.chain = false; s.labCoat = true; s.glassesStyle = 3; s.belly = 0.15f; s.browSlope = -0.4f; s.browBulk = 1.15f;
+        s.button = RGBA(236, 240, 244);
+    } else if (id == "stack") {     // Captain Stack: navy uniform with gold braid, a peaked cap, a trimmed silver beard
+        s.skin = RGBA(214, 160, 122); s.skinShade = RGBA(188, 134, 100); s.hair = RGBA(226, 228, 232); s.brow = RGBA(208, 210, 216);
+        s.jacket = RGBA(30, 52, 98); s.jacketDark = RGBA(20, 36, 72); s.vest = RGBA(246, 244, 238); s.shirt = RGBA(246, 244, 238);
+        s.accent = RGBA(226, 176, 52); s.trousers = RGBA(28, 42, 78); s.shoes = RGBA(34, 30, 30); s.glasses = RGBA(70, 46, 32);
+        s.iris = RGBA(62, 110, 150); s.lip = RGBA(176, 104, 92);
+        s.moustache = true; s.bowTie = false; s.chain = false; s.cap = true; s.uniform = true; s.glassesStyle = 0;
+        s.belly = 0.8f; s.browSlope = 0.4f; s.browBulk = 1.6f;
+    } else if (id == "nana") {      // Nana Free: rose cardigan with a brooch, cat-eye glasses, a set of silver curls
+        s.skin = RGBA(146, 98, 70); s.skinShade = RGBA(122, 78, 54); s.hair = RGBA(234, 234, 242); s.brow = RGBA(206, 206, 216);
+        s.jacket = RGBA(196, 108, 136); s.jacketDark = RGBA(160, 78, 108); s.vest = RGBA(246, 236, 220); s.shirt = RGBA(246, 236, 220);
+        s.accent = RGBA(232, 196, 120); s.trousers = RGBA(92, 86, 120); s.shoes = RGBA(70, 52, 60); s.glasses = RGBA(204, 60, 90);
+        s.iris = RGBA(80, 54, 40); s.lip = RGBA(176, 86, 88); s.button = RGBA(246, 236, 220);
+        s.moustache = false; s.bowTie = false; s.chain = false; s.brooch = true; s.glassesStyle = 5;
+        s.belly = 0.6f; s.browSlope = 0.7f; s.browBulk = 0.9f;
+    } else if (id == "kernel") {    // Kernel Panic: black leather over a red tee, a pink mohawk, sensible nerves
+        s.skin = RGBA(228, 182, 144); s.skinShade = RGBA(202, 152, 116); s.hair = RGBA(240, 74, 152); s.brow = RGBA(70, 44, 54);
+        s.jacket = RGBA(40, 40, 48); s.jacketDark = RGBA(22, 22, 28); s.vest = RGBA(214, 52, 66); s.shirt = RGBA(214, 52, 66);
+        s.accent = RGBA(240, 74, 152); s.trousers = RGBA(34, 36, 46); s.shoes = RGBA(150, 36, 44); s.glasses = RGBA(40, 44, 56);
+        s.iris = RGBA(70, 52, 40); s.lip = RGBA(190, 98, 96); s.button = RGBA(206, 210, 218);
+        s.moustache = false; s.bowTie = false; s.chain = false; s.glassesStyle = 0;
+        s.belly = 0.f; s.open = 0.026f; s.browSlope = 0.8f; s.browBulk = 1.05f;
     } else if (id == "ada") {       // Ada: zip hoodie, auburn hair in a bun, big grin
         s.skin = RGBA(242, 200, 168); s.skinShade = RGBA(218, 170, 138); s.hair = RGBA(186, 88, 52); s.brow = RGBA(140, 66, 42);
         s.jacket = RGBA(46, 152, 154); s.jacketDark = RGBA(32, 114, 120); s.vest = RGBA(248, 238, 216); s.shirt = RGBA(248, 238, 216);
@@ -67,24 +90,25 @@ Vector3 Trace(const sdf::Model& m, Vector3 a, Vector3 b, int group) {
 }
 
 void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
-    const bool mal = id == "malloc", ptr = id == "pointer", heap = id == "heap";
+    const bool mal = id == "malloc", ptr = id == "pointer", heap = id == "heap", cpt = id == "stack", nan = id == "nana", ker = id == "kernel";
+    // one value per librarian, in this order: Malloc, Pointer, Heap, Ada, Captain Stack, Nana Free, Kernel Panic
+    const int who = mal ? 0 : ptr ? 1 : heap ? 2 : cpt ? 4 : nan ? 5 : ker ? 6 : 3;
+    auto pick = [&](float a, float b, float c, float d, float e, float g, float h) { const float v[7] = { a, b, c, d, e, g, h }; return v[who]; };
+    auto pickV = [&](Vector3 a, Vector3 b, Vector3 c, Vector3 d, Vector3 e, Vector3 g, Vector3 h) { const Vector3 v[7] = { a, b, c, d, e, g, h }; return v[who]; };
     const Color skin = L.skin;
 
     // ---- skull, jaw, chin, cheeks, neck: broad shapes that melt into one head ----
     const Vector3 C{ 0.f, 0.128f, -0.004f };   // centre of the cranium
-    const Vector3 cranR = mal ? V(0.106f, 0.112f, 0.114f) : ptr ? V(0.102f, 0.113f, 0.112f) : heap ? V(0.103f, 0.113f, 0.113f) : V(0.103f, 0.111f, 0.112f);
+    const Vector3 cranR = pickV(V(0.106f, 0.112f, 0.114f), V(0.102f, 0.113f, 0.112f), V(0.103f, 0.113f, 0.113f), V(0.103f, 0.111f, 0.112f),
+                                V(0.107f, 0.113f, 0.115f), V(0.1f, 0.108f, 0.108f), V(0.1f, 0.114f, 0.109f));
     m.Ell(C, cranR, skin, gSkin, 0.03f);
-    m.Ell(V(0, 0.079f, 0.012f), mal ? V(0.099f, 0.08f, 0.094f) : ptr ? V(0.087f, 0.083f, 0.09f) : heap ? V(0.091f, 0.08f, 0.09f) : V(0.088f, 0.077f, 0.088f), skin, gSkin, 0.035f);
-    if (mal) m.Ball(V(0, 0.03f, 0.05f), 0.036f, skin, gSkin, 0.03f);
-    else if (ptr) m.Ball(V(0, 0.02f, 0.054f), 0.03f, skin, gSkin, 0.03f);
-    else if (heap) m.Ball(V(0, 0.022f, 0.056f), 0.031f, skin, gSkin, 0.03f);
-    else m.Ball(V(0, 0.026f, 0.056f), 0.026f, skin, gSkin, 0.03f);
-    for (int s = -1; s <= 1; s += 2) {
-        if (mal) m.Ball(V(s * 0.055f, 0.078f, 0.064f), 0.032f, skin, gSkin, 0.03f);
-        else if (ptr) m.Ball(V(s * 0.05f, 0.086f, 0.062f), 0.026f, skin, gSkin, 0.03f);
-        else if (heap) m.Ball(V(s * 0.052f, 0.084f, 0.062f), 0.029f, skin, gSkin, 0.03f);
-        else m.Ball(V(s * 0.05f, 0.082f, 0.062f), 0.03f, skin, gSkin, 0.03f);
-    }
+    m.Ell(V(0, 0.079f, 0.012f), pickV(V(0.099f, 0.08f, 0.094f), V(0.087f, 0.083f, 0.09f), V(0.091f, 0.08f, 0.09f), V(0.088f, 0.077f, 0.088f),
+                                      V(0.098f, 0.082f, 0.094f), V(0.089f, 0.076f, 0.088f), V(0.084f, 0.08f, 0.088f)), skin, gSkin, 0.035f);
+    m.Ball(V(0, pick(0.03f, 0.02f, 0.022f, 0.026f, 0.024f, 0.03f, 0.024f), pick(0.05f, 0.054f, 0.056f, 0.056f, 0.052f, 0.052f, 0.056f)),
+           pick(0.036f, 0.03f, 0.031f, 0.026f, 0.04f, 0.028f, 0.027f), skin, gSkin, 0.03f);   // the chin
+    for (int s = -1; s <= 1; s += 2)   // cheeks
+        m.Ball(V(s * pick(0.055f, 0.05f, 0.052f, 0.05f, 0.054f, 0.054f, 0.048f), pick(0.078f, 0.086f, 0.084f, 0.082f, 0.08f, 0.08f, 0.084f), pick(0.064f, 0.062f, 0.062f, 0.062f, 0.064f, 0.064f, 0.06f)),
+               pick(0.032f, 0.026f, 0.029f, 0.03f, 0.031f, 0.036f, 0.026f), skin, gSkin, 0.03f);
     m.Cone(V(0, 0.05f, -0.018f), V(0, 0.018f, -0.018f), 0.044f, 0.04f, skin, gSkin, 0.03f);   // the top of the neck (the rest belongs to the torso)
 
     // a point on the scalp in a direction (azimuth from the nose, elevation) seen from the head's centre
@@ -99,7 +123,7 @@ void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
 
     // ---- brow ridge, eye sockets ----
     f.eyeX = 0.041f; f.eyeY = 0.131f;
-    f.eyeR = mal ? 0.0215f : ptr ? 0.0205f : heap ? 0.022f : 0.0232f;
+    f.eyeR = pick(0.0215f, 0.0205f, 0.022f, 0.0232f, 0.0205f, 0.0225f, 0.0228f);
     f.browY = f.eyeY + (ptr ? 0.041f : 0.047f);   // the professor's half-moons leave room for lower brows
     {
         float by = f.eyeY + 0.034f;
@@ -113,10 +137,10 @@ void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
 
     // ---- nose ----
     {
-        float ny = mal ? 0.101f : ptr ? 0.096f : heap ? 0.1f : 0.103f;          // height of the tip
-        float tipR = mal ? 0.0195f : ptr ? 0.0205f : heap ? 0.0155f : 0.0115f;
-        float fwd = mal ? 0.012f : ptr ? 0.017f : heap ? 0.009f : 0.008f;       // how far it stands out
-        Color nc = (mal || ptr) ? RGBA(240, 158, 136) : Shade(skin, 1.02f);
+        float ny = pick(0.101f, 0.096f, 0.1f, 0.103f, 0.098f, 0.103f, 0.102f);                  // height of the tip
+        float tipR = pick(0.0195f, 0.0205f, 0.0155f, 0.0115f, 0.022f, 0.0135f, 0.0125f);
+        float fwd = pick(0.012f, 0.017f, 0.009f, 0.008f, 0.016f, 0.009f, 0.009f);               // how far it stands out
+        Color nc = (mal || ptr || cpt) ? RGBA(240, 158, 136) : Shade(skin, 1.02f);
         float nz = surf(0, ny) + fwd - tipR * 0.25f;
         float byy = f.eyeY + 0.004f;
         m.Cone(V(0, byy, surf(0, byy) - 0.004f), V(0, ny + 0.004f, nz - 0.004f), 0.0085f, tipR * 0.72f, skin, gSkin, 0.01f);
@@ -136,13 +160,14 @@ void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
 
     // ---- mouth area and cheeks ----
     f.mouthY = ptr ? 0.048f : 0.05f;
-    f.mouthW = mal ? 0.03f : ptr ? 0.027f : heap ? 0.034f : 0.032f;
+    f.mouthW = pick(0.03f, 0.027f, 0.034f, 0.032f, 0.03f, 0.03f, 0.031f);
     f.smile = 0.011f;
     f.restOpen = mal ? 0.38f : 0.f;
-    f.lidOpen = ptr ? 29.f : 40.f;   // the professor's lids rest a little lower: wise, not startled
+    f.lidOpen = ptr ? 29.f : cpt ? 33.f : nan ? 34.f : 40.f;   // the professor's lids rest a little lower: wise, not startled
     m.Ell(V(0, f.mouthY + 0.006f, surf(0, f.mouthY + 0.006f) - 0.015f), V(0.036f, 0.024f, 0.02f), skin, gSkin, 0.02f);   // a soft muzzle
+    const Color blush = nan ? RGBA(188, 108, 92) : kCheek;   // pink would look like face powder on darker skin
     for (int s = -1; s <= 1; s += 2)
-        m.Paint(V(s * 0.062f, 0.084f, surf(s * 0.062f, 0.084f)), V(0.019f, 0.013f, 0.02f), kCheek, 0.012f, mal ? 0.75f : 0.55f, gSkin);
+        m.Paint(V(s * 0.062f, 0.084f, surf(s * 0.062f, 0.084f)), V(0.019f, 0.013f, 0.02f), blush, 0.012f, mal ? 0.75f : cpt ? 0.7f : nan ? 0.6f : 0.55f, gSkin);
 
     // ---- hair ----
     if (mal) {
@@ -228,6 +253,72 @@ void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
                    Shade(L.hair, 0.9f + 0.55f * Hash(i + 50)), gHair, 0.009f);
         }
         m.Ell(V(0, 0.155f, -0.03f), V(0.118f, 0.105f, 0.105f), L.hair, gHair, 0.01f);   // so no scalp shows between curls
+    } else if (cpt) {
+        // short silver hair at the sides and back (the cap covers the rest), a trimmed beard along the jaw and a bushy moustache
+        const Vector3 capC = Vector3Add(C, V(0, 0.004f, -0.014f)), capR = Vector3Add(cranR, V(0.01f, 0.006f, 0.012f));
+        m.Ell(capC, capR, L.hair, gHair, 0.02f);
+        for (int i = 0; i < 20; i++) {   // short ridges combed back from the face to the nape give the hair some texture
+            float az0 = 2.f * PI * (i + 0.5f * Hash(i + 90)) / 20.f;
+            std::vector<Vector3> p;
+            for (int k = 0; k < 5; k++) {
+                float t = k / 4.f, el = Lf(-40.f, 40.f, t) * DEG, az = az0 + 0.25f * (1.f - t);
+                Vector3 d{ sinf(az) * cosf(el), sinf(el), cosf(az) * cosf(el) };
+                p.push_back(Vector3Add(capC, V(d.x * capR.x * 0.9f, d.y * capR.y * 0.9f, d.z * capR.z * 0.9f)));
+            }
+            m.Lock(p, std::vector<float>(p.size(), 0.018f), Shade(L.hair, 0.93f + 0.1f * Hash(i + 3)), gHair, 0.012f);
+        }
+        m.Carve(V(0, 0.06f, 0.13f), V(0.09f, 0.2f, 0.125f), Shade(L.hair, 0.85f), gHair, 0.008f);   // the face stays clear
+        m.Carve(V(0, -0.02f, -0.05f), V(0.2f, 0.066f, 0.2f), Shade(L.hair, 0.82f), gHair, 0.006f);   // a level hairline at the nape
+        for (int s = -1; s <= 1; s += 2)                                                              // and round each ear
+            m.Carve(V(s * 0.114f, 0.106f, -0.002f), V(0.03f, 0.044f, 0.032f), Shade(L.hair, 0.82f), gHair, 0.006f);
+        {
+            std::vector<Vector3> jaw;
+            std::vector<float> jr;
+            for (int k = -6; k <= 6; k++) {
+                float a = k / 6.f, x = a * 0.09f, y = 0.008f + 0.086f * a * a;
+                jaw.push_back(V(x, y, surf(x, y + 0.01f) - 0.004f - 0.006f * a * a));
+                jr.push_back(0.022f - 0.013f * a * a);   // it thins to a sideburn under the hair
+            }
+            m.Lock(jaw, jr, L.hair, gFacial, 0.014f);
+        }
+        m.Ell(V(0, -0.014f, 0.066f), V(0.052f, 0.05f, 0.03f), L.hair, gFacial, 0.02f);   // the chin: a squared-off beard
+        for (int s = -1; s <= 1; s += 2) {
+            auto on = [&](float x, float y, float dz) { return V(s * x, y, surf(s * x, y) + dz); };
+            m.Lock({ on(0.003f, 0.079f, 0.007f), on(0.022f, 0.077f, 0.011f), on(0.043f, 0.07f, 0.009f), on(0.059f, 0.063f, 0.004f), on(0.069f, 0.063f, 0.0f) },
+                   { 0.0135f, 0.016f, 0.0138f, 0.009f, 0.0035f }, L.hair, gFacial, 0.005f);
+        }
+    } else if (nan) {
+        // a short set of tight silver curls close to the head; the hairline is high and the face stays clear
+        const int N = 300;
+        for (int i = 0; i < N; i++) {
+            float t = (i + 0.5f) / N, phi = acosf(1.f - 2.f * t), th = PI * (1.f + sqrtf(5.f)) * i;
+            Vector3 d{ sinf(phi) * cosf(th), cosf(phi), sinf(phi) * sinf(th) };
+            bool face = d.z > 0.2f && d.y < 0.72f - 0.35f * fabsf(d.x);
+            if (face || d.y < -0.4f) continue;
+            // a moderate blend: soft lumps that read as curls, not as separate balls and not as one smooth helmet
+            m.Ball(V(d.x * 0.114f, 0.13f + d.y * 0.115f, -0.008f + d.z * 0.115f), 0.0175f + 0.005f * Hash(i), Shade(L.hair, 0.9f + 0.14f * Hash(i + 50)), gHair, 0.009f);
+        }
+        m.Ell(V(0, 0.135f, -0.012f), V(0.108f, 0.104f, 0.104f), L.hair, gHair, 0.01f);   // so no scalp shows between curls
+    } else if (ker) {
+        // shaved sides with a faint stubble, and a tall mohawk of tapered spikes from the forehead to the nape
+        for (int s = -1; s <= 1; s += 2)
+            m.Paint(scalp(s * 90.f * DEG, 30.f * DEG), V(0.045f, 0.075f, 0.09f), Shade(L.skin, 0.62f), 0.02f, 0.55f, gSkin);
+        const int NS = 13;
+        std::vector<Vector3> crest;
+        for (int i = 0; i < NS; i++) {
+            float u = i / (NS - 1.f);
+            float el = Lf(52.f, 150.f, u) * DEG;   // a path over the head from front to back (90 degrees is straight up)
+            Vector3 d{ 0.f, sinf(el), cosf(el) };
+            float rim = 1.f / sqrtf(d.y * d.y / (cranR.y * cranR.y) + d.z * d.z / (cranR.z * cranR.z));
+            Vector3 p0 = Vector3Add(C, Vector3Scale(d, rim - 0.012f));   // rooted just under the skin
+            crest.push_back(Vector3Add(p0, Vector3Scale(d, 0.004f)));
+            float h = 0.08f + 0.06f * sinf(PI * (0.08f + 0.84f * u));   // tallest over the middle of the head
+            float sway = (i % 2 ? 0.011f : -0.011f);                    // alternate spikes lean to either side: a wider band from the front, separate spikes from the side
+            Vector3 tip = Vector3Add(Vector3Add(p0, V(sway, 0.92f * h, -0.22f * h)), Vector3Scale(d, 0.012f));   // standing up, swept back a little
+            Vector3 mid = Vector3Add(Vector3Lerp(p0, tip, 0.5f), Vector3Scale(d, 0.006f));
+            m.Lock({ p0, mid, tip }, { 0.026f, 0.018f, 0.0045f }, Shade(L.hair, 0.88f + 0.26f * Hash(i + 5)), gHair, 0.01f);
+        }
+        m.Lock(crest, std::vector<float>(crest.size(), 0.026f), L.hair, gHair, 0.01f);   // a solid base, so the spikes grow from one crest
     } else {
         // Ada: hair combed back smooth into a bun on the crown, a side-swept fringe and a loose strand by each ear
         const Vector3 bun{ 0.f, 0.262f, -0.06f };
@@ -277,32 +368,29 @@ void SculptHead(const std::string& id, const Spec& L, sdf::Model& m, Face& f) {
 }
 
 // ---------------------------------------------------------------------------
-// the torso: jacket, waistcoat, lapels, collar and shoulders sculpted in spine space.
-// `m` is fitness 0..1: it broadens the chest and shoulders and slims the paunch.
+// the torso: jacket, waistcoat, lapels, collar and shoulders sculpted in spine space
 // ---------------------------------------------------------------------------
-void SculptTorso(const std::string& id, const Spec& L, float m, sdf::Model& t) {
+void SculptTorso(const std::string& id, const Spec& L, sdf::Model& t) {
     enum { gCoat = 0, gInner = 1, gDark = 2, gTrim = 3, gNeck = 4 };
     const bool robe = id == "pointer", coat = L.labCoat, hoodie = L.hood;
-    const float b = L.belly * (1.f - m), sx = ShoulderX(id);
+    const float b = L.belly, sx = ShoulderX(id);
     const Color gold = RGBA(244, 204, 104);
-    const float chestW = sx - 0.02f + 0.052f * m, chestD = 0.098f + 0.026f * m;
-    const float yoke = 0.048f + 0.016f * m, pec = Clamp((m - 0.25f) / 0.5f, 0.f, 1.f);
+    const float chestW = sx - 0.02f, chestD = 0.098f, yoke = 0.048f;
     auto body = [&](int g, Color c, float grow) {   // a long core, hips, belly, chest and chest muscles: the hem hangs below the hip joints
         t.Ell(V(0, 0.2f, 0.f), V(0.126f + grow, 0.25f, 0.095f + grow), c, g, 0.04f);
         t.Ell(V(0, 0.05f, 0.f), V(0.146f + grow, 0.3f, 0.106f + grow), c, g, 0.04f);
         t.Ell(V(0, 0.17f, 0.01f + 0.026f * b), V(0.132f + 0.02f * b + grow, 0.125f, 0.102f + 0.036f * b + grow), c, g, 0.04f);
         t.Ell(V(0, 0.365f, 0.004f), V(chestW + grow, 0.125f, chestD + grow), c, g, 0.04f);
         for (int s = -1; s <= 1; s += 2)
-            t.Ell(V(s * chestW * 0.48f, 0.4f, 0.045f + 0.03f * pec), V(chestW * 0.46f + grow, 0.064f, 0.012f + 0.032f * pec + grow), c, g, 0.035f);
+            t.Ell(V(s * chestW * 0.48f, 0.4f, 0.045f), V(chestW * 0.46f + grow, 0.064f, 0.012f + grow), c, g, 0.035f);
     };
     body(gCoat, L.jacket, 0.f);
-    t.Cone(V(0, 0.47f, -0.01f), V(0, 0.572f, -0.012f), 0.072f, 0.05f + 0.012f * m, L.jacket, gCoat, 0.03f);        // up to the collar
+    t.Cone(V(0, 0.47f, -0.01f), V(0, 0.572f, -0.012f), 0.072f, 0.05f, L.jacket, gCoat, 0.03f);        // up to the collar
     t.Cone(V(0, 0.5f, -0.014f), V(0, 0.56f, -0.016f), 0.055f, 0.054f, L.skin, gNeck, 0.01f);                       // the neck stands in the collar; the head turns on top of it
     for (int s = -1; s <= 1; s += 2) {
         t.Cone(V(0, 0.532f, -0.008f), V(s * (sx - 0.012f), 0.488f, -0.004f), yoke + 0.004f, yoke - 0.006f, L.jacket, gCoat, 0.04f);   // shoulders slope down from the neck
-        // shoulder caps the arms turn in; at top fitness the sleeves are gone and the shoulders are bare
-        if (m >= 0.8f) t.Ball(V(s * sx, 0.497f, 0.f), 0.044f + 0.04f * m, L.skin, gNeck, 0.01f);
-        else t.Ball(V(s * sx, 0.497f, 0.f), 0.044f + 0.04f * m, L.jacket, gCoat, 0.03f);
+        t.Ball(V(s * sx, 0.497f, 0.f), 0.044f, L.jacket, gCoat, 0.03f);   // shoulder caps the arms turn in
+        if (L.uniform) t.Ell(V(s * (sx - 0.008f), 0.541f, 0.f), V(0.036f, 0.007f, 0.03f), gold, gTrim, 0.004f, V(0.f, 0.f, -s * 0.3f));   // a gold epaulette
     }
     auto front = [&](float x, float y) { return Trace(t, V(x, y, 0.4f), V(x, y, -0.1f), -1).z; };
     auto hoop = [&](float y, float r, Color c, int g) {   // a band round the body at height y
@@ -342,7 +430,7 @@ void SculptTorso(const std::string& id, const Spec& L, float m, sdf::Model& t) {
         body(gInner, L.vest, -0.005f);
         t.Cone(V(0, 0.44f, -0.01f), V(0, 0.57f, -0.012f), 0.066f, 0.048f, L.vest, gInner, 0.03f);
         // the opening is narrow under the collar and widens towards the hem
-        const float w0 = (coat ? 0.04f : 0.034f) + 0.01f * m, w1 = (coat ? 0.088f : 0.072f) + 0.02f * b;
+        const float w0 = (coat ? 0.04f : 0.034f) + L.open, w1 = (coat ? 0.088f : 0.072f) + 0.02f * b + 1.6f * L.open;
         auto edge = [&](float y) { return Lf(w0, w1, Clamp((0.5f - y) / 0.6f, 0.f, 1.f)); };
         {
             const float ys[5] = { 0.495f, 0.36f, 0.22f, 0.08f, -0.1f };
@@ -362,10 +450,15 @@ void SculptTorso(const std::string& id, const Spec& L, float m, sdf::Model& t) {
         }
         for (int k = 0; k < 4; k++) {
             float y = 0.16f + 0.078f * k;
-            t.Ball(V(0, y, front(0, y) + 0.001f), 0.0085f, coat ? RGBA(236, 240, 244) : gold, gTrim, 0.002f);
+            t.Ball(V(0, y, front(0, y) + 0.001f), 0.0085f, L.button, gTrim, 0.002f);
+        }
+        if (L.brooch) {   // a cameo brooch on the lapel
+            float bx = 0.062f, by = 0.4f, bz = front(bx, by);
+            t.Ell(V(bx, by, bz - 0.001f), V(0.0165f, 0.021f, 0.008f), L.accent, gTrim, 0.003f);
+            t.Ell(V(bx, by, bz + 0.003f), V(0.011f, 0.015f, 0.007f), RGBA(238, 212, 196), gTrim, 0.002f);
         }
         if (L.bowTie) {
-            // the bow sits on whatever is beneath it: at high fitness the chest pushes out under the lobes
+            // the bow sits on whatever is beneath it
             float zl = std::max(front(-0.03f, 0.532f), front(0.03f, 0.532f)) + 0.006f, zt = std::max(front(0, 0.532f) + 0.008f, zl);
             for (int s = -1; s <= 1; s += 2)
                 for (int v = -1; v <= 1; v += 2)   // each wing is two lobes fanning out from the knot
@@ -382,23 +475,18 @@ void SculptTorso(const std::string& id, const Spec& L, float m, sdf::Model& t) {
 
 // ---------------------------------------------------------------------------
 // a cartoon hand in hand space: wrist at the origin, fingers along -Y, palm towards +Z.
-// `side` (-1 / +1) is the side the thumb is on; `grip` closes the fist round a dumbbell bar.
+// `side` (-1 / +1) is the side the thumb is on.
 // ---------------------------------------------------------------------------
-void SculptHand(const Spec& L, float side, bool grip, sdf::Model& h) {
+void SculptHand(const Spec& L, float side, sdf::Model& h) {
     const Color skin = L.skin;
     h.Cone(V(0, 0.012f, 0.f), V(0, -0.02f, 0.001f), 0.021f, 0.024f, skin, 0, 0.01f);   // wrist
     h.Ell(V(0, -0.042f, 0.002f), V(0.031f, 0.034f, 0.0155f), skin, 0, 0.012f);         // palm
     for (int k = 0; k < 4; k++) {
         float x = (k - 1.5f) * 0.0158f, len = (k == 0 || k == 3) ? 0.88f : 1.f;
-        if (grip)
-            h.Lock({ V(x, -0.064f, 0.004f), V(x, -0.09f, 0.012f), V(x, -0.1f, 0.036f), V(x, -0.084f, 0.056f), V(x, -0.066f, 0.05f) },
-                   { 0.0092f, 0.009f, 0.0088f, 0.0082f, 0.0074f }, skin, 0, 0.0035f);
-        else
-            h.Lock({ V(x, -0.066f, 0.f), V(x * 1.06f, -0.066f - 0.024f * len, 0.004f), V(x * 1.08f, -0.066f - 0.042f * len, 0.012f), V(x * 1.06f, -0.066f - 0.054f * len, 0.024f) },
-                   { 0.0092f, 0.009f, 0.0084f, 0.0072f }, skin, 0, 0.0035f);
+        h.Lock({ V(x, -0.066f, 0.f), V(x * 1.06f, -0.066f - 0.024f * len, 0.004f), V(x * 1.08f, -0.066f - 0.042f * len, 0.012f), V(x * 1.06f, -0.066f - 0.054f * len, 0.024f) },
+               { 0.0092f, 0.009f, 0.0084f, 0.0072f }, skin, 0, 0.0035f);
     }
-    if (grip) h.Lock({ V(side * 0.026f, -0.034f, 0.01f), V(side * 0.03f, -0.056f, 0.038f), V(side * 0.012f, -0.068f, 0.06f) }, 0.0098f, 0.0094f, 0.008f, skin, 0, 0.004f);
-    else h.Lock({ V(side * 0.024f, -0.028f, 0.004f), V(side * 0.04f, -0.046f, 0.012f), V(side * 0.044f, -0.066f, 0.022f) }, 0.0098f, 0.0094f, 0.0078f, skin, 0, 0.004f);
+    h.Lock({ V(side * 0.024f, -0.028f, 0.004f), V(side * 0.04f, -0.046f, 0.012f), V(side * 0.044f, -0.066f, 0.022f) }, 0.0098f, 0.0094f, 0.0078f, skin, 0, 0.004f);
 }
 
 // polygonise a model and map its front surface over [x0,x1] x [y0,y1]
@@ -413,9 +501,8 @@ void Bake(Sculpt& s, const sdf::Model& m, float cell, float x0, float x1, float 
         }
 }
 
-struct TorsoSlot { Sculpt s; int level = -1; };
 std::map<std::string, Head> g_heads;
-std::map<std::string, TorsoSlot> g_torsos;
+std::map<std::string, Sculpt> g_torsos;
 std::map<std::string, Sculpt> g_hands;
 
 } // namespace
@@ -438,26 +525,23 @@ const Head& GetHead(const std::string& id) {
     return h;
 }
 
-const Sculpt& GetTorso(const std::string& id, float muscle) {
-    int level = (int)floorf(Clamp(muscle, 0.f, 1.f) * 20.f + 0.5f);   // rebuilt in steps of 5% fitness
-    TorsoSlot& t = g_torsos[id];
-    if (t.level == level) return t.s;
-    for (Mesh& mesh : t.s.meshes) UnloadMesh(mesh);
-    t.s = Sculpt();
+const Sculpt& GetTorso(const std::string& id) {
+    auto it = g_torsos.find(id);
+    if (it != g_torsos.end()) return it->second;
+    Sculpt& t = g_torsos[id];
     sdf::Model m;
-    SculptTorso(id, MakeSpec(id), level / 20.f, m);
-    Bake(t.s, m, 0.003f, -0.32f, 0.32f, -0.14f, 0.62f, 0.4f, -0.2f, -1);
-    t.level = level;
-    return t.s;
+    SculptTorso(id, MakeSpec(id), m);
+    Bake(t, m, 0.003f, -0.32f, 0.32f, -0.14f, 0.62f, 0.4f, -0.2f, -1);
+    return t;
 }
 
-const Sculpt& GetHand(const std::string& id, int arm, bool grip) {
-    std::string key = id + (arm ? "L" : "R") + (grip ? "g" : "r");
+const Sculpt& GetHand(const std::string& id, int arm) {
+    std::string key = id + (arm ? "L" : "R");
     auto it = g_hands.find(key);
     if (it != g_hands.end()) return it->second;
     Sculpt& s = g_hands[key];
     sdf::Model m;
-    SculptHand(MakeSpec(id), arm == 0 ? -1.f : 1.f, grip, m);
+    SculptHand(MakeSpec(id), arm == 0 ? -1.f : 1.f, m);
     s.meshes = m.Build(0.0015f);
     return s;
 }
@@ -466,7 +550,7 @@ void UnloadSculpts() {
     for (auto& kv : g_heads)
         for (Mesh& mesh : kv.second.meshes) UnloadMesh(mesh);
     for (auto& kv : g_torsos)
-        for (Mesh& mesh : kv.second.s.meshes) UnloadMesh(mesh);
+        for (Mesh& mesh : kv.second.meshes) UnloadMesh(mesh);
     g_heads.clear();
     g_torsos.clear();
     for (auto& kv : g_hands)

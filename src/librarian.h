@@ -39,11 +39,7 @@ public:
     Vector3 lookAt{ 0.f, 1.3f, 1.9f };
     float lookWeight = 1.f;
     float gestureAmount = 1.f;       // 0 disables talking gestures
-    std::string look = "malloc";     // who is on duty: malloc, pointer, heap, ada
-    float muscle = 0.f;              // displayed fitness 0..1 (eases towards muscleTarget)
-    float muscleTarget = 0.f;
-    bool dumbbells = false;          // a dumbbell in each fist
-    bool fists = false;              // hands closed with nothing in them (flexing)
+    std::string look = "malloc";     // who is on duty: an id from unlocks::Roster()
     float clock = 0.f;               // animation time for the robot's LEDs
     float debugMouth = -1.f, debugBlink = -1.f;   // autopilot: hold the mouth open / the eyes shut for a screenshot (-1 = off)
     std::function<void()> onFootstep;
